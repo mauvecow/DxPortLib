@@ -1,0 +1,57 @@
+IMPORTANT NOTE:
+  This library is not intended to be a 100% implementation of the
+  DxLib interface!
+
+  Throw out the cruft and only allow what makes sense for modern
+  portability and hardware acceleration guidelines.
+
+---------------------------------------------------------------------------
+
+System:
+- DxLib general:
+  - No asynchronous loading support anywhere.
+  - Doesn't quit work right on Windows right now.
+- Memory:
+  - None of the debugging information is supported or used.
+- Text:
+  - HANGEUL, BIG5, GB2312 not supported.
+    (Need to embed codepage files. Easy, but no reason to do so yet.)
+- Log:
+  - Does not exist at this time.
+
+File I/O:
+- DXA archiver:
+  - Compressed data cannot be streamed incrementally.
+    Instead it will load decompress the whole thing into memory and
+    stream from there.
+- Files:
+  - No support for custom streaming functions.
+
+Graphics:
+- Functions unsupported due to SDL2_Renderer backend:
+  - DrawModiGraph
+  - DrawTriangle/DrawQuadrangle
+  - DrawLine thickness.
+  - Blend modes other than NONE/ADD/MUL.
+  - Shader filter nonsense.
+  - 3D.
+- OpenGL:
+  - Not written yet!!
+- Movies:
+  - No support for movie playback, theora or otherwise.
+- Font:
+  - Does not support ANTIALIASING_4x4 or 8x8. Will automatically
+    fall back to ANTIALIASING.
+  - No vertical font rendering.
+
+Sound:
+- AudioBuffer support needs to be split away from AudioInstance.
+- The rest of the Mem API needs to be implemented.
+
+Other:
+- Input:
+  - Multibyte/unicode input not supported.
+- Networking:
+  - No support whatsoever! (link to SDL2_net?)
+
+---------------------------------------------------------------------------

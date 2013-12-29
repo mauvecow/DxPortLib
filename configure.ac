@@ -1,0 +1,75 @@
+# I apologize for how bad this script is, I'm a bit of an autotools scrub.
+#
+# Feel free to send improvements!
+
+AC_INIT([DxPortLib], [0.2.0], [], [DxPortLib])
+
+AC_CONFIG_AUX_DIR(autotools)
+AC_CONFIG_MACRO_DIR(autotools)
+
+AM_INIT_AUTOMAKE(DxPortLib, $VERSION)
+
+AC_PROG_CC
+AC_PROG_CXX
+AM_PROG_CC_STDC
+AM_PROG_LIBTOOL
+
+MAJOR_VERSION=0     
+MINOR_VERSION=2
+MICRO_VERSION=0
+INTERFACE_AGE=0
+BINARY_AGE=0
+VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
+
+AC_SUBST(MAJOR_VERSION)   
+AC_SUBST(MINOR_VERSION)
+AC_SUBST(MICRO_VERSION) 
+AC_SUBST(INTERFACE_AGE)
+AC_SUBST(BINARY_AGE)
+AC_SUBST(VERSION)   
+
+LT_INIT([])
+LT_RELEASE=$MAJOR_VERSION.$MINOR_VERSION
+LT_CURRENT=`expr $MICRO_VERSION - $INTERFACE_AGE`
+LT_REVISION=$INTERFACE_AGE
+LT_AGE=`expr $BINARY_AGE - $INTERFACE_AGE`
+
+AC_SUBST(LT_RELEASE)
+AC_SUBST(LT_CURRENT)
+AC_SUBST(LT_REVISION)
+AC_SUBST(LT_AGE)
+
+BASE_CFLAGS=""
+BASE_CXXFLAGS=""
+
+CFLAGS="$CFLAGS -Wall -fvisibility=hidden"
+CXXFLAGS="$CXXFLAGS -Wall -fvisibility=hidden"
+
+srcdir=`cd $srcdir && pwd`
+
+CFLAGS="$CFLAGS -I$srcdir/include"
+CXXFLAGS="$CXXFLAGS -I$srcdir/include"
+
+SDL_VERSION=2.0.0
+AC_SUBST(SDL_VERSION)
+AM_PATH_SDL2($SDL_VERSION,
+	:,
+	AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
+)
+CFLAGS="$CFLAGS $SDL_CFLAGS"
+CXXFLAGS="$CXXFLAGS $SDL_CFLAGS"
+LIBS="$LIBS $SDL_LIBS"
+
+AC_CHECK_LIB(SDL2_image, IMG_Quit)
+
+LIBS="$LIBS -lSDL2_image -lSDL2_ttf -lvorbisfile"
+
+LIBS="$LIBS -lGL"
+
+AC_OUTPUT([
+Makefile
+src/Makefile
+include/Makefile
+test/Makefile
+DxPortLib.pc
+])
