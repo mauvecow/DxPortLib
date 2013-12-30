@@ -873,6 +873,11 @@ void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
         rendererFlags |= SDL_RENDERER_PRESENTVSYNC;
     }
     
+    /* Prefer OpenGL driver over D3D when available.
+     * SDL's D3D driver seems a bit buggy...
+     */
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    
     PL_renderer = SDL_CreateRenderer(window, -1, rendererFlags);
     
     PL_Draw_ResizeWindow(width, height);

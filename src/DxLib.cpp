@@ -198,6 +198,13 @@ int SetGraphMode(int width, int height, int bitDepth, int FPS) {
 int SetWindowSizeChangeEnableFlag(int windowResizeFlag) {
     return ::DxLib_SetWindowSizeChangeEnableFlag(windowResizeFlag);
 }
+
+// Windows can define SetWindowText to SetWindowTextA/W,
+// so get rid of that.
+#ifdef SetWindowText
+#  undef SetWindowText
+#endif
+
 int SetWindowText(const DXCHAR *windowName) {
     return ::DxLib_SetWindowText(windowName);
 }
