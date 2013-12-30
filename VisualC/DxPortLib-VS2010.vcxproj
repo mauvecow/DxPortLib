@@ -14,6 +14,7 @@
     <ProjectGuid>{4C5AB93F-D2A1-4ACC-9CCF-41347E3B36AF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>DxPortLib</RootNamespace>
+    <ProjectName>DxPortLib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -50,7 +51,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;DXPORTLIB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\VisualC\external\include;C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\VisualC\external\include\vorbis;C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\VisualC\external\include\SDL2;C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\include;external\include\vorbis;external\include\SDL2;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -66,7 +67,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DXPORTLIB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\VisualC\external\include;C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\VisualC\external\include\vorbis;C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\VisualC\external\include\SDL2;C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\include;external\include\vorbis;external\include\SDL2;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

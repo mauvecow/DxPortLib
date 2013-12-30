@@ -14,6 +14,7 @@
     <ProjectGuid>{6EADC141-3439-4793-AFB9-3C61E64AD5B8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>test_draw</RootNamespace>
+    <ProjectName>test_draw</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -50,7 +51,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\include;C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\VisualC\external\include\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;..\external\include\SDL2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -80,7 +81,7 @@ copy /Y "..\external\lib\x86\libpng16-16.dll" "$(TargetDir)\libpng16-16.dll"
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\include;C:\Users\Patrick\Documents\Visual Studio 2010\Projects\DxPortLib-0.2.0\VisualC\external\include\SDL2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;..\external\include\SDL2</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -111,7 +112,7 @@ copy /Y "..\external\lib\x86\libpng16-16.dll" "$(TargetDir)\libpng16-16.dll"
     <Library Include="..\external\lib\x86\SDL2main.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DxPortLib.vcxproj">
+    <ProjectReference Include="..\DxPortLib-VS2010.vcxproj">
       <Project>{4c5ab93f-d2a1-4acc-9ccf-41347e3b36af}</Project>
     </ProjectReference>
   </ItemGroup>
