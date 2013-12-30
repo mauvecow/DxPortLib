@@ -13,6 +13,8 @@
 
 #include "DxLib.h"
 
+#include "SDL_main.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -27,7 +29,7 @@ int main(int argc, char **argv) {
     
     SetUseCharSet(DX_CHARSET_EXT_UTF8);
     
-    SetWindowText("DxPortLib Test App");
+    SetWindowText(_T("DxPortLib Test App"));
     SetWindowSizeChangeEnableFlag(DXTRUE);
     
     SetGraphMode(screenWidth, screenHeight, 32);
@@ -37,27 +39,27 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    EXT_MapFontFileToName(argv[1], "TestFont", -1, DXFALSE);
-    EXT_MapFontFileToName(argv[1], "TestFontBold", -1, DXTRUE);
+    EXT_MapFontFileToName(argv[1], _T("TestFont"), -1, DXFALSE);
+    EXT_MapFontFileToName(argv[1], _T("TestFontBold"), -1, DXTRUE);
     
     int fonts[17];
-    fonts[0] = CreateFontToHandle("TestFont", 10);
-    fonts[1] = CreateFontToHandle("TestFont", 14);
-    fonts[2] = CreateFontToHandle("TestFont", 18);
-    fonts[3] = CreateFontToHandle("TestFont", 22);
-    fonts[4] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_EDGE, -1, 1);
-    fonts[5] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_EDGE, -1, 2);
-    fonts[6] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_EDGE, -1, 3);
-    fonts[7] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_EDGE, -1, 4);
-    fonts[8] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_ANTIALIASING, -1, 1);
-    fonts[9] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 1);
-    fonts[10] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 2);
-    fonts[11] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 3);
-    fonts[12] = CreateFontToHandle("TestFont", 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 4);
-    fonts[13] = CreateFontToHandle("TestFontBold", 22);
-    fonts[14] = CreateFontToHandle("TestFontBold", 22, -1, DX_FONTTYPE_EDGE, -1, 4);
-    fonts[15] = CreateFontToHandle("TestFontBold", 22, -1, DX_FONTTYPE_ANTIALIASING, -1, 1);
-    fonts[16] = CreateFontToHandle("TestFontBold", 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 1);
+    fonts[0] = CreateFontToHandle(_T("TestFont"), 10);
+    fonts[1] = CreateFontToHandle(_T("TestFont"), 14);
+    fonts[2] = CreateFontToHandle(_T("TestFont"), 18);
+    fonts[3] = CreateFontToHandle(_T("TestFont"), 22);
+    fonts[4] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_EDGE, -1, 1);
+    fonts[5] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_EDGE, -1, 2);
+    fonts[6] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_EDGE, -1, 3);
+    fonts[7] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_EDGE, -1, 4);
+    fonts[8] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING, -1, 1);
+    fonts[9] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 1);
+    fonts[10] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 2);
+    fonts[11] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 3);
+    fonts[12] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 4);
+    fonts[13] = CreateFontToHandle(_T("TestFontBold"), 22);
+    fonts[14] = CreateFontToHandle(_T("TestFontBold"), 22, -1, DX_FONTTYPE_EDGE, -1, 4);
+    fonts[15] = CreateFontToHandle(_T("TestFontBold"), 22, -1, DX_FONTTYPE_ANTIALIASING, -1, 1);
+    fonts[16] = CreateFontToHandle(_T("TestFontBold"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 1);
     
     while (ProcessMessage() == 0
 #ifndef DX_NON_INPUT
@@ -75,7 +77,7 @@ int main(int argc, char **argv) {
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
         
         for (int i = 0; i < 17; ++i) {
-            DrawStringToHandle(30, 30 + (i * 32), "The quick brown fox jumped over the lazy dog. あいうえお", 0xffffff, fonts[i]);
+            DrawStringToHandle(30, 30 + (i * 32), _T("The quick brown fox jumped over the lazy dog. あいうえお"), 0xffffff, fonts[i]);
         }
         
         ScreenFlip();

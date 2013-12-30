@@ -8,6 +8,10 @@ DxPortLib, provided all functions are available.
 
 #include "DxLib.h"
 
+/* - OPTIONAL: If you want to use main() on Windows, include this
+ *   and link SDL2main.lib. Otherwise ignore. */
+#include "SDL_main.h"
+
 /* - Non-Windows platforms do not use WinMain. */
 int main(int argc, char **argv) {
     /* - DxPortLib requires the text encoding to be set early.

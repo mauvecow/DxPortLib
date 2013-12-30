@@ -6,9 +6,11 @@ noinst_PROGRAMS =	\
 test_draw_SOURCES =	\
 	test_draw.cpp
 test_draw_LDADD = \
-	../src/libDxPortLib.la
+	../src/libDxPortLib.la \
+	-lSDL2main
 
 test_font_SOURCES =	\
 	test_font.cpp
 test_font_LDADD = \
-	../src/libDxPortLib.la
+	../src/libDxPortLib.la \
+	-lSDL2main

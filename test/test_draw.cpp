@@ -13,6 +13,8 @@
 
 #include "DxLib.h"
 
+#include "SDL_main.h"
+
 static const int BOUNCETHINGCOUNT = 50;
 
 struct BounceThing {
