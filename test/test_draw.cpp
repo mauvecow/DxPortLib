@@ -89,7 +89,7 @@ static void DrawBounceThings() {
 int main(int argc, char **argv) {
     SetUseCharSet(DX_CHARSET_EXT_UTF8);
     
-    SetWindowText("DxPortLib Test App");
+    SetWindowText(_T("DxPortLib Test App"));
     SetWindowSizeChangeEnableFlag(DXTRUE);
     
     SetGraphMode(640, 480, 32);

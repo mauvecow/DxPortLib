@@ -32,9 +32,12 @@ int main(int argc, char **argv) {
      *   value will be ignored. It will always be 32bpp. */
     SetGraphMode(640, 480, 32);
     
+    /* - DxPortLib defines the _T() and _TEXT() macro for all platforms.
+     *   This chooses between Unicode or Multibyte text automatically. */
+    SetWindowText(_T("Ported Application"));
+    
     /* Normal DxLib initialization... */
     ChangeWindowMode(TRUE);
-    SetWindowText("Ported Application");
     
     DxLib_Init();
     

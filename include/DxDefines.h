@@ -69,6 +69,18 @@ namespace DxLib {
 #  endif
 #endif
 
+/* #define _T() if it isn't already. */
+#ifndef _TEXT
+#  ifdef UNICODE
+#    define _TEXT(s) L ## s
+#  else
+#    define _TEXT(s) s
+#  endif
+#endif
+#ifndef _T
+#  define _T(s) _TEXT(s)
+#endif
+
 /* DxPortLib only supports Shift-JIS and UTF8.
  * Please use UTF8 when available. Please.
  */

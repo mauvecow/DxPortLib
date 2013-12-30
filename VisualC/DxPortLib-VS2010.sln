@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DxPortLib", "DxPortLib-VS2010.vcxproj", "{4C5AB93F-D2A1-4ACC-9CCF-41347E3B36AF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_draw", "test_draw\test_draw-VS2010.vcxproj", "{6EADC141-3439-4793-AFB9-3C61E64AD5B8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4C5AB93F-D2A1-4ACC-9CCF-41347E3B36AF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4C5AB93F-D2A1-4ACC-9CCF-41347E3B36AF}.Debug|Win32.Build.0 = Debug|Win32
+		{4C5AB93F-D2A1-4ACC-9CCF-41347E3B36AF}.Release|Win32.ActiveCfg = Release|Win32
+		{4C5AB93F-D2A1-4ACC-9CCF-41347E3B36AF}.Release|Win32.Build.0 = Release|Win32
+		{6EADC141-3439-4793-AFB9-3C61E64AD5B8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6EADC141-3439-4793-AFB9-3C61E64AD5B8}.Debug|Win32.Build.0 = Debug|Win32
+		{6EADC141-3439-4793-AFB9-3C61E64AD5B8}.Release|Win32.ActiveCfg = Release|Win32
+		{6EADC141-3439-4793-AFB9-3C61E64AD5B8}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -211,6 +211,11 @@ extern DXCALL int SetGraphMode(int width, int height,
 // NOTICE: Can only be set before DxLib_Init is called!
 extern DXCALL int SetWindowSizeChangeEnableFlag(int windowResizeFlag);
 
+// Avoid conflicts with windows headers that will define SetWindowText.
+#ifdef SetWindowText
+#  undef SetWindowText
+#endif
+
 // - Sets the title of the window.
 extern DXCALL int SetWindowText(const DXCHAR *windowName);
 
