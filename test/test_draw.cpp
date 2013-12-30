@@ -104,11 +104,29 @@ int main(int argc, char **argv) {
     SRand(0);
     InitBounceThings();
     
+	int isWindowed = DXTRUE;
+	int wasPressed = 0;
+	int timerDelta = 0;
+	int timeLast = GetNowCount();
+    
     while (ProcessMessage() == 0
 #ifndef DX_NON_INPUT
         && CheckHitKey(KEY_INPUT_ESCAPE) == 0
 #endif
     ) {
+		/* If Alt+Enter is pressed, flip to fullscreen mode. */
+		if (CheckHitKey(KEY_INPUT_RETURN)
+			&& (CheckHitKey(KEY_INPUT_LALT) || CheckHitKey(KEY_INPUT_RALT))
+		) {
+			if (wasPressed == 0) {
+				isWindowed = 1 - isWindowed;
+				ChangeWindowMode(isWindowed);
+			}
+			wasPressed = 1;
+		} else {
+			wasPressed = 0;
+		}
+
         /* Game logic here */
         MoveBounceThings();
         
@@ -123,7 +141,19 @@ int main(int argc, char **argv) {
         DrawBounceThings();
         
         ScreenFlip();
-        WaitTimer(16);
+
+		/* Time to next frame automatically... */
+		int newTime = GetNowCount();
+		timerDelta += newTime - timeLast;
+		timeLast = newTime;
+
+		int n = timerDelta;
+		if (n > 16) {
+			n = 16;
+		}
+		timerDelta -= n;
+
+        WaitTimer(16 - n);
     }
     
     DxLib_End();
