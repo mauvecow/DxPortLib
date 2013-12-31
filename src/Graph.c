@@ -21,10 +21,6 @@
 
 #include "DxInternal.h"
 
-#ifdef DXPORTLIB_DRAW_SDL2_RENDER
-
-#include "SDL2Render_DxInternal.h"
-
 #include "SDL_image.h"
 
 /* ---------------------------------------------------------- GRAPH DATA */
@@ -287,5 +283,3 @@ int PL_Graph_GetTextureID(int graphID, SDL_Rect *rect) {
     
     return graph->textureRefID;
 }
-
-#endif /* #ifdef DXPORTLIB_DRAW_SDL2_RENDER */

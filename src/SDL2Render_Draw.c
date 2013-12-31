@@ -833,7 +833,7 @@ void PL_Draw_ResizeWindow(int width, int height) {
     SDL_RenderSetScale(PL_renderer, 1.0f/1024.0f, 1.0f/1024.0f);
 }
 
-void PL_Draw_Refresh(const SDL_Rect *targetRect) {
+void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     SDL_SetRenderTarget(PL_renderer, NULL);
     SDL_RenderSetViewport(PL_renderer, NULL);
     SDL_RenderSetClipRect(PL_renderer, NULL);

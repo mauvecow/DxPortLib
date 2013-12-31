@@ -37,8 +37,8 @@
 
 /* DxPortLib extension - Sets the drawing backend.
  * --- SELECT ONLY ONE --- */
-#define DXPORTLIB_DRAW_SDL2_RENDER
-/* NOT YET AVAILABLE: #define DXPORTLIB_DRAW_OPENGL */
+/* #define DXPORTLIB_DRAW_SDL2_RENDER */
+#define DXPORTLIB_DRAW_OPENGL
 
 /* Disables the archive format. */
 /* #define DX_NON_DXA */

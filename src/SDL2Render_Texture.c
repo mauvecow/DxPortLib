@@ -65,7 +65,7 @@ int PL_Texture_CreateFromDimensions(int width, int height) {
     
     texture = SDL_CreateTexture(PL_renderer,
                                 SDL_PIXELFORMAT_ARGB8888,
-                                SDL_TEXTUREACCESS_STREAMING,
+                                0,
                                 width, height
                                 );
     if (texture == NULL) {
@@ -117,10 +117,22 @@ int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const SDL_Rec
     /* Convert to target format if different. */
     if (textureref->format != surface->format->format) {
         SDL_Surface *tempSurface = SDL_ConvertSurfaceFormat(surface, textureref->format, 0);
-        SDL_UpdateTexture(texture, rect, tempSurface->pixels, tempSurface->pitch);
+        if (SDL_MUSTLOCK(tempSurface)) {
+            SDL_LockSurface(tempSurface);
+            SDL_UpdateTexture(texture, rect, tempSurface->pixels, tempSurface->pitch);
+            SDL_UnlockSurface(tempSurface);
+        } else {
+            SDL_UpdateTexture(texture, rect, tempSurface->pixels, tempSurface->pitch);
+        }
         SDL_FreeSurface(tempSurface);
     } else {
-        SDL_UpdateTexture(texture, rect, surface->pixels, surface->pitch);
+        if (SDL_MUSTLOCK(surface)) {
+            SDL_LockSurface(surface);
+            SDL_UpdateTexture(texture, rect, surface->pixels, surface->pitch);
+            SDL_UnlockSurface(surface);
+        } else {
+            SDL_UpdateTexture(texture, rect, surface->pixels, surface->pitch);
+        }
     }
     
     return 0;

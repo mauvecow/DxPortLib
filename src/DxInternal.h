@@ -96,6 +96,7 @@ typedef enum {
     DXHANDLE_FONT,
     DXHANDLE_SOUND,
     DXHANDLE_FILE,
+    DXHANDLE_FRAMEBUFFER,
     DXHANDLE_END
 } HandleType;
 
@@ -237,7 +238,7 @@ extern int PL_Draw_SetBasicBlendFlag(int blendFlag);
 extern DXCOLOR PL_Draw_GetColor(int red, int green, int blue);
 
 extern void PL_Draw_ResizeWindow(int width, int height);
-extern void PL_Draw_Refresh(const SDL_Rect *targetRect);
+extern void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect);
 extern void PL_Draw_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect);
 extern void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag);
 extern void PL_Draw_End();
