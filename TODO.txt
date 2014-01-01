@@ -57,6 +57,5 @@ Other:
 ---------------------------------------------------------------------------
 
 OpenGL:
-- Fix DrawRectGraph (sigh)
 - DrawLine thickness.
 - Verify blending behavior.

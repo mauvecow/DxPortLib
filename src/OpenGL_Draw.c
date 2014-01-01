@@ -95,7 +95,7 @@ typedef struct VertexCache {
 
 static VertexCache s_cache;
 
-/* given a call with a vertex definition and the number of vertices,
+/* Given a call with a vertex definition and the number of vertices,
  * returns the starting vertex pointer.
  */
 static void *s_beginCache(
@@ -103,6 +103,7 @@ static void *s_beginCache(
     int vertexSize, int vertexCount,
     GLenum drawMode, int textureRefID
 ) {
+    /* - If this is the same as the last definition, try to continue it. */
     if (s_cache.defArray == definitionArray
         && s_cache.drawMode == drawMode
         && s_cache.textureRefID == textureRefID
@@ -111,7 +112,6 @@ static void *s_beginCache(
         int pos = s_cache.vertexDataPosition;
         int newPos = pos + n;
         if (newPos <= s_cache.vertexDataSize) {
-            /* got enough room, just return another vertex. */
             s_cache.vertexDataPosition = newPos;
             s_cache.vertexCount += vertexCount;
             
@@ -119,9 +119,10 @@ static void *s_beginCache(
         }
     }
 
-    /* flush the current cache */
+    /* - Flush the current cache */
     PL_Draw_FlushCache();
     
+    /* - Set up the new definition. */
     s_cache.defArray = definitionArray;
     s_cache.defCount = defCount;
     s_cache.drawMode = drawMode;
@@ -133,6 +134,11 @@ static void *s_beginCache(
     return s_cache.vertexData;
 }
 
+/* Helpful start macro.
+ * 
+ * Can be called multiple times in the same function to fetch more
+ * vertices as needed.
+ */
 #define START(vertexName, VertexType, drawMode, textureRefID, vertexCount) \
     VertexType *vertexName = (VertexType *)s_beginCache( \
                                s_def ## VertexType, elementsof(s_def ## VertexType), \
@@ -219,9 +225,9 @@ int PL_Draw_InitCache() {
     s_cache.vertexSize = 1;
     s_cache.vertexCount = 0;
     
-    /* 256kb should be enough for anybody */
+    /* 64kb should be enough for anybody */
     s_cache.vertexDataPosition = 0;
-    s_cache.vertexDataSize = 12 * 1024;
+    s_cache.vertexDataSize = 64 * 1024;
     s_cache.vertexData = SDL_malloc(s_cache.vertexDataSize);
     
     return 0;
@@ -274,11 +280,21 @@ int PL_Draw_Line(int x1, int y1, int x2, int y2, DXCOLOR color, int thickness) {
 }
 
 int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillFlag) {
+    /* DxLib's circle/oval drawing functions are not mimiced accurately.
+     * 
+     * DxLib draws them one pixel around the circumference at a time.
+     * And filled ellipses are lines extending across the diameter.
+     * 
+     * Yes, really.
+     * 
+     * We may want to adjust the number of points based on the
+     * circumference of the ellipse.
+     */
     Uint32 vColor = s_modulateColor(color);
     x -= 0.5f; y -= 0.5f;
     
     if (fillFlag) {
-        int points = 24;
+        int points = 36;
         float amount = ((float)M_PI * 2) / points;
         START(v, VertexPosition2Color, GL_TRIANGLE_FAN, -1, points);
         int i;
@@ -292,7 +308,7 @@ int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillF
         /* we don't want triangle fan to bleed over, so clear it out now. */
         PL_Draw_FlushCache();
     } else {
-        int points = 24;
+        int points = 36;
         float amount = ((float)M_PI * 2) / points;
         START(v, VertexPosition2Color, GL_LINES, -1, points * 2);
         VertexPosition2Color *sv = v;
@@ -503,27 +519,92 @@ int PL_Draw_ExtendGraph(int x1, int y1, int x2, int y2, int graphID, int blendFl
 
 int PL_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
                       int graphID, int blendFlag, int turnFlag) {
+    /* DxLib has very, very strange behavior for DrawRectGraph.
+     * 
+     * Unlike basically all other drawing functions, it does not
+     * simply create a subsection of the graph to draw. Instead,
+     * it creates a clip window on screen and then draws the entire
+     * graph over it.
+     * 
+     * When it flips horizontally, it flips the whole graph, too,
+     * which is where real trouble begins.
+     * 
+     * This is actually important, because it means you can set the
+     * source coordinates to be partially outside of the texture and
+     * it will still be valid!
+     */
     SDL_Rect texRect;
     int textureRefID;
     float xMult, yMult;
     if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
         Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
-        float x1 = dx, y1 = dy;
-        float x2, y2;
-        float tx1 = (texRect.x + sx) * xMult;
-        float ty1 = (texRect.y + sy) * yMult;
-        float tx2 = tx1 + (sw * xMult);
-        float ty2 = ty1 + (sh * yMult);
+        float dx1, dy1, dx2, dy2;
+        float tx1, ty1, tx2, ty2;
         
-        x2 = x1 + sw; y2 = y1 + sh;
+        /* - only do the fancy clipping calculations if we need to */
+        if ((sx + sw) > texRect.w || (sy + sh) > texRect.h) {
+            /* - calculate non-flipped clip window */
+            /* we make sure to clip both the window and the texture's bounds */
+            float dx2a, dy2a;
+            float tx, ty;
+            tx = dx - (float)sx;
+            ty = dy - (float)sy;
+            
+            dx1 = dx;
+            dy1 = dy;
+            
+            dx2 = tx + (float)texRect.w;
+            dx2a = dx + (float)sw;
+            if (dx2a < dx2) { dx2 = dx2a; }
+            
+            dy2 = ty + (float)texRect.h;
+            dy2a = dy + (float)sh;
+            if (dy2a < dy2) { dy2 = dy2a; }
+            
+            if (dx2 <= dx1 || dy2 <= dy1) {
+                return 0;
+            }
+    
+            /* - calculate texture coordinates */
+            tx -= (float)texRect.x;
+            ty -= (float)texRect.y;
+            
+            tx1 = (dx1 - tx) * xMult;
+            ty1 = (dy1 - ty) * yMult;
+            tx2 = (dx2 - tx) * xMult;
+            ty2 = (dy2 - ty) * yMult;
+            
+            /* - if flipping, offset x coordinates from the other side */
+            if (turnFlag) {
+                dx1 = dx + (float)sw;
+                dx2 = dx1 + dx - dx2;
+            }
+        } else {
+            /* - simple version, no clip needed */
+            dx1 = dx;
+            dy1 = dy;
+            dx2 = dx + (float)sw;
+            dy2 = dy + (float)sh;
+            
+            tx1 = (texRect.x + (float)sx) * xMult;
+            ty1 = (texRect.y + (float)sy) * yMult;
+            tx2 = tx1 + ((float)sw * xMult);
+            ty2 = ty1 + ((float)sh * yMult);
+            
+            if (turnFlag) { float tmp = dx1; dx1 = dx2; dx2 = tmp; }
+        }
         
-        v[0].x = x1; v[0].y = y1; v[0].tcx = tx1; v[0].tcy = ty1; v[0].color = vColor;
-        v[1].x = x2; v[1].y = y1; v[1].tcx = tx2; v[1].tcy = ty1; v[1].color = vColor;
-        v[2].x = x1; v[2].y = y2; v[2].tcx = tx1; v[2].tcy = ty2; v[2].color = vColor;
-        v[3] = v[2];
-        v[4] = v[1];
-        v[5].x = x2; v[5].y = y2; v[5].tcx = tx2; v[5].tcy = ty2; v[5].color = vColor;
+        /* - draw! */
+        {
+            START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+            
+            v[0].x = dx1; v[0].y = dy1; v[0].tcx = tx1; v[0].tcy = ty1; v[0].color = vColor;
+            v[1].x = dx2; v[1].y = dy1; v[1].tcx = tx2; v[1].tcy = ty1; v[1].color = vColor;
+            v[2].x = dx1; v[2].y = dy2; v[2].tcx = tx1; v[2].tcy = ty2; v[2].color = vColor;
+            v[3] = v[2];
+            v[4] = v[1];
+            v[5].x = dx2; v[5].y = dy2; v[5].tcx = tx2; v[5].tcy = ty2; v[5].color = vColor;
+        }
     }
     
     return 0;
@@ -545,10 +626,10 @@ int PL_EXT_Draw_RectGraphFastF(
         Uint32 vColor = s_getColor();
         START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
         float dx2, dy2;
-        float tx1 = (texRect.x + sx) * xMult;
-        float ty1 = (texRect.y + sy) * yMult;
-        float tx2 = tx1 + (sw * xMult);
-        float ty2 = ty1 + (sh * yMult);
+        float tx1 = (texRect.x + (float)sx) * xMult;
+        float ty1 = (texRect.y + (float)sy) * yMult;
+        float tx2 = tx1 + ((float)sw * xMult);
+        float ty2 = ty1 + ((float)sh * yMult);
         
         dx2 = dx1 + sw; dy2 = dy1 + sh;
         
