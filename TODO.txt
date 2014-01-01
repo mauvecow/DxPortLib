@@ -13,6 +13,7 @@ System:
   - Doesn't quit work right on Windows right now.
 - Memory:
   - None of the debugging information is supported or used.
+  - Would like Handle to manage its own data heap for allocated stuff.
 - Text:
   - HANGEUL, BIG5, GB2312 not supported.
     (Need to embed codepage files. Easy, but no reason to do so yet.)

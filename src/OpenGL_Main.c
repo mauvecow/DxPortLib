@@ -117,6 +117,29 @@ static void s_LoadGL() {
 
 /* ------------------------------------------------------- Window context */
 
+static void s_BindActiveFramebuffer() {
+    PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+    
+    PL_GL.glDisable(GL_DEPTH_TEST);
+    PL_GL.glDisable(GL_CULL_FACE);
+    
+    PL_GL.glViewport(0, 0, PL_drawScreenWidth, PL_drawScreenHeight);
+    PL_GL.glClearColor(0, 0, 0, 1);
+    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    PL_GL.glColor4f(1, 1, 1, 1);
+    
+    PL_GL.glMatrixMode(GL_PROJECTION);
+    PL_GL.glLoadIdentity();
+    PL_GL.glOrtho((GLdouble)0, (GLdouble)PL_drawScreenWidth,
+                  (GLdouble)0, (GLdouble)PL_drawScreenHeight,
+                  0.0, 1.0);
+    
+    PL_GL.glMatrixMode(GL_MODELVIEW);
+    PL_GL.glLoadIdentity();
+    
+    PL_Draw_ForceUpdate();
+}
+
 void PL_Draw_ResizeWindow(int width, int height) {
     if (!PL_GL.isInitialized) {
         return;
@@ -142,6 +165,8 @@ void PL_Draw_ResizeWindow(int width, int height) {
     
     PL_Texture_glSetFilter(s_screenFrameBufferA, GL_LINEAR, GL_LINEAR);
     PL_Texture_glSetFilter(s_screenFrameBufferB, GL_LINEAR, GL_LINEAR);
+    
+    s_BindActiveFramebuffer();
 }
 
 /* FIXME genericize this code a bit... */
@@ -240,26 +265,7 @@ void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     SDL_GL_SwapWindow(window);
     
     /* Rebind the new buffer. */
-    PL_Texture_BindFramebuffer(s_screenFrameBufferA);
-    
-    PL_GL.glDisable(GL_DEPTH_TEST);
-    PL_GL.glDisable(GL_CULL_FACE);
-    
-    PL_GL.glViewport(0, 0, PL_drawScreenWidth, PL_drawScreenHeight);
-    PL_GL.glClearColor(0, 0, 0, 1);
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
-    PL_GL.glColor4f(1, 1, 1, 1);
-    
-    PL_GL.glMatrixMode(GL_PROJECTION);
-    PL_GL.glLoadIdentity();
-    PL_GL.glOrtho((GLdouble)0, (GLdouble)PL_drawScreenWidth,
-                  (GLdouble)0, (GLdouble)PL_drawScreenHeight,
-                  0.0, 1.0);
-    
-    PL_GL.glMatrixMode(GL_MODELVIEW);
-    PL_GL.glLoadIdentity();
-    
-    PL_Draw_ForceUpdate();
+    s_BindActiveFramebuffer();
 }
 
 void PL_Draw_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect) {
