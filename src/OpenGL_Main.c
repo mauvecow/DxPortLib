@@ -68,6 +68,9 @@ static void s_LoadGL() {
     PL_GL.glClear = SDL_GL_GetProcAddress("glClear");
     
     PL_GL.glColor4f = SDL_GL_GetProcAddress("glColor4f");
+    
+    PL_GL.glLineWidth = SDL_GL_GetProcAddress("glLineWidth");
+    
     PL_GL.glTexEnvf = SDL_GL_GetProcAddress("glTexEnvf");
     PL_GL.glBlendFuncSeparate = SDL_GL_GetProcAddress("glBlendFuncSeparate");
     PL_GL.glBlendEquationSeparate = SDL_GL_GetProcAddress("glBlendEquationSeparate");

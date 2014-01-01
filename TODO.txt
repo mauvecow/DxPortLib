@@ -57,5 +57,4 @@ Other:
 ---------------------------------------------------------------------------
 
 OpenGL:
-- DrawLine thickness.
 - Verify blending behavior.

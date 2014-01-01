@@ -267,10 +267,30 @@ int PL_Draw_Pixel(int x, int y, DXCOLOR color) {
 
 int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thickness) {
     Uint32 vColor = s_modulateColor(color);
-    START(v, VertexPosition2Color, GL_LINES, -1, 2);
+    if (thickness <= 1) {
+        START(v, VertexPosition2Color, GL_LINES, -1, 2);
     
-    v[0].x = x1; v[0].y = y1; v[0].color = vColor;
-    v[1].x = x2; v[1].y = y2; v[1].color = vColor;
+        v[0].x = x1; v[0].y = y1; v[0].color = vColor;
+        v[1].x = x2; v[1].y = y2; v[1].color = vColor;
+    } else {
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float l = (float)SDL_sqrt((dx * dx) + (dy * dy));
+        
+        if (l > 0) {
+            START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6);
+            float t = (float)thickness * 0.5f;
+            float nx = (dx / l) * t;
+            float ny = (dy / l) * t;
+            
+            v[0].x = x1 - ny; v[0].y = y1 + nx; v[0].color = vColor;
+            v[1].x = x2 - ny; v[1].y = y2 + nx; v[1].color = vColor;
+            v[2].x = x1 + ny; v[2].y = y1 - nx; v[2].color = vColor;
+            v[3] = v[2];
+            v[4] = v[1];
+            v[5].x = x2 + ny; v[5].y = y2 - nx; v[5].color = vColor;
+        }
+    }
     
     return 0;
 }

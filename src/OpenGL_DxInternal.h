@@ -95,6 +95,8 @@ typedef struct GLInfo_t {
     
     void (APIENTRY *glColor4f)( GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha );
     
+    void (APIENTRY *glLineWidth)( GLfloat width );
+
     void (APIENTRY *glTexEnvf)( GLenum target, GLenum pname, GLfloat param );
     void (APIENTRY *glBlendFuncSeparate) ( GLenum srcRGB, GLenum dstRGB,
                                            GLenum srcAlpha, GLenum dstAlpha);
