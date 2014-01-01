@@ -270,6 +270,10 @@ int SetUseTransColor(int flag) {
     return ::DxLib_SetUseTransColor(flag);
 }
 
+int DrawPixel(int x, int y, DXCOLOR color) {
+    return ::DxLib_DrawPixel(x, y, color);
+}
+
 int DrawLine(int x1, int y1, int x2, int y2, DXCOLOR color, int thickness) {
     return ::DxLib_DrawLine(x1, y1, x2, y2, color, thickness);
 }
@@ -307,6 +311,27 @@ int DrawOval(int x, int y, int rx, int ry, DXCOLOR color, int fillFlag) {
 }
 int DrawOvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillFlag) {
     return ::DxLib_DrawOvalF(x, y, rx, ry, color, fillFlag);
+}
+
+int DrawTriangle(int x1, int y1, int x2, int y2,
+                       int x3, int y3,
+                       DXCOLOR color, int fillFlag) {
+    return ::DxLib_DrawTriangle(x1, y1, x2, y2, x3, y3, color, fillFlag);
+}
+int DrawTriangleF(float x1, float y1, float x2, float y2,
+                        float x3, float y3,
+                        DXCOLOR color, int fillFlag) {
+    return ::DxLib_DrawTriangleF(x1, y1, x2, y2, x3, y3, color, fillFlag);
+}
+int DrawQuadrangle(int x1, int y1, int x2, int y2,
+                         int x3, int y3, int x4, int y4,
+                         DXCOLOR color, int fillFlag) {
+    return ::DxLib_DrawQuadrangle(x1, y1, x2, y2, x3, y3, x4, y4, color, fillFlag);
+}
+int DrawQuadrangleF(float x1, float y1, float x2, float y2,
+                          float x3, float y3, float x4, float y4,
+                          DXCOLOR color, int fillFlag) {
+    return ::DxLib_DrawQuadrangleF(x1, y1, x2, y2, x3, y3, x4, y4, color, fillFlag);
 }
 
 int DrawGraph(int x, int y, int graphID, int blendFlag) {
@@ -457,6 +482,17 @@ int DrawTurnGraph(int x, int y, int graphID, int blendFlag) {
 }
 int DrawTurnGraph(float x, float y, int graphID, int blendFlag) {
     return ::DxLib_DrawTurnGraphF(x, y, graphID, blendFlag);
+}
+
+int DrawModiGraph(int x1, int y1, int x2, int y2,
+                        int x3, int y3, int x4, int y4,
+                        int graphID, int blendFlag) {
+    return ::DxLib_DrawModiGraph(x1, y1, x2, y2, x3, y3, x4, y4, graphID, blendFlag);
+}
+int DrawModiGraphF(float x1, float y1, float x2, float y2,
+                         float x3, float y3, float x4, float y4,
+                         int graphID, int blendFlag) {
+    return ::DxLib_DrawModiGraphF(x1, y1, x2, y2, x3, y3, x4, y4, graphID, blendFlag);
 }
 
 int SetDrawArea(int x1, int y1, int x2, int y2) {

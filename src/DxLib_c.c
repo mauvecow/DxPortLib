@@ -365,6 +365,10 @@ int DxLib_SetUseTransColor(int flag) {
     return PL_Graph_SetUseTransColor(flag);
 }
 
+int DxLib_DrawPixel(int x, int y, DXCOLOR color) {
+    return PL_Draw_Pixel(x, y, color);
+}
+
 int DxLib_DrawLine(int x1, int y1, int x2, int y2, DXCOLOR color, int thickness) {
     return PL_Draw_Line(x1, y1, x2, y2, color, thickness);
 }
@@ -402,6 +406,27 @@ int DxLib_DrawOval(int x, int y, int rx, int ry, DXCOLOR color, int fillFlag) {
 }
 int DxLib_DrawOvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillFlag) {
     return PL_Draw_OvalF(x, y, rx, ry, color, fillFlag);
+}
+
+int DxLib_DrawTriangle(int x1, int y1, int x2, int y2,
+                       int x3, int y3,
+                       DXCOLOR color, int fillFlag) {
+    return PL_Draw_Triangle(x1, y1, x2, y2, x3, y3, color, fillFlag);
+}
+int DxLib_DrawTriangleF(float x1, float y1, float x2, float y2,
+                        float x3, float y3,
+                        DXCOLOR color, int fillFlag) {
+    return PL_Draw_TriangleF(x1, y1, x2, y2, x3, y3, color, fillFlag);
+}
+int DxLib_DrawQuadrangle(int x1, int y1, int x2, int y2,
+                         int x3, int y3, int x4, int y4,
+                         DXCOLOR color, int fillFlag) {
+    return PL_Draw_Quadrangle(x1, y1, x2, y2, x3, y3, x4, y4, color, fillFlag);
+}
+int DxLib_DrawQuadrangleF(float x1, float y1, float x2, float y2,
+                          float x3, float y3, float x4, float y4,
+                          DXCOLOR color, int fillFlag) {
+    return PL_Draw_QuadrangleF(x1, y1, x2, y2, x3, y3, x4, y4, color, fillFlag);
 }
 
 int DxLib_DrawGraph(int x, int y, int graphID, int blendFlag) {
@@ -552,6 +577,17 @@ int DxLib_DrawTurnGraph(int x, int y, int graphID, int blendFlag) {
 }
 int DxLib_DrawTurnGraphF(float x, float y, int graphID, int blendFlag) {
     return PL_Draw_TurnGraphF(x, y, graphID, blendFlag);
+}
+
+int DxLib_DrawModiGraph(int x1, int y1, int x2, int y2,
+                        int x3, int y3, int x4, int y4,
+                        int graphID, int blendFlag) {
+    return PL_Draw_ModiGraph(x1, y1, x2, y2, x3, y3, x4, y4, graphID, blendFlag);
+}
+int DxLib_DrawModiGraphF(float x1, float y1, float x2, float y2,
+                         float x3, float y3, float x4, float y4,
+                         int graphID, int blendFlag) {
+    return PL_Draw_ModiGraphF(x1, y1, x2, y2, x3, y3, x4, y4, graphID, blendFlag);
 }
 
 int DxLib_SetDrawArea(int x1, int y1, int x2, int y2) {

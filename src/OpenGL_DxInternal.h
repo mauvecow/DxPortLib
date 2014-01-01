@@ -40,6 +40,11 @@
 
 #define elementsof(x) (sizeof(x) / sizeof(x[0]))
 
+/* In the event this is not defined... */
+#ifndef M_PI
+#define M_PI    3.14159265358979323846
+#endif
+
 typedef struct GLInfo_t {
     int isInitialized;
     
@@ -131,8 +136,9 @@ extern int PL_Texture_CreateFramebuffer(int width, int height);
 extern int PL_Texture_Bind(int textureRefID);
 extern int PL_Texture_Unbind(int textureRefID);
 extern int PL_Texture_BindFramebuffer(int textureRefID);
+extern int PL_Texture_glSetFilter(int textureRefID, GLenum minFilter, GLenum magFilter);
 extern int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
-extern int PL_Texture_RenderGetGraphTextureInfo(int graphID, SDL_Rect *rect, float *xMult, float *yMult);
+extern int PL_Texture_RenderGetGraphTextureInfo(int graphID, int *textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
 extern int PL_Texture_ClearAllData();
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */

@@ -32,8 +32,8 @@ static void InitBounceThings() {
         BounceThing *thing = &things[i];
         int j;
         
-        thing->w = 10 + GetRand(10);
-        thing->h = 10 + GetRand(10);
+        thing->w = 10 + GetRand(50);
+        thing->h = 10 + GetRand(50);
         thing->x = 20 + GetRand(600 - thing->w);
         thing->y = 20 + GetRand(460 - thing->w);
         thing->dx = GetRand(4) - 2;

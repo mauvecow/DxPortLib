@@ -85,6 +85,54 @@ int PL_Draw_ResetSettings() {
     return 0;
 }
 
+/* Unsupported functions up top. */
+int PL_Draw_Pixel(int x, int y, DXCOLOR color) {
+    return -1;
+}
+
+int PL_Draw_TriangleF(
+    float x1, float y1, float x2, float y2, float x3, float y3,
+    DXCOLOR color, int fillFlag
+) {
+    return -1;
+}
+int PL_Draw_Triangle(
+    int x1, int y1, int x2, int y2, int x3, int y3,
+    DXCOLOR color, int fillFlag
+) {
+    return -1;
+}
+int PL_Draw_QuadrangleF(
+    float x1, float y1, float x2, float y2,
+    float x3, float y3, float x4, float y4,
+    DXCOLOR color, int fillFlag
+) {
+    return -1;
+}
+int PL_Draw_Quadrangle(
+    int x1, int y1, int x2, int y2,
+    int x3, int y3, int x4, int y4,
+    DXCOLOR color, int fillFlag
+) {
+    return -1;
+}
+int PL_Draw_ModiGraphF(
+    float x1, float y1, float x2, float y2,
+    float x3, float y3, float x4, float y4,
+    int graphID, int blendFlag
+) {
+    return -1;
+}
+int PL_Draw_ModiGraph(
+    int x1, int y1, int x2, int y2,
+    int x3, int y3, int x4, int y4,
+    int graphID, int blendFlag
+) {
+    return -1;
+}
+
+/* Supported functions from here on out. */
+
 void PL_Draw_InitCircleGraph() {
     const int circleWidth = 128;
     const int circleRadius = circleWidth / 2;
@@ -514,7 +562,6 @@ static int s_Draw_RotaGraphMain(
     
     return 0;
 }
-
 
 int PL_Draw_RotaGraphF(float x, float y, 
                        double scaleFactor, double angle,

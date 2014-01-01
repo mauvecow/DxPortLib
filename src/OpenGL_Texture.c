@@ -336,6 +336,26 @@ int PL_Texture_CreateFramebuffer(int width, int height) {
     return textureRefID;
 }
 
+int PL_Texture_glSetFilter(int textureRefID, GLenum minFilter, GLenum magFilter) {
+    TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
+    GLuint textureTarget;
+    if (textureref == NULL || textureref->textureID == 0) {
+        return -1;
+    }
+    
+    textureTarget = textureref->glTarget;
+    
+    PL_GL.glEnable(textureTarget);
+    PL_GL.glBindTexture(textureTarget, textureref->textureID);
+    
+    PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, minFilter);
+    PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, magFilter);
+    
+    PL_GL.glDisable(textureTarget);
+    
+    return 0;
+}
+
 int PL_Texture_AddRef(int textureRefID) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     if (textureref == NULL) {
@@ -428,13 +448,14 @@ int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMu
     
     return 0;
 }
-int PL_Texture_RenderGetGraphTextureInfo(int graphID, SDL_Rect *rect, float *xMult, float *yMult) {
+int PL_Texture_RenderGetGraphTextureInfo(int graphID, int *dTextureRefID, SDL_Rect *rect, float *xMult, float *yMult) {
     int textureRefID = PL_Graph_GetTextureID(graphID, rect);
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     
     if (textureref == NULL) {
         return -1;
     }
+    *dTextureRefID = textureRefID;
     *xMult = textureref->widthMult;
     *yMult = textureref->heightMult;
     

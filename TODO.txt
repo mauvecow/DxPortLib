@@ -55,3 +55,8 @@ Other:
   - No support whatsoever! (link to SDL2_net?)
 
 ---------------------------------------------------------------------------
+
+OpenGL:
+- Fix DrawRectGraph (sigh)
+- DrawLine thickness.
+- Verify blending behavior.

@@ -135,6 +135,9 @@ void PL_Draw_ResizeWindow(int width, int height) {
     
     s_screenFrameBufferA = PL_Texture_CreateFramebuffer(width, height);
     s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height);
+    
+    PL_Texture_glSetFilter(s_screenFrameBufferA, GL_LINEAR, GL_LINEAR);
+    PL_Texture_glSetFilter(s_screenFrameBufferB, GL_LINEAR, GL_LINEAR);
 }
 
 /* FIXME genericize this code a bit... */
@@ -143,10 +146,10 @@ typedef struct RectVertex {
     float tcx, tcy;
 } RectVertex;
 
-static void s_drawRect(int textureRefID, const SDL_Rect *rect) {
+static void s_drawRect(const SDL_Rect *rect) {
     RectVertex v[4];
-    float x1 = rect->x + 0.5f;
-    float y1 = rect->y + 0.5f;
+    float x1 = rect->x;
+    float y1 = rect->y;
     float x2 = x1 + rect->w;
     float y2 = y1 + rect->h;
     float tcx1, tcy1, tcx2, tcy2;
@@ -178,6 +181,8 @@ static void s_drawRect(int textureRefID, const SDL_Rect *rect) {
     
     PL_GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     PL_GL.glDisableClientState(GL_VERTEX_ARRAY);
+    
+    PL_Texture_Unbind(s_screenFrameBufferB);
 }
 
 void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
@@ -222,9 +227,7 @@ void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
         PL_GL.glActiveTexture(GL_TEXTURE0);
     }
     
-    s_drawRect(s_screenFrameBufferB, targetRect);
-    
-    PL_Texture_Unbind(s_screenFrameBufferB);
+    s_drawRect(targetRect);
     
     /* Swap! */
     SDL_GL_SwapWindow(window);
@@ -243,7 +246,7 @@ void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     PL_GL.glMatrixMode(GL_PROJECTION);
     PL_GL.glLoadIdentity();
     PL_GL.glOrtho((GLdouble)0, (GLdouble)PL_drawScreenWidth,
-                  (GLdouble)PL_drawScreenHeight, 0,
+                  (GLdouble)0, (GLdouble)PL_drawScreenHeight,
                   0.0, 1.0);
     
     PL_GL.glMatrixMode(GL_MODELVIEW);
