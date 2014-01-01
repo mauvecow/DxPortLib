@@ -149,10 +149,10 @@ typedef struct RectVertex {
 
 static void s_drawRect(const SDL_Rect *rect) {
     RectVertex v[4];
-    float x1 = rect->x;
-    float y1 = rect->y;
-    float x2 = x1 + rect->w;
-    float y2 = y1 + rect->h;
+    float x1 = (float)rect->x;
+    float y1 = (float)rect->y;
+    float x2 = x1 + (float)rect->w;
+    float y2 = y1 + (float)rect->h;
     float tcx1, tcy1, tcx2, tcy2;
     SDL_Rect texRect;
     float xMult, yMult;
@@ -161,10 +161,10 @@ static void s_drawRect(const SDL_Rect *rect) {
     
     PL_Texture_RenderGetTextureInfo(s_screenFrameBufferB, &texRect, &xMult, &yMult);
 
-    tcx1 = texRect.x * xMult;
-    tcy1 = texRect.y * yMult;
-    tcx2 = tcx1 + (texRect.w * xMult);
-    tcy2 = tcy1 + (texRect.h * yMult);
+    tcx1 = (float)texRect.x * xMult;
+    tcy1 = (float)texRect.y * yMult;
+    tcx2 = tcx1 + ((float)texRect.w * xMult);
+    tcy2 = tcy1 + ((float)texRect.h * yMult);
     
     v[0].x = x1; v[0].y = y1; v[0].tcx = tcx1; v[0].tcy = tcy1;
     v[1].x = x2; v[1].y = y1; v[1].tcx = tcx2; v[1].tcy = tcy1;

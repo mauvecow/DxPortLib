@@ -121,7 +121,7 @@ static int s_GLFrameBuffer_Release(int handleID) {
     info->refCount -= 1;
     if (info->refCount <= 0) {
         PL_GL.glDeleteFramebuffersEXT(1, &info->framebufferID);
-        info->framebufferID = -1;
+        info->framebufferID = 0;
         
         PL_Handle_ReleaseID(handleID, DXTRUE);
     }
@@ -134,7 +134,7 @@ static int s_GLFrameBuffer_Release(int handleID) {
 typedef struct TextureRef {
     GLuint textureID;
     
-    GLuint glInternalFormat;
+    GLint glInternalFormat;
     GLuint glTarget;
     GLuint glFormat;
     GLuint glType;
@@ -306,8 +306,8 @@ int PL_Texture_CreateFromDimensions(int width, int height) {
         textureref->widthMult = 1.0f;
         textureref->heightMult = 1.0f;
     } else {
-        textureref->widthMult = 1.0f / texWidth;
-        textureref->heightMult = 1.0f / texHeight;
+        textureref->widthMult = 1.0f / (float)texWidth;
+        textureref->heightMult = 1.0f / (float)texHeight;
     }
     
     return textureRefID;
@@ -336,7 +336,7 @@ int PL_Texture_CreateFramebuffer(int width, int height) {
     return textureRefID;
 }
 
-int PL_Texture_glSetFilter(int textureRefID, GLenum minFilter, GLenum magFilter) {
+int PL_Texture_glSetFilter(int textureRefID, GLint minFilter, GLint magFilter) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     GLuint textureTarget;
     if (textureref == NULL || textureref->textureID == 0) {

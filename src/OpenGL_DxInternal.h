@@ -138,7 +138,7 @@ extern int PL_Texture_CreateFramebuffer(int width, int height);
 extern int PL_Texture_Bind(int textureRefID);
 extern int PL_Texture_Unbind(int textureRefID);
 extern int PL_Texture_BindFramebuffer(int textureRefID);
-extern int PL_Texture_glSetFilter(int textureRefID, GLenum minFilter, GLenum magFilter);
+extern int PL_Texture_glSetFilter(int textureRefID, GLint minFilter, GLint magFilter);
 extern int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
 extern int PL_Texture_RenderGetGraphTextureInfo(int graphID, int *textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
 extern int PL_Texture_ClearAllData();
