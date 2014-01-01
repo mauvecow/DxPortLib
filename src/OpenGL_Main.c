@@ -73,6 +73,7 @@ static void s_LoadGL() {
     PL_GL.glBlendEquationSeparate = SDL_GL_GetProcAddress("glBlendEquationSeparate");
     
     PL_GL.glViewport = SDL_GL_GetProcAddress("glViewport");
+    PL_GL.glScissor = SDL_GL_GetProcAddress("glScissor");
     
     PL_GL.glDrawArrays = SDL_GL_GetProcAddress("glDrawArrays");
 
@@ -222,6 +223,9 @@ void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     PL_GL.glClearColor(0, 0, 0, 1);
     PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     
+    PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    PL_GL.glDisable(GL_BLEND);
+    
     /* Draw the framebuffer texture onto the main screen. */
     if (PL_GL.glActiveTexture != 0) {
         PL_GL.glActiveTexture(GL_TEXTURE0);
@@ -251,6 +255,8 @@ void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     
     PL_GL.glMatrixMode(GL_MODELVIEW);
     PL_GL.glLoadIdentity();
+    
+    PL_Draw_ForceUpdate();
 }
 
 void PL_Draw_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect) {
@@ -291,6 +297,8 @@ void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     PL_Draw_InitCache();
     
     PL_Draw_ResizeWindow(width, height);
+    
+    PL_Draw_ForceUpdate();
 }
 
 void PL_Draw_End() {

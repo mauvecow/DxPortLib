@@ -132,6 +132,8 @@ extern int PL_Draw_FlushCache();
 extern int PL_Draw_InitCache();
 extern int PL_Draw_DestroyCache();
 
+extern int PL_Draw_ForceUpdate();
+
 extern int PL_Texture_CreateFramebuffer(int width, int height);
 extern int PL_Texture_Bind(int textureRefID);
 extern int PL_Texture_Unbind(int textureRefID);

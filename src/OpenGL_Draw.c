@@ -256,7 +256,7 @@ static inline Uint32 s_modulateColor(DXCOLOR color) {
 int PL_Draw_PixelF(float x, float y, DXCOLOR color) {
     Uint32 vColor = s_modulateColor(color);
     START(v, VertexPosition2Color, GL_POINTS, -1, 1);
-    v[0].x = x - 0.5f; v[0].y = y - 0.5f; v[0].color = vColor;
+    v[0].x = x; v[0].y = y; v[0].color = vColor;
     
     return 0;
 }
@@ -269,8 +269,8 @@ int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thi
     Uint32 vColor = s_modulateColor(color);
     START(v, VertexPosition2Color, GL_LINES, -1, 2);
     
-    v[0].x = x1 - 0.5f; v[0].y = y1 - 0.5f; v[0].color = vColor;
-    v[1].x = x2 - 0.5f; v[1].y = y2 - 0.5f; v[1].color = vColor;
+    v[0].x = x1; v[0].y = y1; v[0].color = vColor;
+    v[1].x = x2; v[1].y = y2; v[1].color = vColor;
     
     return 0;
 }
@@ -291,7 +291,6 @@ int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillF
      * circumference of the ellipse.
      */
     Uint32 vColor = s_modulateColor(color);
-    x -= 0.5f; y -= 0.5f;
     
     if (fillFlag) {
         int points = 36;
@@ -347,9 +346,6 @@ int PL_Draw_TriangleF(
     DXCOLOR color, int fillFlag
 ) {
     Uint32 vColor = s_modulateColor(color);
-    x1 -= 0.5f; y1 -= 0.5f;
-    x2 -= 0.5f; y2 -= 0.5f;
-    x3 -= 0.5f; y3 -= 0.5f;
     
     if (fillFlag) {
         START(v, VertexPosition2Color, GL_TRIANGLES, -1, 3);
@@ -385,10 +381,6 @@ int PL_Draw_QuadrangleF(
     DXCOLOR color, int fillFlag
 ) {
     Uint32 vColor = s_modulateColor(color);
-    x1 -= 0.5f; y1 -= 0.5f;
-    x2 -= 0.5f; y2 -= 0.5f;
-    x3 -= 0.5f; y3 -= 0.5f;
-    x3 -= 0.5f; y4 -= 0.5f;
     
     if (fillFlag) {
         START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6);
@@ -427,8 +419,6 @@ int PL_Draw_Quadrangle(
 
 int PL_Draw_BoxF(float x1, float y1, float x2, float y2, DXCOLOR color, int FillFlag) {
     Uint32 vColor = s_modulateColor(color);
-    x1 -= 0.5f; x2 -= 0.5f;
-    y1 -= 0.5f; y2 -= 0.5f;
     
     if (FillFlag) {
         /* TRIANGLES instead of TRIANGLE_STRIP so that we can batch. */
@@ -729,10 +719,10 @@ static int s_Draw_RotaGraphMain(
     /* Calculate extents */
     halfWcos = halfW * fCos;
     halfHsin = halfH * fSin;
-    xext1 = halfWcos + halfHsin;
-    xext2 = halfWcos - halfHsin;
     halfHcos = halfH * fCos;
     halfWsin = halfW * fSin;
+    xext1 = halfWcos - halfHsin;
+    xext2 = halfWcos + halfHsin;
     yext1 = halfHcos + halfWsin;
     yext2 = halfHcos - halfWsin;
     
@@ -1064,6 +1054,15 @@ int PL_Draw_SetBasicBlendFlag(int blendFlag) {
 
 DXCOLOR PL_Draw_GetColor(int red, int green, int blue) {
     return red | (green << 8) | (blue << 16);
+}
+
+int PL_Draw_ForceUpdate() {
+    int blendMode = s_blendMode;
+    s_blendMode = -1;
+    PL_Draw_SetDrawBlendMode(blendMode, s_drawColorA >> 24);
+    
+    
+    return 0;
 }
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */

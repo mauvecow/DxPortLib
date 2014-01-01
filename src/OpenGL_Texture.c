@@ -405,8 +405,18 @@ static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const SD
 
 int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const SDL_Rect *rect) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
+    SDL_Rect tempRect;
+    
     if (textureref == NULL || textureref->textureID == 0) {
         return -1;
+    }
+    
+    if (rect == NULL) {
+        tempRect.x = 0;
+        tempRect.y = 0;
+        tempRect.w = surface->w;
+        tempRect.h = surface->h;
+        rect = &tempRect;
     }
     
     /* Convert to target format if different. */
