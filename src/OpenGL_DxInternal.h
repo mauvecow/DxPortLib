@@ -33,6 +33,13 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
+/* some helpful defines */
+#ifndef offsetof
+#  define offsetof(x, y) ((int)&(((x *)0)->y))
+#endif
+
+#define elementsof(x) (sizeof(x) / sizeof(x[0]))
+
 typedef struct GLInfo_t {
     int isInitialized;
     
@@ -41,17 +48,29 @@ typedef struct GLInfo_t {
     int maxTextureHeight;
 
     /* Main GL functions */
-    void (APIENTRY *glEnable)(GLenum cap);
-    void (APIENTRY *glDisable)(GLenum cap);
+    void (APIENTRY *glEnable)( GLenum cap );
+    void (APIENTRY *glDisable)( GLenum cap );
+    void (APIENTRY *glEnableClientState)( GLenum cap );
+    void (APIENTRY *glDisableClientState)( GLenum cap );
+    
     GLenum (APIENTRY *glGetError)(void);
     void (APIENTRY *glPixelStorei)( GLenum pname, GLint param );
     void (APIENTRY *glFinish)(void);
     void (APIENTRY *glGetIntegerv)( GLenum pname, GLint *params );
     
+    void (APIENTRY *glMatrixMode)( GLenum mode );
+    void (APIENTRY *glLoadIdentity)( void );
+    void (APIENTRY *glPushMatrix)( void );
+    void (APIENTRY *glPopMatrix)( void );
+    void (APIENTRY *glOrtho)( GLdouble left, GLdouble right,
+                              GLdouble bottom, GLdouble top,
+                              GLdouble near_val, GLdouble far_val );
+    
     /* Texture functions */
     void (APIENTRY *glGenTextures)( GLsizei n, GLuint *textures );
     void (APIENTRY *glDeleteTextures)( GLsizei n, const GLuint *textures);
 
+    void (APIENTRY *glActiveTexture)( GLenum texture );
     void (APIENTRY *glBindTexture)( GLenum target, GLuint texture );
     void (APIENTRY *glTexParameteri)( GLenum target, GLenum pname, GLint param );
     void (APIENTRY *glTexImage2D)( GLenum target, GLint level,
@@ -72,18 +91,23 @@ typedef struct GLInfo_t {
     void (APIENTRY *glColor4f)( GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha );
     
     void (APIENTRY *glTexEnvf)( GLenum target, GLenum pname, GLfloat param );
-    void (APIENTRY *glBlendFuncSeparatei) ( GLuint buf,
-                                              GLenum srcRGB, GLenum dstRGB,
-                                              GLenum srcAlpha, GLenum dstAlpha);
+    void (APIENTRY *glBlendFuncSeparate) ( GLenum srcRGB, GLenum dstRGB,
+                                           GLenum srcAlpha, GLenum dstAlpha);
+    void (APIENTRY *glBlendEquationSeparate) ( GLenum modeRGB, GLenum modeAlpha );
     
     void (APIENTRY *glViewport)( GLint x, GLint y, GLsizei width, GLsizei height );
     void (APIENTRY *glScissor)( GLint x, GLint y, GLsizei width, GLsizei height );
     
     void (APIENTRY *glDrawArrays)( GLenum mode, GLint first, GLsizei count );
- 
-    void (APIENTRY *glEnableVertexAttribArray) (GLuint index);   
-    void (APIENTRY *glDisableVertexAttribArray) (GLuint index);   
     
+    void (APIENTRY *glVertexPointer)( GLint size, GLenum type,  
+                                      GLsizei stride, const GLvoid *ptr );  
+    void (APIENTRY *glColorPointer)( GLint size, GLenum type,
+                                     GLsizei stride, const GLvoid *ptr );
+    void (APIENTRY *glTexCoordPointer)( GLint size, GLenum type,
+                                        GLsizei stride, const GLvoid *ptr );
+
+ 
     /* Framebuffer functions */
     int hasFramebufferSupport;
     
@@ -96,11 +120,19 @@ typedef struct GLInfo_t {
 
 extern GLInfo PL_GL;
 
+extern int PL_drawScreenWidth;
+extern int PL_drawScreenHeight;
+
 extern int PL_Draw_FlushCache();
+extern int PL_Draw_InitCache();
+extern int PL_Draw_DestroyCache();
 
 extern int PL_Texture_CreateFramebuffer(int width, int height);
+extern int PL_Texture_Bind(int textureRefID);
+extern int PL_Texture_Unbind(int textureRefID);
 extern int PL_Texture_BindFramebuffer(int textureRefID);
-extern int PL_Texture_RenderGetGraphTexture(int graphID, GLuint *textureID, SDL_Rect *rect);
+extern int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
+extern int PL_Texture_RenderGetGraphTextureInfo(int graphID, SDL_Rect *rect, float *xMult, float *yMult);
 extern int PL_Texture_ClearAllData();
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */

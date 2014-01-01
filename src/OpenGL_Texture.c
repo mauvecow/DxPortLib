@@ -27,7 +27,7 @@
 
 /* --------------------------------------------------------- Framebuffers */
 
-/* Framebuffers re reused when it is possible to do so, so we
+/* Framebuffers are reused when it is possible to do so, so we
  * refcount instead.
  */
 typedef struct FramebufferInfo {
@@ -39,7 +39,7 @@ typedef struct FramebufferInfo {
     int refCount;
 } FramebufferInfo;
 
-static int s_GLFrameBuffer_Bind(int handleID, GLuint textureID) {
+static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textureID) {
     FramebufferInfo *info;
     
     if (PL_GL.hasFramebufferSupport == DXFALSE) {
@@ -55,7 +55,7 @@ static int s_GLFrameBuffer_Bind(int handleID, GLuint textureID) {
         
         PL_GL.glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
                                         GL_COLOR_ATTACHMENT0_EXT,
-                                        GL_TEXTURE_2D,
+                                        textureTarget,
                                         textureID,
                                         0);
         
@@ -139,13 +139,15 @@ typedef struct TextureRef {
     GLuint glFormat;
     GLuint glType;
     
+    int width;
+    int height;
+    float widthMult;
+    float heightMult;
+    
     Uint32 sdlFormat;
     
     int texWidth;
     int texHeight;
-    
-    float invWidth;
-    float invHeight;
     
     int framebufferID;
     
@@ -176,16 +178,39 @@ static int s_AllocateTextureRefID(GLuint textureID) {
     return textureRefID;
 }
 
+int PL_Texture_Bind(int textureRefID) {
+    TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
+    if (textureref == NULL) {
+        return -1;
+    }
+    
+    glEnable(textureref->glTarget);
+    glBindTexture(textureref->glTarget, textureref->textureID);
+    return 0;
+}
+
+int PL_Texture_Unbind(int textureRefID) {
+    TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
+    if (textureref == NULL) {
+        return -1;
+    }
+    
+    glDisable(textureref->glTarget);
+    return 0;
+}
+
 int PL_Texture_BindFramebuffer(int textureRefID) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     int framebufferID = -1;
+    GLenum textureTarget = GL_TEXTURE_2D;
     GLuint textureID = 0;
     if (textureref != NULL) {
         framebufferID = textureref->framebufferID;
         textureID = textureref->textureID;
+        textureTarget = textureref->glTarget;
     }
     
-    return s_GLFrameBuffer_Bind(framebufferID, textureID);
+    return s_GLFrameBuffer_Bind(framebufferID, textureTarget, textureID);
 }
 
 int PL_Texture_CreateFromSurface(SDL_Surface *surface) {
@@ -272,10 +297,18 @@ int PL_Texture_CreateFromDimensions(int width, int height) {
     textureref->glFormat = textureFormat;
     textureref->glType = textureType;
     textureref->sdlFormat = SDL_PIXELFORMAT_ARGB8888;
+    textureref->width = width;
+    textureref->height = height;
     textureref->texWidth = texWidth;
     textureref->texHeight = texHeight;
-    textureref->invWidth = 1.0f / texWidth;
-    textureref->invHeight = 1.0f / texHeight;
+    
+    if (textureTarget == GL_TEXTURE_RECTANGLE_ARB) {
+        textureref->widthMult = 1.0f;
+        textureref->heightMult = 1.0f;
+    } else {
+        textureref->widthMult = 1.0f / texWidth;
+        textureref->heightMult = 1.0f / texHeight;
+    }
     
     return textureRefID;
 }
@@ -380,14 +413,30 @@ int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const SDL_Rec
     return 0;
 }
 
-int PL_Texture_RenderGetGraphTexture(int graphID, GLuint *textureID, SDL_Rect *rect) {
+int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMult, float *yMult) {
+    TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
+    
+    if (textureref == NULL) {
+        return -1;
+    }
+    rect->x = 0;
+    rect->y = 0;
+    rect->w = textureref->width;
+    rect->h = textureref->height;
+    *xMult = textureref->widthMult;
+    *yMult = textureref->heightMult;
+    
+    return 0;
+}
+int PL_Texture_RenderGetGraphTextureInfo(int graphID, SDL_Rect *rect, float *xMult, float *yMult) {
     int textureRefID = PL_Graph_GetTextureID(graphID, rect);
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     
     if (textureref == NULL) {
         return -1;
     }
-    *textureID = textureref->textureID;
+    *xMult = textureref->widthMult;
+    *yMult = textureref->heightMult;
     
     return 0;
 }

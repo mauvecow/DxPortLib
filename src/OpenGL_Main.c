@@ -30,8 +30,8 @@ static SDL_GLContext *s_context = NULL;
 static int s_screenFrameBufferA = -1;
 static int s_screenFrameBufferB = -1;
 
-static int s_screenWidth = -1;
-static int s_screenHeight = -1;
+int PL_drawScreenWidth = -1;
+int PL_drawScreenHeight = -1;
 
 GLInfo PL_GL = { 0 };
 
@@ -41,14 +41,24 @@ static void s_LoadGL() {
     
     PL_GL.glEnable = SDL_GL_GetProcAddress("glEnable");
     PL_GL.glDisable = SDL_GL_GetProcAddress("glDisable");
+    PL_GL.glEnableClientState = SDL_GL_GetProcAddress("glEnableClientState");
+    PL_GL.glDisableClientState = SDL_GL_GetProcAddress("glDisableClientState");
+    
     PL_GL.glGetError = SDL_GL_GetProcAddress("glGetError");
     PL_GL.glPixelStorei = SDL_GL_GetProcAddress("glPixelStorei");
     PL_GL.glFinish = SDL_GL_GetProcAddress("glFinish");
     PL_GL.glGetIntegerv = SDL_GL_GetProcAddress("glGetIntegerv");
     
+    PL_GL.glMatrixMode = SDL_GL_GetProcAddress("glMatrixMode");
+    PL_GL.glLoadIdentity = SDL_GL_GetProcAddress("glLoadIdentity");
+    PL_GL.glPushMatrix = SDL_GL_GetProcAddress("glPushMatrix");
+    PL_GL.glPopMatrix = SDL_GL_GetProcAddress("glPopMatrix");
+    PL_GL.glOrtho = SDL_GL_GetProcAddress("glOrtho");
+    
     PL_GL.glGenTextures = SDL_GL_GetProcAddress("glGenTextures");
     PL_GL.glDeleteTextures = SDL_GL_GetProcAddress("glDeleteTextures");
     
+    PL_GL.glActiveTexture = SDL_GL_GetProcAddress("glActiveTexture");
     PL_GL.glBindTexture = SDL_GL_GetProcAddress("glBindTexture");
     PL_GL.glTexParameteri = SDL_GL_GetProcAddress("glTexParameteri");
     PL_GL.glTexImage2D = SDL_GL_GetProcAddress("glTexImage2D");
@@ -59,14 +69,17 @@ static void s_LoadGL() {
     
     PL_GL.glColor4f = SDL_GL_GetProcAddress("glColor4f");
     PL_GL.glTexEnvf = SDL_GL_GetProcAddress("glTexEnvf");
-    PL_GL.glBlendFuncSeparatei = SDL_GL_GetProcAddress("glBlendFuncSeparatei");
+    PL_GL.glBlendFuncSeparate = SDL_GL_GetProcAddress("glBlendFuncSeparate");
+    PL_GL.glBlendEquationSeparate = SDL_GL_GetProcAddress("glBlendEquationSeparate");
     
     PL_GL.glViewport = SDL_GL_GetProcAddress("glViewport");
     
     PL_GL.glDrawArrays = SDL_GL_GetProcAddress("glDrawArrays");
-    PL_GL.glEnableVertexAttribArray = SDL_GL_GetProcAddress("glEnableVertexAttribArray");
-    PL_GL.glDisableVertexAttribArray = SDL_GL_GetProcAddress("glDisableVertexAttribArray" );
-    
+
+    PL_GL.glVertexPointer = SDL_GL_GetProcAddress("glVertexPointer");
+    PL_GL.glColorPointer = SDL_GL_GetProcAddress("glColorPointer");
+    PL_GL.glTexCoordPointer = SDL_GL_GetProcAddress("glTexCoordPointer");
+
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         PL_GL.hasFramebufferSupport = DXTRUE;
         
@@ -105,12 +118,12 @@ void PL_Draw_ResizeWindow(int width, int height) {
         return;
     }
     
-    if (width == s_screenWidth && height == s_screenHeight) {
+    if (width == PL_drawScreenWidth && height == PL_drawScreenHeight) {
         return;
     }
     
-    s_screenWidth = width;
-    s_screenHeight = height;
+    PL_drawScreenWidth = width;
+    PL_drawScreenHeight = height;
     
     if (PL_GL.hasFramebufferSupport == DXFALSE) {
         return;
@@ -124,46 +137,132 @@ void PL_Draw_ResizeWindow(int width, int height) {
     s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height);
 }
 
+/* FIXME genericize this code a bit... */
+typedef struct RectVertex {
+    float x, y;
+    float tcx, tcy;
+} RectVertex;
+
+static void s_drawRect(int textureRefID, const SDL_Rect *rect) {
+    RectVertex v[4];
+    float x1 = rect->x + 0.5f;
+    float y1 = rect->y + 0.5f;
+    float x2 = x1 + rect->w;
+    float y2 = y1 + rect->h;
+    float tcx1, tcy1, tcx2, tcy2;
+    SDL_Rect texRect;
+    float xMult, yMult;
+    
+    PL_Texture_Bind(s_screenFrameBufferB);
+    
+    PL_Texture_RenderGetTextureInfo(s_screenFrameBufferB, &texRect, &xMult, &yMult);
+
+    tcx1 = texRect.x * xMult;
+    tcy1 = texRect.y * yMult;
+    tcx2 = tcx1 + (texRect.w * xMult);
+    tcy2 = tcy1 + (texRect.h * yMult);
+    
+    v[0].x = x1; v[0].y = y1; v[0].tcx = tcx1; v[0].tcy = tcy1;
+    v[1].x = x2; v[1].y = y1; v[1].tcx = tcx2; v[1].tcy = tcy1;
+    v[2].x = x1; v[2].y = y2; v[2].tcx = tcx1; v[2].tcy = tcy2;
+    v[3].x = x2; v[3].y = y2; v[3].tcx = tcx2; v[3].tcy = tcy2;
+    
+    PL_GL.glColor4f(1, 1, 1, 1);
+    
+    PL_GL.glEnableClientState(GL_VERTEX_ARRAY);
+    PL_GL.glVertexPointer(2, GL_FLOAT, sizeof(RectVertex), (void *)v + offsetof(RectVertex, x));
+    PL_GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    PL_GL.glTexCoordPointer(2, GL_FLOAT, sizeof(RectVertex), (void *)v + offsetof(RectVertex, tcx));
+    
+    PL_GL.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    
+    PL_GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    PL_GL.glDisableClientState(GL_VERTEX_ARRAY);
+}
+
 void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
+    int wWidth, wHeight;
+    
     if (!PL_GL.isInitialized) {
         return;
     }
     
     if (PL_GL.hasFramebufferSupport == DXFALSE) {
         /* without framebuffers, we can't actually refresh. */
+        SDL_GL_SwapWindow(window);
         return;
     }
     
-    /* Redraw the screen */
+    /* Set up the main screen again. */
     PL_Texture_BindFramebuffer(-1);
     
+    SDL_GetWindowSize(window, &wWidth, &wHeight);
+    
+    PL_GL.glDisable(GL_DEPTH_TEST);
+    PL_GL.glDisable(GL_CULL_FACE);
+    
+    PL_GL.glDisable(GL_SCISSOR_TEST);
+    
+    PL_GL.glViewport(0, 0, wWidth, wHeight);
+    
+    PL_GL.glMatrixMode(GL_PROJECTION);
+    PL_GL.glLoadIdentity();
+    PL_GL.glOrtho((GLdouble)0, (GLdouble)wWidth,
+                  (GLdouble)wHeight, 0,
+                  0.0, 1.0);
+    
+    PL_GL.glMatrixMode(GL_MODELVIEW);
+    PL_GL.glLoadIdentity();
+    
+    PL_GL.glClearColor(0, 0, 0, 1);
+    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    
+    /* Draw the framebuffer texture onto the main screen. */
+    if (PL_GL.glActiveTexture != 0) {
+        PL_GL.glActiveTexture(GL_TEXTURE0);
+    }
+    
+    s_drawRect(s_screenFrameBufferB, targetRect);
+    
+    PL_Texture_Unbind(s_screenFrameBufferB);
+    
+    /* Swap! */
     SDL_GL_SwapWindow(window);
     
+    /* Rebind the new buffer. */
     PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+    
+    PL_GL.glDisable(GL_DEPTH_TEST);
+    PL_GL.glDisable(GL_CULL_FACE);
+    
+    PL_GL.glViewport(0, 0, PL_drawScreenWidth, PL_drawScreenHeight);
+    PL_GL.glClearColor(0, 0, 0, 1);
+    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    PL_GL.glColor4f(1, 1, 1, 1);
+    
+    PL_GL.glMatrixMode(GL_PROJECTION);
+    PL_GL.glLoadIdentity();
+    PL_GL.glOrtho((GLdouble)0, (GLdouble)PL_drawScreenWidth,
+                  (GLdouble)PL_drawScreenHeight, 0,
+                  0.0, 1.0);
+    
+    PL_GL.glMatrixMode(GL_MODELVIEW);
+    PL_GL.glLoadIdentity();
 }
 
 void PL_Draw_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect) {
     int tempBuffer;
-    
     if (!PL_GL.isInitialized) {
         return;
     }
     
     PL_Draw_FlushCache();
     
-    if (PL_GL.hasFramebufferSupport == DXFALSE) {
-        /* Without framebuffer support, we're drawing straight to the screen,
-         * so just swap the buffers. */
-        SDL_GL_SwapWindow(window);
-        return;
-    } else {
-        /* Swap our two backbuffers, refresh */
-        tempBuffer = s_screenFrameBufferB;
-        s_screenFrameBufferB = s_screenFrameBufferA;
-        s_screenFrameBufferA = tempBuffer;
+    tempBuffer = s_screenFrameBufferB;
+    s_screenFrameBufferB = s_screenFrameBufferA;
+    s_screenFrameBufferA = tempBuffer;
     
-        PL_Draw_Refresh(window, targetRect);
-    }
+    PL_Draw_Refresh(window, targetRect);
 }
 
 void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
@@ -186,21 +285,25 @@ void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     
     s_LoadGL();
     
+    PL_Draw_InitCache();
+    
     PL_Draw_ResizeWindow(width, height);
 }
 
 void PL_Draw_End() {
+    PL_Draw_DestroyCache();
+    
     if (s_context != NULL) {
-        PL_Texture_ClearAllData();
-        
         PL_Texture_Release(s_screenFrameBufferA);
         PL_Texture_Release(s_screenFrameBufferB);
+        
+        PL_Texture_ClearAllData();
         
         SDL_GL_DeleteContext(s_context);
     }
     
-    s_screenWidth = -1;
-    s_screenHeight = -1;
+    PL_drawScreenWidth = -1;
+    PL_drawScreenHeight = -1;
     
     SDL_memset(&PL_GL, 0, sizeof(PL_GL));
 }
