@@ -30,10 +30,22 @@
  */
 
 static int s_blendMode = DX_BLENDMODE_ALPHA;
+static int s_lastBlendMode = -1;
 static Uint32 s_drawColorR = 0xff;
 static Uint32 s_drawColorG = 0xff;
 static Uint32 s_drawColorB = 0xff;
 static Uint32 s_drawColorA = 0xff000000;
+
+int PL_Draw_ResetSettings() {
+    s_blendMode = DX_BLENDMODE_ALPHA;
+    
+    s_drawColorR = 0xff;
+    s_drawColorG = 0xff;
+    s_drawColorB = 0xff;
+    s_drawColorA = 0xff000000;
+    
+    return 0;
+}
 
 enum VertexElementType {
     VERTEX_POSITION,
@@ -85,6 +97,7 @@ typedef struct VertexCache {
     int vertexCount;
     
     int textureRefID;
+    int blendFlag;
     
     GLenum drawMode;
     
@@ -95,18 +108,45 @@ typedef struct VertexCache {
 
 static VertexCache s_cache;
 
+static int s_ApplyBlendMode(int blendMode) {
+    if (blendMode == s_lastBlendMode) {
+        return 0;
+    }
+    s_lastBlendMode = blendMode;
+    
+    switch(blendMode) {
+    case DX_BLENDMODE_ALPHA:
+        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        PL_GL.glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        PL_GL.glEnable(GL_BLEND);
+        break;
+    case DX_BLENDMODE_ADD:
+        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        PL_GL.glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
+        PL_GL.glEnable(GL_BLEND);
+        break;
+    default: /* NOBLEND */
+        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        PL_GL.glDisable(GL_BLEND);
+        blendMode = DX_BLENDMODE_NOBLEND;
+        break;
+    }
+    return 0;
+}
+
 /* Given a call with a vertex definition and the number of vertices,
  * returns the starting vertex pointer.
  */
-static void *s_beginCache(
+static void *s_BeginCache(
     const VertexDefinition *definitionArray, int defCount,
     int vertexSize, int vertexCount,
-    GLenum drawMode, int textureRefID
+    GLenum drawMode, int textureRefID, int blendFlag
 ) {
     /* - If this is the same as the last definition, try to continue it. */
     if (s_cache.defArray == definitionArray
         && s_cache.drawMode == drawMode
         && s_cache.textureRefID == textureRefID
+        && s_cache.blendFlag == blendFlag
     ) {
         int n = vertexCount * vertexSize;
         int pos = s_cache.vertexDataPosition;
@@ -126,6 +166,7 @@ static void *s_beginCache(
     s_cache.defArray = definitionArray;
     s_cache.defCount = defCount;
     s_cache.drawMode = drawMode;
+    s_cache.blendFlag = blendFlag;
     s_cache.textureRefID = textureRefID;
     s_cache.vertexSize = vertexSize;
     s_cache.vertexCount = vertexCount;
@@ -139,15 +180,11 @@ static void *s_beginCache(
  * Can be called multiple times in the same function to fetch more
  * vertices as needed.
  */
-#define START(vertexName, VertexType, drawMode, textureRefID, vertexCount) \
-    VertexType *vertexName = (VertexType *)s_beginCache( \
+#define START(vertexName, VertexType, drawMode, textureRefID, vertexCount, blendFlag) \
+    VertexType *vertexName = (VertexType *)s_BeginCache( \
                                s_def ## VertexType, elementsof(s_def ## VertexType), \
                                sizeof(VertexType), vertexCount, \
-                               drawMode, textureRefID);
-
-int PL_Draw_ResetSettings() {
-    return 0;
-}
+                               drawMode, textureRefID, blendFlag);
 
 int PL_Draw_FlushCache() {
     int i;
@@ -158,6 +195,13 @@ int PL_Draw_FlushCache() {
     if (s_cache.defArray == NULL || s_cache.vertexCount == 0) {
         s_cache.vertexDataPosition = 0;
         return 0;
+    }
+    
+    /* Apply blending mode */
+    if (s_cache.blendFlag) {
+        s_ApplyBlendMode(s_blendMode);
+    } else {
+        s_ApplyBlendMode(DX_BLENDMODE_NOBLEND);
     }
     
     /* State vertex info */
@@ -255,7 +299,7 @@ static inline Uint32 s_modulateColor(DXCOLOR color) {
 
 int PL_Draw_PixelF(float x, float y, DXCOLOR color) {
     Uint32 vColor = s_modulateColor(color);
-    START(v, VertexPosition2Color, GL_POINTS, -1, 1);
+    START(v, VertexPosition2Color, GL_POINTS, -1, 1, DXTRUE);
     v[0].x = x; v[0].y = y; v[0].color = vColor;
     
     return 0;
@@ -268,7 +312,7 @@ int PL_Draw_Pixel(int x, int y, DXCOLOR color) {
 int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thickness) {
     Uint32 vColor = s_modulateColor(color);
     if (thickness <= 1) {
-        START(v, VertexPosition2Color, GL_LINES, -1, 2);
+        START(v, VertexPosition2Color, GL_LINES, -1, 2, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y2; v[1].color = vColor;
@@ -278,7 +322,7 @@ int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thi
         float l = (float)SDL_sqrt((dx * dx) + (dy * dy));
         
         if (l > 0) {
-            START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6);
+            START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6, DXTRUE);
             float t = (float)thickness * 0.5f;
             float nx = (dx / l) * t;
             float ny = (dy / l) * t;
@@ -315,7 +359,7 @@ int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillF
     if (fillFlag) {
         int points = 36;
         float amount = ((float)M_PI * 2) / (float)points;
-        START(v, VertexPosition2Color, GL_TRIANGLE_FAN, -1, points);
+        START(v, VertexPosition2Color, GL_TRIANGLE_FAN, -1, points, DXTRUE);
         int i;
         
         for (i = 0; i < points; ++i) {
@@ -329,7 +373,7 @@ int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillF
     } else {
         int points = 36;
         float amount = ((float)M_PI * 2) / (float)points;
-        START(v, VertexPosition2Color, GL_LINES, -1, points * 2);
+        START(v, VertexPosition2Color, GL_LINES, -1, points * 2, DXTRUE);
         VertexPosition2Color *sv = v;
         int i;
         
@@ -368,13 +412,13 @@ int PL_Draw_TriangleF(
     Uint32 vColor = s_modulateColor(color);
     
     if (fillFlag) {
-        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 3);
+        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 3, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y2; v[1].color = vColor;
         v[2].x = x3; v[2].y = y3; v[2].color = vColor;
     } else {
-        START(v, VertexPosition2Color, GL_LINES, -1, 6);
+        START(v, VertexPosition2Color, GL_LINES, -1, 6, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[5] = v[0];
@@ -403,7 +447,7 @@ int PL_Draw_QuadrangleF(
     Uint32 vColor = s_modulateColor(color);
     
     if (fillFlag) {
-        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6);
+        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y2; v[1].color = vColor;
@@ -412,7 +456,7 @@ int PL_Draw_QuadrangleF(
         v[4] = v[1];
         v[5].x = x4; v[5].y = y4; v[5].color = vColor;
     } else {
-        START(v, VertexPosition2Color, GL_LINES, -1, 8);
+        START(v, VertexPosition2Color, GL_LINES, -1, 8, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[7] = v[0];
@@ -442,7 +486,7 @@ int PL_Draw_BoxF(float x1, float y1, float x2, float y2, DXCOLOR color, int Fill
     
     if (FillFlag) {
         /* TRIANGLES instead of TRIANGLE_STRIP so that we can batch. */
-        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6);
+        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6, DXTRUE);
         
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y1; v[1].color = vColor;
@@ -452,7 +496,7 @@ int PL_Draw_BoxF(float x1, float y1, float x2, float y2, DXCOLOR color, int Fill
         v[5].x = x2; v[5].y = y2; v[5].color = vColor;
     } else {
         /* LINES instead of LINE_LOOP so that we can batch. */
-        START(v, VertexPosition2Color, GL_LINES, -1, 8);
+        START(v, VertexPosition2Color, GL_LINES, -1, 8, DXTRUE);
         
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y1; v[1].color = vColor;
@@ -477,7 +521,7 @@ int PL_Draw_GraphF(float x1, float y1, int graphID, int blendFlag) {
     float xMult, yMult;
     if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
         Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
         float x2, y2;
         float tx1 = (float)texRect.x * xMult;
         float ty1 = (float)texRect.y * yMult;
@@ -509,7 +553,7 @@ int PL_Draw_ExtendGraphF(float x1, float y1, float x2, float y2, int graphID, in
     float xMult, yMult;
     if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
         Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
         float tx1 = (float)texRect.x * xMult;
         float ty1 = (float)texRect.y * yMult;
         float tx2 = tx1 + ((float)texRect.w * xMult);
@@ -608,7 +652,7 @@ int PL_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
         
         /* - draw! */
         {
-            START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+            START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
             
             v[0].x = dx1; v[0].y = dy1; v[0].tcx = tx1; v[0].tcy = ty1; v[0].color = vColor;
             v[1].x = dx2; v[1].y = dy1; v[1].tcx = tx2; v[1].tcy = ty1; v[1].color = vColor;
@@ -636,7 +680,7 @@ int PL_EXT_Draw_RectGraphFastF(
     float xMult, yMult;
     if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
         Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
         float dx2, dy2;
         float tx1 = (float)(texRect.x + sx) * xMult;
         float ty1 = (float)(texRect.y + sy) * yMult;
@@ -666,7 +710,7 @@ int PL_Draw_RectExtendGraphF(float dx1, float dy1, float dx2, float dy2,
     float xMult, yMult;
     if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
         Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
         float tx1 = (float)(texRect.x + sx) * xMult;
         float ty1 = (float)(texRect.y + sy) * yMult;
         float tx2 = tx1 + ((float)sw * xMult);
@@ -712,7 +756,7 @@ static int s_Draw_RotaGraphMain(
      * - Draw!
      */
     Uint32 vColor = s_getColor();
-    START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+    START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
     float tw = (float)texRect->w;
     float th = (float)texRect->h;
     float tx1 = (float)texRect->x * xMult;
@@ -954,7 +998,7 @@ int PL_Draw_ModiGraphF(
     float xMult, yMult;
     if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
         Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
         float tx1 = (float)texRect.x * xMult;
         float ty1 = (float)texRect.y * yMult;
         float tx2 = tx1 + ((float)texRect.w * xMult);
@@ -987,7 +1031,7 @@ int PL_Draw_TurnGraphF(float x1, float y1, int graphID, int blendFlag) {
     float xMult, yMult;
     if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
         Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6);
+        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
         float x2, y2;
         float tx1 = (float)texRect.x * xMult;
         float ty1 = (float)texRect.y * yMult;
@@ -1032,24 +1076,6 @@ int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
         PL_Draw_FlushCache();
         
         s_blendMode = blendMode;
-        
-        switch(blendMode) {
-        case DX_BLENDMODE_ALPHA:
-            PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            PL_GL.glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-            PL_GL.glEnable(GL_BLEND);
-            break;
-        case DX_BLENDMODE_ADD:
-            PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            PL_GL.glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
-            PL_GL.glEnable(GL_BLEND);
-            break;
-        default: /* NOBLEND */
-            PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-            PL_GL.glDisable(GL_BLEND);
-            blendMode = DX_BLENDMODE_NOBLEND;
-            break;
-        }
     }
     
     /* Changing draw color does not cause a cache flush. */
@@ -1083,9 +1109,7 @@ DXCOLOR PL_Draw_GetColor(int red, int green, int blue) {
 }
 
 int PL_Draw_ForceUpdate() {
-    int blendMode = s_blendMode;
-    s_blendMode = -1;
-    PL_Draw_SetDrawBlendMode(blendMode, (int)(s_drawColorA >> 24));
+    s_lastBlendMode = -1;
     
     return 0;
 }

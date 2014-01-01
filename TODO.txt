@@ -28,15 +28,12 @@ File I/O:
   - No support for custom streaming functions.
 
 Graphics:
-- Functions unsupported due to SDL2_Renderer backend:
-  - DrawModiGraph
-  - DrawTriangle/DrawQuadrangle
-  - DrawLine thickness.
+- Functions unsupported:
   - Blend modes other than NONE/ADD/MUL.
+  - Vertex buffers.
   - Shader filter nonsense.
   - 3D.
-- OpenGL:
-  - Not written yet!!
+  - Any matrix math.
 - Movies:
   - No support for movie playback, theora or otherwise.
 - Font:
@@ -55,6 +52,3 @@ Other:
   - No support whatsoever! (link to SDL2_net?)
 
 ---------------------------------------------------------------------------
-
-OpenGL:
-- Verify blending behavior.
