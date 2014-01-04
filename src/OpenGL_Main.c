@@ -202,9 +202,9 @@ static void s_drawRect(const SDL_Rect *rect) {
     PL_GL.glColor4f(1, 1, 1, 1);
     
     PL_GL.glEnableClientState(GL_VERTEX_ARRAY);
-    PL_GL.glVertexPointer(2, GL_FLOAT, sizeof(RectVertex), (void *)v + offsetof(RectVertex, x));
+    PL_GL.glVertexPointer(2, GL_FLOAT, sizeof(RectVertex), (unsigned char *)v + offsetof(RectVertex, x));
     PL_GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    PL_GL.glTexCoordPointer(2, GL_FLOAT, sizeof(RectVertex), (void *)v + offsetof(RectVertex, tcx));
+    PL_GL.glTexCoordPointer(2, GL_FLOAT, sizeof(RectVertex), (unsigned char *)v + offsetof(RectVertex, tcx));
     
     PL_GL.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     
