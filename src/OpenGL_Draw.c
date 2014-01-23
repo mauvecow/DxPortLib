@@ -29,15 +29,17 @@
  * store information in sequence as we go.
  */
 
-static int s_blendMode = DX_BLENDMODE_ALPHA;
+static int s_blendMode = DX_BLENDMODE_NOBLEND;
 static int s_lastBlendMode = -1;
+static Uint32 s_blendFlags;
 static Uint32 s_drawColorR = 0xff;
 static Uint32 s_drawColorG = 0xff;
 static Uint32 s_drawColorB = 0xff;
 static Uint32 s_drawColorA = 0xff000000;
 
 int PL_Draw_ResetSettings() {
-    s_blendMode = DX_BLENDMODE_ALPHA;
+    s_blendMode = DX_BLENDMODE_NOBLEND;
+    s_lastBlendMode = -1;
     
     s_drawColorR = 0xff;
     s_drawColorG = 0xff;
@@ -46,6 +48,87 @@ int PL_Draw_ResetSettings() {
     
     return 0;
 }
+
+/* ------------------------------------------------------- BLENDING MODES */
+
+typedef struct BlendInfo {
+    GLfloat texEnvParam;
+    GLenum blendEquation;
+    GLenum srcRGBBlend;
+    GLenum destRGBBlend;
+    GLenum srcAlphaBlend;
+    GLenum destAlphaBlend;
+    Uint32 blendFlags;
+} BlendInfo;
+
+#define NOBLEND 0xfffffff
+
+#define BLENDFLAG_4X    (0x1)
+
+static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
+    { GL_MODULATE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* NOBLEND */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, 0 }, /* ALPHA */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* ADD */
+    
+    /* This is different from DxLib's implementation of DX_BLENDMODE_SUB,
+     * but it looks the same as far as I know. */
+    { GL_MODULATE,      GL_FUNC_REVERSE_SUBTRACT, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* SUB */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ZERO, GL_SRC_COLOR, GL_ZERO, GL_ONE, 0 }, /* MUL */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* SUB2 */
+    
+    { GL_MODULATE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* XOR (unsupported) */
+    { GL_MODULATE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* reserved */
+    
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ZERO, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* DESTCOLOR */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE_MINUS_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE, 0 }, /* INVDESTCOLOR */
+    { GL_BLEND,         GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE, 0 }, /* INVSRC */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE, 0 }, /* MULA */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, BLENDFLAG_4X }, /* ALPHA_X4 */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, BLENDFLAG_4X }, /* ADD_X4 */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ZERO, GL_ONE, GL_ZERO, 0 }, /* SRCCOLOR */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE, 0 }, /* HALF_ADD */
+    { GL_MODULATE,      GL_FUNC_REVERSE_SUBTRACT, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* SUB1 */
+    
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, 0 }, /* PMA_ALPHA */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ONE, GL_ONE, 0 }, /* PMA_ADD */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_REVERSE_SUBTRACT, GL_ONE, GL_ONE, GL_ONE, GL_ONE, 0 }, /* PMA_SUB */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE, 0 }, /* PMA_INVSRC */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, BLENDFLAG_4X }, /* PMA_ALPHA_X4 */ /* FIXME */
+    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ONE, GL_ONE, BLENDFLAG_4X }, /* PMA_ADD_X4 */ /* FIXME */
+};
+
+static int s_ApplyBlendMode(int blendMode) {
+    const BlendInfo *blend;
+    
+    if (blendMode == s_lastBlendMode) {
+        return 0;
+    }
+    if (blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) {
+        blendMode = DX_BLENDMODE_NOBLEND;
+        if (blendMode == s_lastBlendMode) {
+            return 0;
+        }
+    }
+    
+    s_lastBlendMode = blendMode;
+    
+    blend = &s_blendModeTable[blendMode];
+    s_blendFlags = blend->blendFlags;
+    
+    if (blend->srcRGBBlend == NOBLEND) {
+        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        PL_GL.glDisable(GL_BLEND);
+    } else {
+        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blend->texEnvParam);
+        PL_GL.glBlendFuncSeparate(blend->srcRGBBlend, blend->destRGBBlend, blend->srcAlphaBlend, blend->destAlphaBlend);
+        PL_GL.glBlendEquation(blend->blendEquation);
+        PL_GL.glEnable(GL_BLEND);
+    }
+    
+    return 0;
+}
+
+/* --------------------------------------------------------- VERTEX CACHE */
 
 enum VertexElementType {
     VERTEX_POSITION,
@@ -108,31 +191,6 @@ typedef struct VertexCache {
 
 static VertexCache s_cache;
 
-static int s_ApplyBlendMode(int blendMode) {
-    if (blendMode == s_lastBlendMode) {
-        return 0;
-    }
-    s_lastBlendMode = blendMode;
-    
-    switch(blendMode) {
-    case DX_BLENDMODE_ALPHA:
-        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        PL_GL.glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        PL_GL.glEnable(GL_BLEND);
-        break;
-    case DX_BLENDMODE_ADD:
-        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        PL_GL.glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
-        PL_GL.glEnable(GL_BLEND);
-        break;
-    default: /* NOBLEND */
-        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        PL_GL.glDisable(GL_BLEND);
-        blendMode = DX_BLENDMODE_NOBLEND;
-        break;
-    }
-    return 0;
-}
 
 /* Given a call with a vertex definition and the number of vertices,
  * returns the starting vertex pointer.
@@ -287,14 +345,21 @@ int PL_Draw_DestroyCache() {
     return 0;
 }
 
+/* --------------------------------------------------------- DRAWING CODE */
+
 static inline Uint32 s_getColor() {
     return (s_drawColorR) | (s_drawColorG << 8) | (s_drawColorB << 16) | s_drawColorA;
 }
 static inline Uint32 s_modulateColor(DXCOLOR color) {
-    return s_drawColorA
-           | (((color & 0xff) * s_drawColorR) / 0xff)
-           | (((color & 0xff00) * s_drawColorG) / 0xff)
-           | (((color & 0xff0000) * s_drawColorB) / 0xff);
+    Uint32 r = ((color & 0xff) * s_drawColorR * 4) / 0xff;
+    Uint32 g = (((color & 0xff00) * s_drawColorG * 4) / 0xff) & 0xffffff00;
+    Uint32 b = (((color & 0xff0000) * s_drawColorB * 4) / 0xff) & 0xffff0000;
+    
+    if (r > 0xff) { r = 0xff; }
+    if (g > 0xff00) { g = 0xff00; }
+    if (b > 0xff0000) { b = 0xff0000; }
+    
+    return s_drawColorA | r | g | b;
 }
 
 int PL_Draw_PixelF(float x, float y, DXCOLOR color) {
@@ -1084,6 +1149,13 @@ int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
     return 0;
 }
 
+int PL_Draw_GetDrawBlendMode(int *blendMode, int *alpha) {
+    *blendMode = s_blendMode;
+    *alpha = (int)(s_drawColorA >> 24);
+    
+    return 0;
+}
+
 int PL_Draw_SetBright(int redBright, int greenBright, int blueBright) {
     s_drawColorR = redBright & 0xff;
     s_drawColorG = greenBright & 0xff;
@@ -1102,10 +1174,6 @@ int PL_Draw_GetBright(int *redBright, int *greenBright, int *blueBright) {
 int PL_Draw_SetBasicBlendFlag(int blendFlag) {
     /* Reseved for software renderer, so it won't be used at all. */
     return 0;
-}
-
-DXCOLOR PL_Draw_GetColor(int red, int green, int blue) {
-    return red | (green << 8) | (blue << 16);
 }
 
 int PL_Draw_ForceUpdate() {

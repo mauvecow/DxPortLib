@@ -100,7 +100,9 @@ typedef struct GLInfo_t {
     void (APIENTRY *glTexEnvf)( GLenum target, GLenum pname, GLfloat param );
     void (APIENTRY *glBlendFuncSeparate) ( GLenum srcRGB, GLenum dstRGB,
                                            GLenum srcAlpha, GLenum dstAlpha);
+    void (APIENTRY *glBlendFunc) ( GLenum src, GLenum srcAlpha );
     void (APIENTRY *glBlendEquationSeparate) ( GLenum modeRGB, GLenum modeAlpha );
+    void (APIENTRY *glBlendEquation) ( GLenum mode );
     
     void (APIENTRY *glViewport)( GLint x, GLint y, GLsizei width, GLsizei height );
     void (APIENTRY *glScissor)( GLint x, GLint y, GLsizei width, GLsizei height );

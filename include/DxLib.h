@@ -285,7 +285,6 @@ extern DXCALL int SetUseTransColor(int flag);
 extern DXCALL int DrawPixel(int x, int y, DXCOLOR color);
 
 // - Draws a line from (x1,y1) to (x2,y2) with the given color.
-// NOTICE: DxPortLib does not currently support line thickness.
 extern DXCALL int DrawLine(int x1, int y1, int x2, int y2,
                            DXCOLOR color, int thickness = 1);
 extern DXCALL int DrawLineF(float x1, float y1, float x2, float y2,
@@ -443,9 +442,8 @@ extern DXCALL int DrawModiGraphF(float x1, float y1, float x2, float y2,
 extern DXCALL int SetDrawArea(int x1, int y1, int x2, int y2);
 
 // - Sets the current blending mode.
-// NOTICE: The current rendering backend only supports these modes:
-//         NOBLEND, ALPHA, ADD, MUL.
 extern DXCALL int SetDrawBlendMode(int blendMode, int alpha);
+extern DXCALL int GetDrawBlendMode(int *blendMode, int *alpha);
 
 // - Sets the drawing color, which all displayed colors are multiplied by.
 extern DXCALL int SetDrawBright(int redBright,

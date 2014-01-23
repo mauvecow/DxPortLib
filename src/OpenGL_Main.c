@@ -73,7 +73,9 @@ static void s_LoadGL() {
     
     PL_GL.glTexEnvf = SDL_GL_GetProcAddress("glTexEnvf");
     PL_GL.glBlendFuncSeparate = SDL_GL_GetProcAddress("glBlendFuncSeparate");
+    PL_GL.glBlendFunc = SDL_GL_GetProcAddress("glBlendFunc");
     PL_GL.glBlendEquationSeparate = SDL_GL_GetProcAddress("glBlendEquationSeparate");
+    PL_GL.glBlendEquation = SDL_GL_GetProcAddress("glBlendEquation");
     
     PL_GL.glViewport = SDL_GL_GetProcAddress("glViewport");
     PL_GL.glScissor = SDL_GL_GetProcAddress("glScissor");

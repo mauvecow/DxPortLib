@@ -53,3 +53,6 @@ Other:
   - No support whatsoever! (link to SDL2_net?)
 
 ---------------------------------------------------------------------------
+
+OpenGL:
+- Fix remaining blending issues.

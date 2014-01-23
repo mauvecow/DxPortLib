@@ -597,6 +597,9 @@ int DxLib_SetDrawArea(int x1, int y1, int x2, int y2) {
 int DxLib_SetDrawBlendMode(int blendMode, int alpha) {
     return PL_Draw_SetDrawBlendMode(blendMode, alpha);
 }
+int DxLib_GetDrawBlendMode(int *blendMode, int *alpha) {
+    return PL_Draw_GetDrawBlendMode(blendMode, alpha);
+}
 int DxLib_SetDrawBright(int redBright, int greenBright, int blueBright) {
     return PL_Draw_SetBright(redBright, greenBright, blueBright);
 }
@@ -606,7 +609,7 @@ int DxLib_SetBasicBlendFlag(int blendFlag) {
 }
 
 DXCOLOR DxLib_GetColor(int red, int green, int blue) {
-    return PL_Draw_GetColor(red, green, blue);
+    return red | (green << 8) | (blue << 16);
 }
 
 /* ---------------------------------------------------- DxFont.cpp */

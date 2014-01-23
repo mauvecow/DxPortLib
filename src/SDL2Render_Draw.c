@@ -39,6 +39,7 @@
 SDL_Renderer *PL_renderer = NULL;
 
 static const SDL_Point s_zeroPoint = { 0, 0 };
+static int s_blendModeDX = DX_BLENDMODE_NOBLEND;
 static SDL_BlendMode s_blendMode = SDL_BLENDMODE_NONE;
 static Uint8 s_drawColorR = 255;
 static Uint8 s_drawColorG = 255;
@@ -791,6 +792,8 @@ int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2) {
 }
 
 int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
+    s_blendModeDX = blendMode;
+    
     switch(blendMode) {
         case DX_BLENDMODE_ALPHA: s_blendMode = SDL_BLENDMODE_BLEND; break;
         case DX_BLENDMODE_ADD: s_blendMode = SDL_BLENDMODE_ADD; break;
@@ -802,6 +805,12 @@ int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
     }
     
     s_drawAlpha = (Uint8)alpha;
+    
+    return 0;
+}
+int PL_Draw_GetDrawBlendMode(int *blendMode, int *alpha) {
+    blendMode = s_blendModeDX;
+    *alpha = (int)s_drawAlpha;
     
     return 0;
 }
@@ -825,10 +834,6 @@ int PL_Draw_GetBright(int *redBright, int *greenBright, int *blueBright) {
 int PL_Draw_SetBasicBlendFlag(int blendFlag) {
     /* Reseved for software renderer, so it won't be used at all. */
     return 0;
-}
-
-DXCOLOR PL_Draw_GetColor(int red, int green, int blue) {
-    return red | (green << 8) | (blue << 16);
 }
 
 /* ------------------------------------------------------------------------

@@ -309,6 +309,7 @@ extern DXCALL int DxLib_DrawModiGraphF(float x1, float y1, float x2, float y2,
 extern DXCALL int DxLib_SetDrawArea(int x1, int y1, int x2, int y2);
 
 extern DXCALL int DxLib_SetDrawBlendMode(int blendMode, int alpha);
+extern DXCALL int DxLib_GetDrawBlendMode(int *blendMode, int *alpha);
 extern DXCALL int DxLib_SetDrawBright(int redBright,
                                       int greenBright,
                                       int blueBright);

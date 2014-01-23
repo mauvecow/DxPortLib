@@ -502,6 +502,9 @@ int SetDrawArea(int x1, int y1, int x2, int y2) {
 int SetDrawBlendMode(int blendMode, int alpha) {
     return ::DxLib_SetDrawBlendMode(blendMode, alpha);
 }
+int GetDrawBlendMode(int *blendMode, int *alpha) {
+    return ::DxLib_GetDrawBlendMode(blendMode, alpha);
+}
 int SetDrawBright(int redBright, int greenBright, int blueBright) {
     return ::DxLib_SetDrawBright(redBright, greenBright, blueBright);
 }
@@ -511,7 +514,7 @@ int SetBasicBlendFlag(int blendFlag) {
 }
 
 DXCOLOR GetColor(int red, int green, int blue) {
-    return ::DxLib_GetColor(red, green, blue);
+    return red | (green << 8) | (blue << 16);
 }
 
 // ---------------------------------------------------- DxFont.cpp
