@@ -162,8 +162,8 @@ void PL_Draw_ResizeWindow(int width, int height) {
     PL_Texture_Release(s_screenFrameBufferA);
     PL_Texture_Release(s_screenFrameBufferB);
     
-    s_screenFrameBufferA = PL_Texture_CreateFramebuffer(width, height);
-    s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height);
+    s_screenFrameBufferA = PL_Texture_CreateFramebuffer(width, height, DXFALSE);
+    s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height, DXFALSE);
     
     s_BindActiveFramebuffer();
 }

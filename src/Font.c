@@ -362,7 +362,8 @@ static void s_GrowGlyphTexture(FontData *fontData) {
     
     glyphTexture->textureID = PL_Texture_CreateFromDimensions(
             glyphTexture->width,
-            glyphTexture->height
+            glyphTexture->height,
+            DXTRUE
         );
     
     PL_Texture_AddRef(glyphTexture->textureID);
@@ -651,6 +652,10 @@ static GlyphData *s_CacheGlyph(FontData *fontData, unsigned int glyphID) {
     glyph->rect.y = 0;
     glyph->rect.w = (unsigned short)(maxX - minX);
     glyph->rect.h = (unsigned short)(maxY - minY);
+    glyph->edgeRect.x = 0;
+    glyph->edgeRect.y = 0;
+    glyph->edgeRect.w = (unsigned short)(maxX - minX);
+    glyph->edgeRect.h = (unsigned short)(maxY - minY);
     glyph->advance = (short)advance;
     
     if ((fontData->fontType & DX_FONTTYPE_EDGE) != 0) {

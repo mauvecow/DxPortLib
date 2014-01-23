@@ -79,11 +79,12 @@ static int s_AllocateGraphID(int textureRefID, SDL_Rect rect, int linkToGraphID)
     return graphID;
 }
 
-static void s_ApplyTransparentColor(SDL_Surface *surface) {
+static int s_ApplyTransparentColor(SDL_Surface *surface) {
     SDL_PixelFormat *format;
-    
+    int hasAlphaChannel = DXFALSE;
+   
     if (s_useTransparency == DXFALSE) {
-        return;
+        return DXFALSE;
     }
     
     format = surface->format;
@@ -109,6 +110,7 @@ static void s_ApplyTransparentColor(SDL_Surface *surface) {
             ) {
                 c.a = 0;
                 colors[i] = c;
+                hasAlphaChannel = DXTRUE;
             }
             
         }
@@ -129,19 +131,22 @@ static void s_ApplyTransparentColor(SDL_Surface *surface) {
             for (x = 0; x < width; ++x) {
                 if (pixels[x] == transColor) {
                     pixels[x] = 0;
+                    hasAlphaChannel = DXTRUE;
                 }
             }
             pixels += pitch;
         }
     }
+    
+    return hasAlphaChannel;
 }
 
-int PL_Graph_CreateFromSurface(SDL_Surface *surface) {
+int PL_Graph_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel) {
     int textureRefID;
     int graphID;
     SDL_Rect rect;
     
-    textureRefID = PL_Texture_CreateFromSurface(surface);
+    textureRefID = PL_Texture_CreateFromSurface(surface, hasAlphaChannel);
     if (textureRefID < 0) {
         return -1;
     }
@@ -221,6 +226,7 @@ int s_FlipSurface(SDL_Surface *surface) {
 
 static int s_GenericGraphLoad(SDL_Surface *surface, int flipFlag) {
     int graphID;
+    int hasAlphaChannel = DXFALSE;
     
     /* Convert to 32bpp from 24bpp. */
     if (surface->format->BitsPerPixel == 24) {
@@ -234,16 +240,16 @@ static int s_GenericGraphLoad(SDL_Surface *surface, int flipFlag) {
         }
         
         surface = newSurface;
-        s_ApplyTransparentColor(surface);
+        hasAlphaChannel = s_ApplyTransparentColor(surface);
     } else if (surface->format->BitsPerPixel == 8) {
-        s_ApplyTransparentColor(surface);
+        hasAlphaChannel = s_ApplyTransparentColor(surface);
     }
     
     if (flipFlag) {
         s_FlipSurface(surface);
     }
     
-    graphID = PL_Graph_CreateFromSurface(surface);
+    graphID = PL_Graph_CreateFromSurface(surface, hasAlphaChannel);
     
     SDL_FreeSurface(surface);
     

@@ -135,6 +135,7 @@ typedef struct TextureRef {
     GLuint textureID;
     
     int drawMode;
+    int hasAlphaChannel;
     
     GLint glInternalFormat;
     GLuint glTarget;
@@ -233,10 +234,22 @@ int PL_Texture_BindFramebuffer(int textureRefID) {
     return s_GLFrameBuffer_Bind(framebufferID, textureTarget, textureID);
 }
 
-int PL_Texture_CreateFromSurface(SDL_Surface *surface) {
+int PL_Texture_HasAlphaChannel(int textureRefID) {
+    TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
+    if (textureref == NULL) {
+        return 0;
+    }
+    return textureref->hasAlphaChannel;
+}
+
+int PL_Texture_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel) {
     int textureRefID;
     
-    textureRefID = PL_Texture_CreateFromDimensions(surface->w, surface->h);
+    if (SDL_GetColorKey(surface, 0) >= 0) {
+        hasAlphaChannel = DXTRUE;
+    }
+    
+    textureRefID = PL_Texture_CreateFromDimensions(surface->w, surface->h, hasAlphaChannel);
     if (textureRefID < 0) {
         return -1;
     }
@@ -246,7 +259,7 @@ int PL_Texture_CreateFromSurface(SDL_Surface *surface) {
     return textureRefID;
 }
 
-int PL_Texture_CreateFromDimensions(int width, int height) {
+int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) {
     int textureRefID;
     TextureRef *textureref;
     GLint textureInternalFormat = 0;
@@ -322,6 +335,7 @@ int PL_Texture_CreateFromDimensions(int width, int height) {
     textureref->texWidth = texWidth;
     textureref->texHeight = texHeight;
     textureref->drawMode = DX_DRAWMODE_NEAREST;
+    textureref->hasAlphaChannel = hasAlphaChannel;
     
     if (textureTarget == GL_TEXTURE_RECTANGLE_ARB) {
         textureref->widthMult = 1.0f;
@@ -334,12 +348,12 @@ int PL_Texture_CreateFromDimensions(int width, int height) {
     return textureRefID;
 }
 
-int PL_Texture_CreateFramebuffer(int width, int height) {
+int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel) {
     int textureRefID = -1;
     int framebufferID = -1;
     TextureRef *textureref;
     
-    textureRefID = PL_Texture_CreateFromDimensions(width, height);
+    textureRefID = PL_Texture_CreateFromDimensions(width, height, hasAlphaChannel);
     if (textureRefID < 0) {
         return -1;
     }

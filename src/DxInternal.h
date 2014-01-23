@@ -277,7 +277,7 @@ extern int PL_Graph_Load(const DXCHAR *filename, int flipFlag);
 extern int PL_Graph_LoadDiv(const DXCHAR *filename, int graphCount,
                             int xCount, int yCount, int xSize, int ySize,
                             int *handleBuf, int textureFlag, int flipFlag);
-extern int PL_Graph_CreateFromSurface(SDL_Surface *surface);
+extern int PL_Graph_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel);
 extern int PL_Graph_FromTexture(int textureID, SDL_Rect rect);
 extern int PL_Graph_Delete(int graphID);
 extern int PL_Graph_DeleteSharingGraph(int graphID);
@@ -297,8 +297,8 @@ extern void PL_Graph_End();
 extern int PL_Graph_GetTextureID(int graphID, SDL_Rect *rect);
 
 /* ----------------------------------------------------------- Texture.c */
-extern int PL_Texture_CreateFromSurface(SDL_Surface *surface);
-extern int PL_Texture_CreateFromDimensions(int width, int height);
+extern int PL_Texture_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel);
+extern int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel);
 
 extern int PL_Texture_BlitSurface(int textureID, SDL_Surface *surface, const SDL_Rect *rect);
 

@@ -138,12 +138,13 @@ extern int PL_Draw_DestroyCache();
 
 extern int PL_Draw_ForceUpdate();
 
-extern int PL_Texture_CreateFramebuffer(int width, int height);
+extern int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel);
 extern int PL_Texture_Bind(int textureRefID, int drawMode);
 extern int PL_Texture_Unbind(int textureRefID);
 extern int PL_Texture_BindFramebuffer(int textureRefID);
 extern int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
 extern int PL_Texture_RenderGetGraphTextureInfo(int graphID, int *textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
+extern int PL_Texture_HasAlphaChannel(int textureRefID);
 extern int PL_Texture_ClearAllData();
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */

@@ -50,7 +50,7 @@ static int s_AllocateTextureRefID(SDL_Texture *texture) {
     return textureID;
 }
 
-int PL_Texture_CreateFromSurface(SDL_Surface *surface) {
+int PL_Texture_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel) {
     SDL_Texture *texture = SDL_CreateTextureFromSurface(PL_renderer, surface);
     if (texture == NULL) {
         return -1;
@@ -59,7 +59,7 @@ int PL_Texture_CreateFromSurface(SDL_Surface *surface) {
     return s_AllocateTextureRefID(texture);
 }
 
-int PL_Texture_CreateFromDimensions(int width, int height) {
+int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) {
     SDL_Texture *texture;
     int textureRefID;
     

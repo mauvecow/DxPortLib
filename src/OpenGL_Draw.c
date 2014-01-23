@@ -99,8 +99,12 @@ static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
     { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ONE, GL_ONE, BLENDFLAG_4X }, /* PMA_ADD_X4 */ /* FIXME */
 };
 
-static int s_ApplyBlendMode(int blendMode) {
+static int s_ApplyBlendMode(int blendMode, int forceBlend) {
     const BlendInfo *blend;
+    
+    if (forceBlend != 0 && blendMode == DX_BLENDMODE_NOBLEND) {
+        blendMode = DX_BLENDMODE_ALPHA;
+    }
     
     if (blendMode == s_lastBlendMode) {
         return 0;
@@ -118,7 +122,7 @@ static int s_ApplyBlendMode(int blendMode) {
     s_blendFlags = blend->blendFlags;
     
     if (blend->srcRGBBlend == NOBLEND) {
-        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         PL_GL.glDisable(GL_BLEND);
     } else {
         PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blend->texEnvParam);
@@ -259,9 +263,9 @@ int PL_Draw_FlushCache() {
     
     /* Apply blending mode */
     if (s_cache.blendFlag) {
-        s_ApplyBlendMode(s_blendMode);
+        s_ApplyBlendMode(s_blendMode, PL_Texture_HasAlphaChannel(s_cache.textureRefID));
     } else {
-        s_ApplyBlendMode(DX_BLENDMODE_NOBLEND);
+        s_ApplyBlendMode(DX_BLENDMODE_NOBLEND, DXFALSE);
     }
     
     /* State vertex info */
