@@ -22,11 +22,25 @@
 #ifndef DXLIB_DEFINES_H_HEADER
 #define DXLIB_DEFINES_H_HEADER
 
+#include "DxBuildConfig.h"
+
 #ifdef UNICODE
 #include <wchar.h>
 #endif
 
-#include "DxBuildConfig.h"
+/* Include tchar.h if available, fake it on other systems. */
+#if defined _WIN32
+#include <tchar.h>
+#else
+#  ifdef UNICODE
+#    define _TEXT(s) L ## s
+typedef wchar_t TCHAR;
+#  else
+#    define _TEXT(s) s
+typedef char TCHAR;
+#  endif
+#  define _T(s) _TEXT(s)
+#endif
 
 #ifdef __cplusplus   
 namespace DxLib {
@@ -67,18 +81,6 @@ namespace DxLib {
 #  else
 #    define DXCALL
 #  endif
-#endif
-
-/* #define _T() if it isn't already. */
-#ifndef _TEXT
-#  ifdef UNICODE
-#    define _TEXT(s) L ## s
-#  else
-#    define _TEXT(s) s
-#  endif
-#endif
-#ifndef _T
-#  define _T(s) _TEXT(s)
 #endif
 
 /* DxPortLib only supports Shift-JIS and UTF8.
