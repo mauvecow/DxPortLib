@@ -22,12 +22,8 @@ to be used on a DxLib application.
 
 ---
 
-This library is not yet feature complete. Most notably, the rendering
-backend uses SDL2_Renderer, which has a great number of limitations.
-It is good enough for many simple games, though.
-
-Replacing it with a fully OpenGL backend is planned, but will take some
-time to implement.
+This library is not yet feature complete. If you have need of a DxLib
+feature, please submit an issue.
 
 ---
 

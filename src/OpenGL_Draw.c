@@ -66,7 +66,7 @@ typedef struct BlendInfo {
 #define BLENDFLAG_4X    (0x1)
 
 static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
-    { GL_MODULATE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* NOBLEND */
+    { GL_MODULATE,      GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* NOBLEND */
     { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, 0 }, /* ALPHA */
     { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* ADD */
     
@@ -76,8 +76,8 @@ static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
     { GL_MODULATE,      GL_FUNC_ADD, GL_ZERO, GL_SRC_COLOR, GL_ZERO, GL_ONE, 0 }, /* MUL */
     { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* SUB2 */
     
-    { GL_MODULATE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* XOR (unsupported) */
-    { GL_MODULATE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* reserved */
+    { GL_MODULATE,      GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* XOR (unsupported) */
+    { GL_MODULATE,      GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* reserved */
     
     { GL_MODULATE,      GL_FUNC_ADD, GL_ZERO, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* DESTCOLOR */
     { GL_MODULATE,      GL_FUNC_ADD, GL_ONE_MINUS_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE, 0 }, /* INVDESTCOLOR */
