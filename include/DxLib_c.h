@@ -471,6 +471,9 @@ extern DXCALL int DxLib_DeleteSoundMem(int soundID);
 
 extern DXCALL int DxLib_InitSoundMem();
 
+extern DXCALL int DxLib_SetCreateSoundDataType(int soundDataType);
+extern DXCALL int DxLib_GetCreateSoundDataType();
+
 #endif /* #ifndef DX_NON_SOUND */
 
 /* --------------------------------------------------------- DxMemory.cpp */

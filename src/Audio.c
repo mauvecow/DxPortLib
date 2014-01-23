@@ -99,6 +99,7 @@ typedef struct Sound {
 static int s_audioOpened = DXFALSE;
 static int s_audioCannotOpen = DXFALSE;
 static int s_audioOldVolumeCalcFlag = DXFALSE;
+static int s_audioDataType = DX_SOUNDDATATYPE_MEMNOPRESS;
 
 static SDL_AudioSpec s_audioSpec;
 
@@ -900,6 +901,17 @@ int PL_SetUseOldVolumeCalcFlag(int volumeFlag) {
     return 0;
 }
 
+int PL_SetCreateSoundDataType(int soundDataType) {
+    if (soundDataType != s_audioDataType) {
+        s_audioDataType = soundDataType;
+    }
+    
+    return 0;
+}
+int PL_GetCreateSoundDataType() {
+    return 0;
+}
+
 int PL_InitSoundMem() {
     int handle;
     if (s_audioOpened == DXFALSE) {
@@ -923,6 +935,7 @@ int PL_Audio_ResetSettings() {
     }
     
     s_audioOldVolumeCalcFlag = DXFALSE;
+    s_audioDataType = DX_SOUNDDATATYPE_MEMNOPRESS;
     
     return 0;
 }

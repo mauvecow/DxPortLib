@@ -476,6 +476,8 @@ extern int PL_SetVolumeSoundMem(int volume, int soundID);
 extern int PL_ChangeVolumeSoundMem(int volume, int soundID);
 extern int PL_SetUseOldVolumeCalcFlag(int volumeFlag);
 extern int PL_InitSoundMem();
+extern int PL_SetCreateSoundDataType(int soundDataType);
+extern int PL_GetCreateSoundDataType();
 
 extern int PL_Audio_ResetSettings();
 extern int PL_Audio_Init();

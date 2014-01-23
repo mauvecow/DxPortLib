@@ -418,6 +418,9 @@ typedef struct XINPUT_STATE {
 #define DX_PLAYTYPE_BACK        (DX_PLAYTYPE_BACKBIT)
 #define DX_PLAYTYPE_LOOP        (DX_PLAYTYPE_BACKBIT | DX_PLAYTYPE_LOOPBIT)
 
+/* Only MEMNOPRESS is supported. */
+#define DX_SOUNDDATATYPE_MEMNOPRESS     (0)
+
 #ifdef __cplusplus   
 }
 #endif

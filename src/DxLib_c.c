@@ -884,6 +884,13 @@ int DxLib_InitSoundMem() {
     return PL_InitSoundMem();
 }
 
+int DxLib_SetCreateSoundDataType(int soundDataType) {
+    return PL_SetCreateSoundDataType(soundDataType);
+}
+int DxLib_GetCreateSoundDataType() {
+    return PL_GetCreateSoundDataType();
+}
+
 #endif /* #ifndef DX_NON_SOUND */
 
 /* ---------------------------------------------------- DxMemory.cpp */

@@ -695,6 +695,11 @@ extern DXCALL int DeleteSoundMem(int soundID);
 // - Deletes all sound handles.
 extern DXCALL int InitSoundMem();
 
+// - Sets the data storage type for loaded sounds.
+// NOTICE: DxPortLib currently only supports DX_SOUNDDATATYPE_MEMNOPRESS.
+extern DXCALL int SetCreateSoundDataType(int soundDataType);
+extern DXCALL int GetCreateSoundDataType();
+
 #endif /* #ifndef DX_NON_SOUND */
 
 // ----------------------------------------------------------- DxMemory.cpp
