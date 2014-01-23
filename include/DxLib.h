@@ -218,6 +218,7 @@ extern DXCALL int SetWindowSizeChangeEnableFlag(int windowResizeFlag);
 
 // - Sets the title of the window.
 extern DXCALL int SetWindowText(const DXCHAR *windowName);
+extern DXCALL int SetMainWindowText(const DXCHAR *windowName);
 
 // - Flips the backbuffer to the front buffer.
 // Call when drawing operations for a frame are finished.

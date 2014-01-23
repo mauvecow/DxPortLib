@@ -208,6 +208,9 @@ int SetWindowSizeChangeEnableFlag(int windowResizeFlag) {
 int SetWindowText(const DXCHAR *windowName) {
     return ::DxLib_SetWindowText(windowName);
 }
+int SetMainWindowText(const DXCHAR *windowName) {
+    return ::DxLib_SetMainWindowText(windowName);
+}
 int ScreenFlip() {
     return ::DxLib_ScreenFlip();
 }

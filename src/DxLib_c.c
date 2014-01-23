@@ -298,6 +298,10 @@ int DxLib_SetWindowText(const DXCHAR *windowName) {
     PL_Window_SetTitle(windowName);
     return 0;
 }
+int DxLib_SetMainWindowText(const DXCHAR *windowName) {
+    PL_Window_SetTitle(windowName);
+    return 0;
+}
 int DxLib_ScreenFlip() {
     PL_Window_SwapBuffers();
     return 0;

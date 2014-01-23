@@ -131,6 +131,7 @@ extern DXCALL int DxLib_SetGraphMode(int width, int height,
                                      int bitDepth, int FPS);
 extern DXCALL int DxLib_SetWindowSizeChangeEnableFlag(int windowResizeFlag);
 extern DXCALL int DxLib_SetWindowText(const DXCHAR *windowName);
+extern DXCALL int DxLib_SetMainWindowText(const DXCHAR *windowName);
 extern DXCALL int DxLib_ScreenFlip();
 extern DXCALL int DxLib_ChangeWindowMode(int fullscreenFlag);
 extern DXCALL int DxLib_SetDrawScreen(int flag);
