@@ -353,13 +353,9 @@ static inline Uint32 s_getColor() {
     return (s_drawColorR) | (s_drawColorG << 8) | (s_drawColorB << 16) | s_drawColorA;
 }
 static SDL_INLINE Uint32 s_modulateColor(DXCOLOR color) {
-    Uint32 r = ((color & 0xff) * s_drawColorR * 4) / 0xff;
-    Uint32 g = (((color & 0xff00) * s_drawColorG * 4) / 0xff) & 0xffffff00;
-    Uint32 b = (((color & 0xff0000) * s_drawColorB * 4) / 0xff) & 0xffff0000;
-    
-    if (r > 0xff) { r = 0xff; }
-    if (g > 0xff00) { g = 0xff00; }
-    if (b > 0xff0000) { b = 0xff0000; }
+    Uint32 r = ((color & 0xff) * s_drawColorR) / 0xff;
+    Uint32 g = (((color & 0xff00) * s_drawColorG) / 0xff) & 0x0000ff00;
+    Uint32 b = (((color & 0xff0000) * s_drawColorB) / 0xff) & 0x00ff0000;
     
     return s_drawColorA | r | g | b;
 }
