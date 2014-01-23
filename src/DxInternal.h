@@ -105,6 +105,7 @@ extern void PL_Handle_End();
 
 extern int PL_Handle_AcquireID(int handleType);
 extern void PL_Handle_ReleaseID(int handleID, int freeData);
+extern int PL_Handle_SwapHandleIDs(int handleAID, int handleBID);
 
 extern void *PL_Handle_AllocateData(int handleID, size_t dataSize);
 extern void *PL_Handle_GetData(int handleID, HandleType handleType);
@@ -265,12 +266,17 @@ extern void PL_Draw_End();
 extern int PL_Draw_ResetSettings();
 
 /* ------------------------------------------------------------- Graph.c */
-extern int PL_Graph_Load(const DXCHAR *filename);
+extern int PL_Graph_Load(const DXCHAR *filename, int flipFlag);
+extern int PL_Graph_LoadDiv(const DXCHAR *filename, int graphCount,
+                            int xCount, int yCount, int xSize, int ySize,
+                            int *handleBuf, int textureFlag, int flipFlag);
 extern int PL_Graph_CreateFromSurface(SDL_Surface *surface);
 extern int PL_Graph_FromTexture(int textureID, SDL_Rect rect);
 extern int PL_Graph_Delete(int graphID);
+extern int PL_Graph_DeleteSharingGraph(int graphID);
 extern int PL_Graph_GetSize(int graphID, int *w, int *h);
 extern int PL_Graph_Derivation(int x, int y, int w, int h, int srcGraphID);
+extern int PL_Graph_GetNum();
 
 extern int PL_Graph_SetTransColor(int r, int g, int b);
 extern int PL_Graph_GetTransColor(int *r, int *g, int *b);

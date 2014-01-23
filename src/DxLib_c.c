@@ -339,16 +339,46 @@ int DxLib_GetAlwaysRunFlag() {
 /* ---------------------------------------------------- DxGraphics.cpp */
 
 int DxLib_LoadGraph(const DXCHAR *name) {
-    return PL_Graph_Load(name);
+    return PL_Graph_Load(name, DXFALSE);
+}
+int DxLib_LoadReverseGraph(const DXCHAR *name) {
+    return PL_Graph_Load(name, DXTRUE);
+}
+int DxLib_LoadDivGraph(const DXCHAR *filename, int graphCount,
+                       int xCount, int yCount, int xSize, int ySize,
+                       int *handleBuf) {
+    return PL_Graph_LoadDiv(filename, graphCount, xCount, yCount,
+                            xSize, ySize, handleBuf,
+                            DXFALSE, DXFALSE);
+}
+int DxLib_LoadDivBmpGraph(const DXCHAR *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf, int textureFlag, int flipFlag) {
+    return PL_Graph_LoadDiv(filename, graphCount, xCount, yCount,
+                            xSize, ySize, handleBuf,
+                            textureFlag, flipFlag);
+}
+int DxLib_LoadReverseDivGraph(const DXCHAR *filename, int graphCount,
+                              int xCount, int yCount, int xSize, int ySize,
+                              int *handleBuf) {
+    return PL_Graph_LoadDiv(filename, graphCount, xCount, yCount,
+                            xSize, ySize, handleBuf,
+                            DXFALSE, DXTRUE);
 }
 int DxLib_DeleteGraph(int graphID) {
     return PL_Graph_Delete(graphID);
+}
+int DxLib_DeleteSharingGraph(int graphID) {
+    return PL_Graph_DeleteSharingGraph(graphID);
 }
 int DxLib_InitGraph() {
     return PL_Graph_InitGraph();
 }
 int DxLib_DerivationGraph(int x, int y, int w, int h, int graphID) {
     return PL_Graph_Derivation(x, y, w, h, graphID);
+}
+int DxLib_GetGraphNum() {
+    return PL_Graph_GetNum();
 }
 
 int DxLib_GetGraphSize(int graphID, int *width, int *height) {

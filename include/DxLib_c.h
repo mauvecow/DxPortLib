@@ -144,10 +144,26 @@ extern DXCALL int DxLib_GetAlwaysRunFlag();
 
 /* ------------------------------------------------------- DxGraphics.cpp */
 extern DXCALL int DxLib_LoadGraph(const DXCHAR *name);
+
+extern DXCALL int DxLib_LoadReverseGraph(const DXCHAR *name);
+extern DXCALL int DxLib_LoadDivGraph(
+                          const DXCHAR *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf);
+extern DXCALL int DxLib_LoadDivBmpGraph(
+                          const DXCHAR *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf, int textureFlag, int flipFlag);
+extern DXCALL int DxLib_LoadReverseDivGraph(
+                          const DXCHAR *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf);
 extern DXCALL int DxLib_DeleteGraph(int graphID);
+extern DXCALL int DxLib_DeleteSharingGraph(int graphID);
 extern DXCALL int DxLib_InitGraph();
 extern DXCALL int DxLib_DerivationGraph(int x, int y, int w, int h,
                                         int graphID);
+extern DXCALL int DxLib_GetGraphNum();
 
 extern DXCALL int DxLib_GetGraphSize(int graphID, int *width, int *height);
 

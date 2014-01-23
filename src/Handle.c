@@ -213,6 +213,26 @@ void *PL_Handle_GetData(int handleID, HandleType handleType) {
     return handle->data;
 }
 
+int PL_Handle_SwapHandleIDs(int handleAID, int handleBID) {
+    HandleData *handleA, *handleB;
+    HandleData tempHandle;
+    
+    if (handleAID < 0 || handleAID >= s_handleCount
+        || handleBID < 0 || handleBID >= s_handleCount
+    ) {
+        return -1;
+    }
+    
+    handleA = &s_handleTable[handleAID];
+    handleB = &s_handleTable[handleBID];
+    
+    SDL_memcpy(&tempHandle, handleA, sizeof(HandleData));
+    SDL_memcpy(handleA, handleB, sizeof(HandleData));
+    SDL_memcpy(handleB, &tempHandle, sizeof(HandleData));
+    
+    return 0;
+}
+
 int PL_Handle_GetPrevID(int handleID) {
     HandleData *handle;
     if (handleID < 0 || handleID >= s_handleCount) {

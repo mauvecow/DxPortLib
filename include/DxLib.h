@@ -250,12 +250,39 @@ extern DXCALL int SetMouseDispFlag(int flag);
 extern DXCALL int GetMouseDispFlag(int flag);
 
 // --------------------------------------------------------- DxGraphics.cpp
-// - Loads the given image file into a Graph handle.
+// - Loads the given image file into the returned handle.
 extern DXCALL int LoadGraph(const DXCHAR *name);
+
+// - Loads the given image flipped horizontally into the returned handle.
+extern DXCALL int LoadReverseGraph(const DXCHAR *name);
+
+// - Loads an image, and then derives into graphCount graphics handles,
+//   placing them into handleBuf.
+// e.g.:
+//   int handles[16];
+//   LoadDivGraph("image.png", 16, 4, 4, 64, 64, handles);
+extern DXCALL int LoadDivGraph(
+                          const DXCHAR *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf);
+extern DXCALL int LoadDivBmpGraph(
+                          const DXCHAR *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf, int textureFlag, int flipFlag);
+extern DXCALL int LoadReverseDivGraph(
+                          const DXCHAR *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf);
+
 // - Deletes a Graph handle.
 extern DXCALL int DeleteGraph(int graphID);
+// - Deletes all graph handles that were based on the same graph as this.
+extern DXCALL int DeleteSharingGraph(int graphID);
 // - Deletes ALL Graph handles.
 extern DXCALL int InitGraph();
+
+// - Gets the number of currently active graphs.
+extern DXCALL int GetGraphNum();
 
 // - Creates a new Graph handle that is a subset of another Graph.
 // This does not create a separate image.

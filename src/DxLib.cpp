@@ -246,14 +246,42 @@ int GetAlwaysRunFlag() {
 int LoadGraph(const DXCHAR *name) {
     return ::DxLib_LoadGraph(name);
 }
+int LoadReverseGraph(const DXCHAR *name) {
+    return ::DxLib_LoadReverseGraph(name);
+}
+int LoadDivGraph(const DXCHAR *filename, int graphCount,
+                 int xCount, int yCount, int xSize, int ySize,
+                 int *handleBuf) {
+    return ::DxLib_LoadDivGraph(filename, graphCount, xCount, yCount,
+                                xSize, ySize, handleBuf);
+}
+int LoadDivBmpGraph(const DXCHAR *filename, int graphCount,
+                    int xCount, int yCount, int xSize, int ySize,
+                    int *handleBuf, int textureFlag, int flipFlag) {
+    return ::LoadDivBmpGraph(filename, graphCount, xCount, yCount,
+                             xSize, ySize, handleBuf,
+                             textureFlag, flipFlag);
+}
+int LoadReverseDivGraph(const DXCHAR *filename, int graphCount,
+                              int xCount, int yCount, int xSize, int ySize,
+                              int *handleBuf) {
+    return ::DxLib_LoadReverseDivGraph(filename, graphCount, xCount, yCount,
+                                       xSize, ySize, handleBuf);
+}
 int DeleteGraph(int graphID) {
     return ::DxLib_DeleteGraph(graphID);
+}
+int DeleteSharingGraph(int graphID) {
+    return ::DxLib_DeleteSharingGraph(graphID);
 }
 int InitGraph() {
     return ::DxLib_InitGraph();
 }
 int DerivationGraph(int x, int y, int w, int h, int graphID) {
     return ::DxLib_DerivationGraph(x, y, w, h, graphID);
+}
+int GetGraphNum() {
+    return ::DxLib_GetGraphNum();
 }
 
 int GetGraphSize(int graphID, int *width, int *height) {
