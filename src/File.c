@@ -404,6 +404,65 @@ int PL_FileRead_eof(int fileHandle) {
     return DXFALSE;
 }
 
+int PL_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
+    DXCHAR ch;
+    int remaining = bufferSize - 1;
+    
+    while (remaining > 0 && (ch = PL_FileRead_getc(fileHandle)) != (DXCHAR)-1) {
+        int chSize;
+        
+        if (ch == '\r') {
+            continue;
+        }
+        if (ch == '\n') {
+            break;
+        }
+        chSize = PL_Text_WriteDxChar(buffer, ch, remaining);
+        remaining -= chSize;
+        buffer += chSize;
+    }
+    
+    *buffer = '\0';
+    
+    return bufferSize - remaining + 1;
+}
+
+DXCHAR PL_FileRead_getc(int fileHandle) {
+    FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
+    if (handle != NULL) {
+        SDL_RWops *rwops = handle->rwops;
+        char buffer[8];
+        const char *reader = buffer;
+        int pos = 0;
+        
+        do {
+            if (SDL_RWread(rwops, buffer + pos, sizeof(char), 1) < 1) {
+                return (DXCHAR)-1;
+            }
+            pos += 1;
+        } while (pos < 7 && PL_Text_IsIncompleteMultibyte(buffer, pos));
+        buffer[pos] = '\0';
+        
+        return PL_Text_ReadDxChar(&reader);
+    }
+    return (DXCHAR)-1;
+}
+
+int PL_FileRead_vscanf(int fileHandle, const DXCHAR *format, va_list args) {
+    DXCHAR dxBuffer[4096];
+    char buffer[4096];
+    int len;
+    
+    len = PL_FileRead_gets(dxBuffer, 4096, fileHandle);
+    if (len < 0) {
+        return 0;
+    }
+    
+    len = PL_Text_DxStringToString(dxBuffer, buffer, 4096, PL_Text_GetUseCharSet());
+    
+    return vsscanf(buffer, format, args);
+}
+
 int PL_File_Init() {
     s_initialized = DXTRUE;
     

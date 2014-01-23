@@ -115,6 +115,17 @@ extern DXCALL int FileRead_read(void *data, int size, int fileHandle);
 // - Returns TRUE if the current position is at the end of the file.
 extern DXCALL int FileRead_eof(int fileHandle);
 
+// - Reads a single line of text from the file, returns length.
+extern DXCALL int FileRead_gets(DXCHAR *buffer,
+                                int bufferSize, int fileHandle);
+
+// - Reads a single character.
+extern DXCALL DXCHAR FileRead_getc(int fileHandle);
+
+// - Performas a scanf() on the next line of text in the file.
+extern DXCALL int FileRead_scanf(int fileHandle,
+                                 const DXCHAR *format, ...);
+
 // ---------------------------------------------------------- DxArchive.cpp
 // - If true, will attempt to load data from dirname.dxa.
 // e.g. "directory/blah.txt" looks for "blah.txt" in "directory.dxa"

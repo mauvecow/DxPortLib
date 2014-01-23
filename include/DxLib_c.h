@@ -77,6 +77,12 @@ extern DXCALL int DxLib_FileRead_read(void *data, int size, int fileHandle);
 
 extern DXCALL int DxLib_FileRead_eof(int fileHandle);
 
+extern DXCALL int DxLib_FileRead_gets(DXCHAR *buffer,
+                                      int bufferSize, int fileHandle);
+extern DXCALL DXCHAR DxLib_FileRead_getc(int fileHandle);
+extern DXCALL int DxLib_FileRead_scanf(int fileHandle,
+                                       const DXCHAR *format, ...);
+
 /* -------------------------------------------------------- DxArchive.cpp */
 extern DXCALL int DxLib_SetUseDXArchiveFlag(int flag);
 

@@ -128,6 +128,27 @@ int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int maxLen) {
     return 0;    
 }
 
+int PL_Text_IsIncompleteUTF8Char(const char *buffer, int length) {
+    unsigned char ch = (unsigned char)buffer[0];
+    
+    if ((ch & 0x80) == 0) {
+        return DXFALSE;
+    }
+    if ((ch & 0xe0) == 0xc0) {
+        return (length >= 2) ? DXFALSE : DXTRUE;
+    } else if ((ch & 0xf0) == 0xe0) {
+        return (length >= 3) ? DXFALSE : DXTRUE;
+    } else if ((ch & 0xf8) == 0xf0) {
+        return (length >= 4) ? DXFALSE : DXTRUE;
+    } else if ((ch & 0xfc) == 0xf8) {
+        return (length >= 5) ? DXFALSE : DXTRUE;
+    } else if ((ch & 0xfe) == 0xfc) {
+        return (length >= 6) ? DXFALSE : DXTRUE;
+    }
+    
+    return DXFALSE;
+}
+
 unsigned int PL_Text_ReadChar(const char **textRef, int charset) {
     switch(charset) {
 #ifndef DXPORTLIB_NON_SJIS
@@ -322,6 +343,19 @@ int PL_Text_DxStrncmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
     return v;
 }
 
+int PL_Text_IsIncompleteMultibyte(const char *string, int length) {
+    switch(s_useCharSet) {
+#ifndef DXPORTLIB_NON_SJIS
+        case DX_CHARSET_SHFTJIS:
+            return PL_Text_IsIncompleteSJISChar(string, length);
+#endif
+        case DX_CHARSET_EXT_UTF8:
+            return PL_Text_IsIncompleteUTF8Char(string, length);
+        default:
+            return DXFALSE;
+    }
+}
+
 int PL_Text_SetUseCharSet(int charset) {
     switch(charset) {
 #ifndef DXPORTLIB_NON_SJIS
@@ -334,4 +368,8 @@ int PL_Text_SetUseCharSet(int charset) {
     s_useCharSet = charset;
     
     return 0;
+}
+
+int PL_Text_GetUseCharSet(int charset) {
+    return s_useCharSet;
 }

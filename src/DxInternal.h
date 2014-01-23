@@ -70,7 +70,11 @@ extern int PL_Text_DxStrncmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen)
 extern void PL_Text_DxStrncatFromString(DXCHAR *str, const char *catStr, int maxLen, int charset);
 extern void PL_Text_DxStrncpyFromString(DXCHAR *str, const char *srcStr, int maxLen, int charset);
 
+extern int PL_Text_IsIncompleteSJISChar(const char *string, int length);
+extern int PL_Text_IsIncompleteUTF8Char(const char *string, int length);
+extern int PL_Text_IsIncompleteMultibyte(const char *string, int length);
 extern int PL_Text_SetUseCharSet(int charset);
+extern int PL_Text_GetUseCharSet();
 
 #define DXSTRLEN(str) PL_Text_DxStrlen(str)
 #define DXSTRDUP(str) PL_Text_DxStrdup(str)
@@ -415,6 +419,10 @@ extern long long PL_FileRead_tell(int fileHandle);
 extern int PL_FileRead_seek(int fileHandle, long long position, int origin);
 extern int PL_FileRead_read(void *data, int size, int fileHandle);
 extern int PL_FileRead_eof(int fileHandle);
+
+extern int PL_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle);
+extern DXCHAR PL_FileRead_getc(int fileHandle);
+extern int PL_FileRead_vscanf(int fileHandle, const DXCHAR *format, va_list args);
 
 extern int PL_File_Init();
 extern int PL_File_End();

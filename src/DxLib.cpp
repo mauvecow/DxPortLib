@@ -109,6 +109,23 @@ int FileRead_eof(int fileHandle) {
     return ::DxLib_FileRead_eof(fileHandle);
 }
 
+int FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
+    return ::DxLib_FileRead_gets(buffer, bufferSize, fileHandle);
+}
+DXCHAR FileRead_getc(int fileHandle) {
+    return ::DxLib_FileRead_getc(fileHandle);
+}
+int FileRead_scanf(int fileHandle, const DXCHAR *format, ...) {
+    va_list args;
+    int retval;
+    
+    va_start(args, format);
+    retval = PL_FileRead_vscanf(fileHandle, format, args);
+    va_end(args);
+    
+    return retval;
+}
+
 // ---------------------------------------------------- DxArchive.cpp
 int SetUseDXArchiveFlag(bool flag) {
     return ::DxLib_SetUseDXArchiveFlag(flag);
