@@ -281,8 +281,10 @@ extern DXCALL int SetUseTransColor(int flag);
 // - blendFlag, if TRUE, draws with blending enabled.
 // - turn or turnFlag, if TRUE, will flip the graph horizontally.
 
-// - Draws a line from (x1,y1) to (x2,y2) with given color.
-// NOTICE: DxPortLib does not currently support line thickness.
+// - Draws a pixel at (x,y) with the given color.
+extern DXCALL int DrawPixel(int x, int y, DXCOLOR color);
+
+// - Draws a line from (x1,y1) to (x2,y2) with the given color.
 extern DXCALL int DrawLine(int x1, int y1, int x2, int y2,
                            DXCOLOR color, int thickness = 1);
 extern DXCALL int DrawLineF(float x1, float y1, float x2, float y2,
@@ -313,6 +315,20 @@ extern DXCALL int DrawOval(int x, int y, int rx, int ry,
                            DXCOLOR color, int fillFlag);
 extern DXCALL int DrawOvalF(float x, float y, float rx, float ry,
                             DXCOLOR color, int fillFlag);
+
+// - Draws a triangle at the given coordinates.
+extern DXCALL int DrawTriangle(int x1, int y1, int x2, int y2,
+                               int x3, int y3,
+                               DXCOLOR color, int fillFlag);
+extern DXCALL int DrawTriangleF(float x1, float y1, float x2, float y2,
+                                float x3, float y3,
+                                DXCOLOR color, int fillFlag);
+extern DXCALL int DrawQuadrangle(int x1, int y1, int x2, int y2,
+                                 int x3, int y3, int x4, int y4,
+                                 DXCOLOR color, int fillFlag);
+extern DXCALL int DrawQuadrangleF(float x1, float y1, float x2, float y2,
+                                  float x3, float y3, float x4, float y4,
+                                  DXCOLOR color, int fillFlag);
 
 // - Draws a graph whole to at (x,y).
 extern DXCALL int DrawGraph(int x, int y, int graphID, int blendFlag);
@@ -414,13 +430,20 @@ extern DXCALL int DrawTurnGraph(int x, int y,
 extern DXCALL int DrawTurnGraphF(float x, float y,
                                  int graphID, int blendFlag);
 
+// - Draws a graph to the given quad.
+extern DXCALL int DrawModiGraph(int x1, int y1, int x2, int y2,
+                                int x3, int y3, int x4, int y4,
+                                int graphID, int blendFlag);
+extern DXCALL int DrawModiGraphF(float x1, float y1, float x2, float y2,
+                                 float x3, float y3, float x4, float y4,
+                                 int graphID, int blendFlag);
+
 // - Clips the drawable area of the screen to (x1, y1, x2, y2).
 extern DXCALL int SetDrawArea(int x1, int y1, int x2, int y2);
 
 // - Sets the current blending mode.
-// NOTICE: The current rendering backend only supports these modes:
-//         NOBLEND, ALPHA, ADD, MUL.
 extern DXCALL int SetDrawBlendMode(int blendMode, int alpha);
+extern DXCALL int GetDrawBlendMode(int *blendMode, int *alpha);
 
 // - Sets the drawing color, which all displayed colors are multiplied by.
 extern DXCALL int SetDrawBright(int redBright,

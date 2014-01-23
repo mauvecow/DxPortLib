@@ -21,10 +21,6 @@
 
 #include "DxInternal.h"
 
-#ifdef DXPORTLIB_DRAW_SDL2_RENDER
-
-#include "SDL2Render_DxInternal.h"
-
 #include "SDL_ttf.h"
 
 #ifndef DX_NON_FONT
@@ -1221,5 +1217,3 @@ void PL_Font_End() {
 }
 
 #endif /* #ifndef DX_NON_FONT */
-
-#endif /* #ifdef DXPORTLIB_DRAW_SDL2_RENDER */

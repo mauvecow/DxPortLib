@@ -30,16 +30,23 @@ static BounceThing things[BOUNCETHINGCOUNT];
 static void InitBounceThings() {
     for (int i = 0; i < BOUNCETHINGCOUNT; ++i) {
         BounceThing *thing = &things[i];
+        int j;
         
-        thing->w = 10 + GetRand(10);
-        thing->h = 10 + GetRand(10);
+        thing->w = 10 + GetRand(50);
+        thing->h = 10 + GetRand(50);
         thing->x = 20 + GetRand(600 - thing->w);
         thing->y = 20 + GetRand(460 - thing->w);
         thing->dx = GetRand(4) - 2;
         thing->dy = GetRand(4) - 2;
         thing->color = GetColor(GetRand(255), GetRand(255), GetRand(255));
-        thing->isCircle = GetRand(1);
-        thing->isFilled = GetRand(1);
+        
+        j = i;
+        thing->isCircle = 0;
+        if (i >= (BOUNCETHINGCOUNT / 2)) {
+            j = i - (BOUNCETHINGCOUNT / 2);
+            thing->isCircle = 1;
+        }
+        thing->isFilled = (j < (BOUNCETHINGCOUNT / 4)) ? 1 : 0;
     }
 }
 
@@ -104,29 +111,29 @@ int main(int argc, char **argv) {
     SRand(0);
     InitBounceThings();
     
-	int isWindowed = DXTRUE;
-	int wasPressed = 0;
-	int timerDelta = 0;
-	int timeLast = GetNowCount();
+    int isWindowed = DXTRUE;
+    int wasPressed = 0;
+    int timerDelta = 0;
+    int timeLast = GetNowCount();
     
     while (ProcessMessage() == 0
 #ifndef DX_NON_INPUT
         && CheckHitKey(KEY_INPUT_ESCAPE) == 0
 #endif
     ) {
-		/* If Alt+Enter is pressed, flip to fullscreen mode. */
-		if (CheckHitKey(KEY_INPUT_RETURN)
-			&& (CheckHitKey(KEY_INPUT_LALT) || CheckHitKey(KEY_INPUT_RALT))
-		) {
-			if (wasPressed == 0) {
-				isWindowed = 1 - isWindowed;
-				ChangeWindowMode(isWindowed);
-			}
-			wasPressed = 1;
-		} else {
-			wasPressed = 0;
-		}
-
+        /* If Alt+Enter is pressed, flip to fullscreen mode. */
+        if (CheckHitKey(KEY_INPUT_RETURN)
+            && (CheckHitKey(KEY_INPUT_LALT) || CheckHitKey(KEY_INPUT_RALT))
+        ) {
+            if (wasPressed == 0) {
+                isWindowed = 1 - isWindowed;
+                ChangeWindowMode(isWindowed);
+            }
+            wasPressed = 1;
+        } else {
+            wasPressed = 0;
+        }
+        
         /* Game logic here */
         MoveBounceThings();
         
@@ -142,16 +149,16 @@ int main(int argc, char **argv) {
         
         ScreenFlip();
 
-		/* Time to next frame automatically... */
-		int newTime = GetNowCount();
-		timerDelta += newTime - timeLast;
-		timeLast = newTime;
+        /* Time to next frame automatically... */
+        int newTime = GetNowCount();
+        timerDelta += newTime - timeLast;
+        timeLast = newTime;
 
-		int n = timerDelta;
-		if (n > 16) {
-			n = 16;
-		}
-		timerDelta -= n;
+        int n = timerDelta;
+        if (n > 16) {
+            n = 16;
+        }
+        timerDelta -= n;
 
         WaitTimer(16 - n);
     }

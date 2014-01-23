@@ -87,6 +87,9 @@
     <ClCompile Include="..\src\Handle.c" />
     <ClCompile Include="..\src\Input.c" />
     <ClCompile Include="..\src\Memory.c" />
+    <ClCompile Include="..\src\OpenGL_Draw.c" />
+    <ClCompile Include="..\src\OpenGL_Main.c" />
+    <ClCompile Include="..\src\OpenGL_Texture.c" />
     <ClCompile Include="..\src\RNG.c" />
     <ClCompile Include="..\src\SDL2Render_Draw.c" />
     <ClCompile Include="..\src\SDL2Render_Texture.c" />
@@ -100,6 +103,7 @@
     <ClInclude Include="..\include\DxLib.h" />
     <ClInclude Include="..\include\DxLib_c.h" />
     <ClInclude Include="..\src\DxInternal.h" />
+    <ClInclude Include="..\src\OpenGL_DxInternal.h" />
     <ClInclude Include="..\src\SDL2Render_DxInternal.h" />
   </ItemGroup>
   <ItemGroup>

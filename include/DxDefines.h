@@ -105,10 +105,30 @@ namespace DxLib {
 #define DX_NONE_GRAPH           (0xfffffffb)
 
 /* Only these blend modes are supported at the moment. */
-#define DX_BLENDMODE_NOBLEND    (0)
-#define DX_BLENDMODE_ALPHA      (1)
-#define DX_BLENDMODE_ADD        (2)
-#define DX_BLENDMODE_MUL        (4)
+#define DX_BLENDMODE_NOBLEND            (0)
+#define DX_BLENDMODE_ALPHA              (1)
+#define DX_BLENDMODE_ADD                (2)
+#define DX_BLENDMODE_SUB                (3)
+#define DX_BLENDMODE_MUL                (4)
+#define DX_BLENDMODE_SUB2               (5)
+/* XOR is not supported. */
+/* 7 is reserved. */
+#define DX_BLENDMODE_DESTCOLOR          (8)
+#define DX_BLENDMODE_INVDESTCOLOR       (9)
+#define DX_BLENDMODE_INVSRC             (10)
+#define DX_BLENDMODE_MULA               (11)
+#define DX_BLENDMODE_ALPHA_X4           (12)
+#define DX_BLENDMODE_ADD_X4             (13)
+#define DX_BLENDMODE_SRCCOLOR           (14)
+#define DX_BLENDMODE_HALF_ADD           (15)
+#define DX_BLENDMODE_SUB1               (16)
+#define DX_BLENDMODE_PMA_ALPHA          (17)
+#define DX_BLENDMODE_PMA_ADD            (18)
+#define DX_BLENDMODE_PMA_SUB            (19)
+#define DX_BLENDMODE_PMA_INVSRC         (20)
+#define DX_BLENDMODE_PMA_ALPHA_X4       (21)
+#define DX_BLENDMODE_PMA_ADD_X4         (22)
+#define DX_BLENDMODE_NUM                (23)
 
 /* Font types. Internally, we only do antialiasing though. */
 #define DX_FONTTYPE_NORMAL                      (0x00)

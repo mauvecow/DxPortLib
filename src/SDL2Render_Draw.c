@@ -39,6 +39,7 @@
 SDL_Renderer *PL_renderer = NULL;
 
 static const SDL_Point s_zeroPoint = { 0, 0 };
+static int s_blendModeDX = DX_BLENDMODE_NOBLEND;
 static SDL_BlendMode s_blendMode = SDL_BLENDMODE_NONE;
 static Uint8 s_drawColorR = 255;
 static Uint8 s_drawColorG = 255;
@@ -84,6 +85,54 @@ int PL_Draw_ResetSettings() {
     
     return 0;
 }
+
+/* Unsupported functions up top. */
+int PL_Draw_Pixel(int x, int y, DXCOLOR color) {
+    return -1;
+}
+
+int PL_Draw_TriangleF(
+    float x1, float y1, float x2, float y2, float x3, float y3,
+    DXCOLOR color, int fillFlag
+) {
+    return -1;
+}
+int PL_Draw_Triangle(
+    int x1, int y1, int x2, int y2, int x3, int y3,
+    DXCOLOR color, int fillFlag
+) {
+    return -1;
+}
+int PL_Draw_QuadrangleF(
+    float x1, float y1, float x2, float y2,
+    float x3, float y3, float x4, float y4,
+    DXCOLOR color, int fillFlag
+) {
+    return -1;
+}
+int PL_Draw_Quadrangle(
+    int x1, int y1, int x2, int y2,
+    int x3, int y3, int x4, int y4,
+    DXCOLOR color, int fillFlag
+) {
+    return -1;
+}
+int PL_Draw_ModiGraphF(
+    float x1, float y1, float x2, float y2,
+    float x3, float y3, float x4, float y4,
+    int graphID, int blendFlag
+) {
+    return -1;
+}
+int PL_Draw_ModiGraph(
+    int x1, int y1, int x2, int y2,
+    int x3, int y3, int x4, int y4,
+    int graphID, int blendFlag
+) {
+    return -1;
+}
+
+/* Supported functions from here on out. */
 
 void PL_Draw_InitCircleGraph() {
     const int circleWidth = 128;
@@ -515,7 +564,6 @@ static int s_Draw_RotaGraphMain(
     return 0;
 }
 
-
 int PL_Draw_RotaGraphF(float x, float y, 
                        double scaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
@@ -744,6 +792,8 @@ int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2) {
 }
 
 int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
+    s_blendModeDX = blendMode;
+    
     switch(blendMode) {
         case DX_BLENDMODE_ALPHA: s_blendMode = SDL_BLENDMODE_BLEND; break;
         case DX_BLENDMODE_ADD: s_blendMode = SDL_BLENDMODE_ADD; break;
@@ -755,6 +805,12 @@ int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
     }
     
     s_drawAlpha = (Uint8)alpha;
+    
+    return 0;
+}
+int PL_Draw_GetDrawBlendMode(int *blendMode, int *alpha) {
+    blendMode = s_blendModeDX;
+    *alpha = (int)s_drawAlpha;
     
     return 0;
 }
@@ -778,10 +834,6 @@ int PL_Draw_GetBright(int *redBright, int *greenBright, int *blueBright) {
 int PL_Draw_SetBasicBlendFlag(int blendFlag) {
     /* Reseved for software renderer, so it won't be used at all. */
     return 0;
-}
-
-DXCOLOR PL_Draw_GetColor(int red, int green, int blue) {
-    return red | (green << 8) | (blue << 16);
 }
 
 /* ------------------------------------------------------------------------
@@ -833,7 +885,7 @@ void PL_Draw_ResizeWindow(int width, int height) {
     SDL_RenderSetScale(PL_renderer, 1.0f/1024.0f, 1.0f/1024.0f);
 }
 
-void PL_Draw_Refresh(const SDL_Rect *targetRect) {
+void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     SDL_SetRenderTarget(PL_renderer, NULL);
     SDL_RenderSetViewport(PL_renderer, NULL);
     SDL_RenderSetClipRect(PL_renderer, NULL);

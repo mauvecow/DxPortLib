@@ -13,6 +13,10 @@ libDxPortLib_la_SOURCES =	\
 	Handle.c		\
 	Input.c			\
 	Memory.c		\
+	OpenGL_Draw.c		\
+	OpenGL_Main.c		\
+	OpenGL_DxInternal.h	\
+	OpenGL_Texture.c	\
 	RNG.c			\
 	SDL2Render_Draw.c	\
 	SDL2Render_DxInternal.h	\

@@ -96,6 +96,7 @@ typedef enum {
     DXHANDLE_FONT,
     DXHANDLE_SOUND,
     DXHANDLE_FILE,
+    DXHANDLE_FRAMEBUFFER,
     DXHANDLE_END
 } HandleType;
 
@@ -150,6 +151,8 @@ extern int PL_EXT_Draw_RectGraphFastF(
                             int sx, int sy, int sw, int sh,
                             int graphID, int blendFlag);
 
+extern int PL_Draw_Pixel(int x, int y, DXCOLOR color);
+
 extern int PL_Draw_Line(int x1, int y1, int x2, int y2, DXCOLOR color, int thickness);
 extern int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thickness);
 
@@ -160,6 +163,17 @@ extern int PL_Draw_Circle(int x, int y, int r, DXCOLOR color, int fillFlag);
 extern int PL_Draw_CircleF(float x, float y, float r, DXCOLOR color, int fillFlag);
 extern int PL_Draw_Oval(int x, int y, int rx, int ry, DXCOLOR color, int fillFlag);
 extern int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillFlag);
+
+extern int PL_Draw_Triangle(int x1, int y1, int x2, int y2,
+                            int x3, int y3, DXCOLOR color, int fillFlag);
+extern int PL_Draw_TriangleF(float x1, float y1, float x2, float y2,
+                             float x3, float y3, DXCOLOR color, int fillFlag);
+extern int PL_Draw_Quadrangle(int x1, int y1, int x2, int y2,
+                              int x3, int y3, int x4, int y4,
+                              DXCOLOR color, int fillFlag);
+extern int PL_Draw_QuadrangleF(float x1, float y1, float x2, float y2,
+                               float x3, float y3, float x4, float y4,
+                               DXCOLOR color, int fillFlag);
 
 extern int PL_Draw_Graph(int x, int y, int graphID, int blendFlag);
 extern int PL_Draw_GraphF(float x, float y, int graphID, int blendFlag);
@@ -229,15 +243,22 @@ extern int PL_Draw_RectRotaGraph3(int x, int y,
 extern int PL_Draw_TurnGraph(int x, int y, int graphID, int blendFlag);
 extern int PL_Draw_TurnGraphF(float x, float y, int graphID, int blendFlag);
 
+extern int PL_Draw_ModiGraph(int x1, int y1, int x2, int y2,
+                             int x3, int y3, int x4, int y4,
+                             int graphID, int blendFlag);
+extern int PL_Draw_ModiGraphF(float x1, float y1, float x2, float y2,
+                              float x3, float y3, float x4, float y4,
+                              int graphID, int blendFlag);
+
 extern int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2);
 extern int PL_Draw_SetDrawBlendMode(int blendMode, int alpha);
+extern int PL_Draw_GetDrawBlendMode(int *blendMode, int *alpha);
 extern int PL_Draw_SetBright(int redBright, int greenBright, int blueBright);
 extern int PL_Draw_GetBright(int *redBright, int *greenBright, int *blueBright);
 extern int PL_Draw_SetBasicBlendFlag(int blendFlag);
-extern DXCOLOR PL_Draw_GetColor(int red, int green, int blue);
 
 extern void PL_Draw_ResizeWindow(int width, int height);
-extern void PL_Draw_Refresh(const SDL_Rect *targetRect);
+extern void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect);
 extern void PL_Draw_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect);
 extern void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag);
 extern void PL_Draw_End();

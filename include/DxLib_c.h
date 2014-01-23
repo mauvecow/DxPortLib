@@ -155,6 +155,8 @@ extern DXCALL int DxLib_SetTransColor(int r, int g, int b);
 extern DXCALL int DxLib_GetTransColor(int *r, int *g, int *b);
 extern DXCALL int DxLib_SetUseTransColor(int flag);
 
+extern DXCALL int DxLib_DrawPixel(int x, int y, DXCOLOR color);
+
 extern DXCALL int DxLib_DrawLine(int x1, int y1, int x2, int y2,
                                  DXCOLOR color, int thickness);
 extern DXCALL int DxLib_DrawLineF(float x1, float y1, float x2, float y2,
@@ -181,6 +183,19 @@ extern DXCALL int DxLib_DrawOval(int x, int y, int rx, int ry,
                                  DXCOLOR color, int fillFlag);
 extern DXCALL int DxLib_DrawOvalF(float x, float y, float rx, float ry,
                                   DXCOLOR color, int fillFlag);
+
+extern DXCALL int DxLib_DrawTriangle(int x1, int y1, int x2, int y2,
+                                     int x3, int y3,
+                                     DXCOLOR color, int fillFlag);
+extern DXCALL int DxLib_DrawTriangleF(float x1, float y1, float x2, float y2,
+                                      float x3, float y3,
+                                      DXCOLOR color, int fillFlag);
+extern DXCALL int DxLib_DrawQuadrangle(int x1, int y1, int x2, int y2,
+                                       int x3, int y3, int x4, int y4,
+                                       DXCOLOR color, int fillFlag);
+extern DXCALL int DxLib_DrawQuadrangleF(float x1, float y1, float x2, float y2,
+                                        float x3, float y3, float x4, float y4,
+                                        DXCOLOR color, int fillFlag);
 
 extern DXCALL int DxLib_DrawGraph(int x, int y,
                                   int graphID, int blendFlag);
@@ -284,9 +299,17 @@ extern DXCALL int DxLib_DrawTurnGraph(int x, int y,
 extern DXCALL int DxLib_DrawTurnGraphF(float x, float y,
                                        int graphID, int blendFlag);
 
+extern DXCALL int DxLib_DrawModiGraph(int x1, int y1, int x2, int y2,
+                                      int x3, int y3, int x4, int y4,
+                                      int graphID, int blendFlag);
+extern DXCALL int DxLib_DrawModiGraphF(float x1, float y1, float x2, float y2,
+                                       float x3, float y3, float x4, float y4,
+                                       int graphID, int blendFlag);
+
 extern DXCALL int DxLib_SetDrawArea(int x1, int y1, int x2, int y2);
 
 extern DXCALL int DxLib_SetDrawBlendMode(int blendMode, int alpha);
+extern DXCALL int DxLib_GetDrawBlendMode(int *blendMode, int *alpha);
 extern DXCALL int DxLib_SetDrawBright(int redBright,
                                       int greenBright,
                                       int blueBright);

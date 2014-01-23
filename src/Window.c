@@ -159,7 +159,7 @@ static void PL_Window_Refresh() {
         PL_Window_HandleResize(wWidth, wHeight);
     }
     
-    PL_Draw_Refresh(&s_targetRect);
+    PL_Draw_Refresh(s_window, &s_targetRect);
 }
 
 int PL_Window_SwapBuffers() {
