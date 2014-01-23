@@ -184,7 +184,7 @@ typedef struct VertexCache {
     
     GLenum drawMode;
     
-    void *vertexData;
+    unsigned char *vertexData;
     int vertexDataPosition;
     int vertexDataSize;
 } VertexCache;
@@ -242,12 +242,12 @@ static void *s_BeginCache(
     VertexType *vertexName = (VertexType *)s_BeginCache( \
                                s_def ## VertexType, elementsof(s_def ## VertexType), \
                                sizeof(VertexType), vertexCount, \
-                               drawMode, textureRefID, blendFlag);
+                               drawMode, textureRefID, blendFlag)
 
 int PL_Draw_FlushCache() {
     int i;
     int vertexSize;
-    void *vertexData;
+    unsigned char *vertexData;
     const VertexDefinition *def;
     
     if (s_cache.defArray == NULL || s_cache.vertexCount == 0) {
@@ -350,7 +350,7 @@ int PL_Draw_DestroyCache() {
 static inline Uint32 s_getColor() {
     return (s_drawColorR) | (s_drawColorG << 8) | (s_drawColorB << 16) | s_drawColorA;
 }
-static inline Uint32 s_modulateColor(DXCOLOR color) {
+static SDL_INLINE Uint32 s_modulateColor(DXCOLOR color) {
     Uint32 r = ((color & 0xff) * s_drawColorR * 4) / 0xff;
     Uint32 g = (((color & 0xff00) * s_drawColorG * 4) / 0xff) & 0xffffff00;
     Uint32 b = (((color & 0xff0000) * s_drawColorB * 4) / 0xff) & 0xffff0000;

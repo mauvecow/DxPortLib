@@ -184,8 +184,8 @@ int PL_Texture_Bind(int textureRefID) {
         return -1;
     }
     
-    glEnable(textureref->glTarget);
-    glBindTexture(textureref->glTarget, textureref->textureID);
+    PL_GL.glEnable(textureref->glTarget);
+    PL_GL.glBindTexture(textureref->glTarget, textureref->textureID);
     return 0;
 }
 
@@ -195,7 +195,7 @@ int PL_Texture_Unbind(int textureRefID) {
         return -1;
     }
     
-    glDisable(textureref->glTarget);
+    PL_GL.glDisable(textureref->glTarget);
     return 0;
 }
 
@@ -285,7 +285,7 @@ int PL_Texture_CreateFromDimensions(int width, int height) {
     /* - Assign to texture reference. */
     textureRefID = s_AllocateTextureRefID(textureID);
     if (textureRefID < 0) {
-        glDeleteTextures(1, &textureID);
+        PL_GL.glDeleteTextures(1, &textureID);
         return -1;
     }
     
