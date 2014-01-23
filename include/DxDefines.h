@@ -364,6 +364,16 @@ typedef struct XINPUT_STATE {
 #define KEY_INPUT_F11           (0x57)
 #define KEY_INPUT_F12           (0x58)
 
+#define KEY_INPUT_KANA          (0x70) /* unsupported */
+#define KEY_INPUT_CONVERT       (0x79) /* unsupported */
+#define KEY_INPUT_NOCONVERT     (0x7b) /* unsupported */
+#define KEY_INPUT_YEN           (0x7d)
+
+#define KEY_INPUT_PREVTRACK     (0x90) /* unsupported */
+#define KEY_INPUT_AT            (0x91) /* maybe supported? */
+#define KEY_INPUT_COLON         (0x92) /* maybe supported? */
+#define KEY_INPUT_KANJI         (0x94) /* unsupported */
+
 #define KEY_INPUT_NUMPADENTER   (0x9c)
 #define KEY_INPUT_RCONTROL      (0x9d)
 #define KEY_INPUT_NUMPADCOMMA   (0xb3)
@@ -382,6 +392,10 @@ typedef struct XINPUT_STATE {
 #define KEY_INPUT_PGDN          (0xd1)
 #define KEY_INPUT_INSERT        (0xd2)
 #define KEY_INPUT_DELETE        (0xd3)
+
+#define KEY_INPUT_LWIN          (0xdb)
+#define KEY_INPUT_RWIN          (0xdc)
+#define KEY_INPUT_APPS          (0xdd) /* unsupported */
 
 /* ----------------------------------------------------- MOUSE DEFINES */
 #define MOUSE_INPUT_LEFT        (0x01)

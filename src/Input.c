@@ -309,10 +309,17 @@ static int s_MapSDLKeyToDXKey(const SDL_Keysym *keysym) {
         case SDL_SCANCODE_LCTRL: return KEY_INPUT_LCONTROL;
         case SDL_SCANCODE_LSHIFT: return KEY_INPUT_LSHIFT;
         case SDL_SCANCODE_LALT: return KEY_INPUT_LALT;
+        case SDL_SCANCODE_LGUI: return KEY_INPUT_LWIN;
         case SDL_SCANCODE_RCTRL: return KEY_INPUT_RCONTROL;
         case SDL_SCANCODE_RSHIFT: return KEY_INPUT_RSHIFT;
         case SDL_SCANCODE_RALT: return KEY_INPUT_RALT;
+        case SDL_SCANCODE_RGUI: return KEY_INPUT_RWIN;
 
+        case SDL_SCANCODE_INTERNATIONAL3: return KEY_INPUT_YEN;
+        case SDL_SCANCODE_KP_AT: return KEY_INPUT_AT; /* ? */
+        case SDL_SCANCODE_KP_COLON: return KEY_INPUT_COLON; /* ? */
+        /* case SDL_SCANCODE_????: return KEY_INPUT_PREVTRACK; */
+        
         default: return 0;
     }
 }
