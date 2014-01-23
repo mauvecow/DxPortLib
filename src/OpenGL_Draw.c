@@ -31,6 +31,7 @@
 
 static int s_blendMode = DX_BLENDMODE_NOBLEND;
 static int s_lastBlendMode = -1;
+static int s_drawMode = DX_DRAWMODE_NEAREST;
 static Uint32 s_blendFlags;
 static Uint32 s_drawColorR = 0xff;
 static Uint32 s_drawColorG = 0xff;
@@ -39,6 +40,7 @@ static Uint32 s_drawColorA = 0xff000000;
 
 int PL_Draw_ResetSettings() {
     s_blendMode = DX_BLENDMODE_NOBLEND;
+    s_drawMode = DX_DRAWMODE_NEAREST;
     s_lastBlendMode = -1;
     
     s_drawColorR = 0xff;
@@ -286,7 +288,7 @@ int PL_Draw_FlushCache() {
     if (PL_GL.glActiveTexture != 0) {
         PL_GL.glActiveTexture(GL_TEXTURE0);
     }
-    PL_Texture_Bind(s_cache.textureRefID);
+    PL_Texture_Bind(s_cache.textureRefID, s_drawMode);
     
     /* Draw! */
     /* This could be optimized a bit by storing a list of drawMode changes,
@@ -1133,6 +1135,19 @@ int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2) {
     }
     
     return 0;
+}
+
+int PL_Draw_SetDrawMode(int drawMode) {
+    if (drawMode != s_drawMode) {
+        PL_Draw_FlushCache();
+        
+        s_drawMode = drawMode;
+    }
+    
+    return 0;
+}
+int PL_Draw_GetDrawMode() {
+    return s_drawMode;
 }
 
 int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {

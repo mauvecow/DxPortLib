@@ -106,6 +106,10 @@ namespace DxLib {
 
 #define DX_NONE_GRAPH           (0xfffffffb)
 
+/* Only nearest/bilinear are supported at current time. */
+#define DX_DRAWMODE_NEAREST             (0)
+#define DX_DRAWMODE_BILINEAR            (1)
+
 /* Only these blend modes are supported at the moment. */
 #define DX_BLENDMODE_NOBLEND            (0)
 #define DX_BLENDMODE_ALPHA              (1)

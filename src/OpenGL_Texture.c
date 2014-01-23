@@ -134,6 +134,8 @@ static int s_GLFrameBuffer_Release(int handleID) {
 typedef struct TextureRef {
     GLuint textureID;
     
+    int drawMode;
+    
     GLint glInternalFormat;
     GLuint glTarget;
     GLuint glFormat;
@@ -178,14 +180,32 @@ static int s_AllocateTextureRefID(GLuint textureID) {
     return textureRefID;
 }
 
-int PL_Texture_Bind(int textureRefID) {
+int PL_Texture_Bind(int textureRefID, int drawMode) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
+    GLuint textureTarget;
     if (textureref == NULL) {
         return -1;
     }
     
-    PL_GL.glEnable(textureref->glTarget);
-    PL_GL.glBindTexture(textureref->glTarget, textureref->textureID);
+    textureTarget = textureref->glTarget;
+    PL_GL.glEnable(textureTarget);
+    PL_GL.glBindTexture(textureTarget, textureref->textureID);
+    
+    if (drawMode != textureref->drawMode) {
+        textureref->drawMode = drawMode;
+        switch(drawMode) {
+            case DX_DRAWMODE_NEAREST:
+            default:
+                PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                break;
+            case DX_DRAWMODE_BILINEAR:
+                PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                break;
+        }
+    }
+    
     return 0;
 }
 
@@ -301,6 +321,7 @@ int PL_Texture_CreateFromDimensions(int width, int height) {
     textureref->height = height;
     textureref->texWidth = texWidth;
     textureref->texHeight = texHeight;
+    textureref->drawMode = DX_DRAWMODE_NEAREST;
     
     if (textureTarget == GL_TEXTURE_RECTANGLE_ARB) {
         textureref->widthMult = 1.0f;
@@ -336,7 +357,7 @@ int PL_Texture_CreateFramebuffer(int width, int height) {
     return textureRefID;
 }
 
-int PL_Texture_glSetFilter(int textureRefID, GLint minFilter, GLint magFilter) {
+int s_glSetFilter(int textureRefID, GLint minFilter, GLint magFilter) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     GLuint textureTarget;
     if (textureref == NULL || textureref->textureID == 0) {

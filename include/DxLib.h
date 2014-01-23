@@ -468,7 +468,11 @@ extern DXCALL int DrawModiGraphF(float x1, float y1, float x2, float y2,
 // - Clips the drawable area of the screen to (x1, y1, x2, y2).
 extern DXCALL int SetDrawArea(int x1, int y1, int x2, int y2);
 
-// - Sets the current blending mode.
+// - Sets the current texture filtering mode from DX_DRAWMODE_*
+extern DXCALL int SetDrawMode(int drawMode);
+extern DXCALL int GetDrawMode();
+
+// - Sets the current blending mode from DX_BLENDMODE_*
 extern DXCALL int SetDrawBlendMode(int blendMode, int alpha);
 extern DXCALL int GetDrawBlendMode(int *blendMode, int *alpha);
 

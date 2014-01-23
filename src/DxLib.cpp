@@ -527,6 +527,12 @@ int SetDrawArea(int x1, int y1, int x2, int y2) {
     return ::DxLib_SetDrawArea(x1, y1, x2, y2);
 }
 
+int SetDrawMode(int drawMode) {
+    return ::DxLib_SetDrawMode(drawMode);
+}
+int GetDrawMode() {
+    return ::DxLib_GetDrawMode();
+}
 int SetDrawBlendMode(int blendMode, int alpha) {
     return ::DxLib_SetDrawBlendMode(blendMode, alpha);
 }

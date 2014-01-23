@@ -791,6 +791,13 @@ int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2) {
     return 0;
 }
 
+int PL_Draw_SetDrawMode(int drawMode) {
+    return 0;
+}
+int PL_Draw_GetDrawMode() {
+    return DX_DRAWMODE_NEAREST;
+}
+
 int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
     s_blendModeDX = blendMode;
     

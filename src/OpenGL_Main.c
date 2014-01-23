@@ -165,9 +165,6 @@ void PL_Draw_ResizeWindow(int width, int height) {
     s_screenFrameBufferA = PL_Texture_CreateFramebuffer(width, height);
     s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height);
     
-    PL_Texture_glSetFilter(s_screenFrameBufferA, GL_LINEAR, GL_LINEAR);
-    PL_Texture_glSetFilter(s_screenFrameBufferB, GL_LINEAR, GL_LINEAR);
-    
     s_BindActiveFramebuffer();
 }
 
@@ -187,7 +184,7 @@ static void s_drawRect(const SDL_Rect *rect) {
     SDL_Rect texRect;
     float xMult, yMult;
     
-    PL_Texture_Bind(s_screenFrameBufferB);
+    PL_Texture_Bind(s_screenFrameBufferB, DX_DRAWMODE_BILINEAR);
     
     PL_Texture_RenderGetTextureInfo(s_screenFrameBufferB, &texRect, &xMult, &yMult);
 

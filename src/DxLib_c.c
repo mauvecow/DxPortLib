@@ -624,6 +624,12 @@ int DxLib_SetDrawArea(int x1, int y1, int x2, int y2) {
     return PL_Draw_SetDrawArea(x1, y1, x2, y2);
 }
 
+int DxLib_SetDrawMode(int drawMode) {
+    return PL_Draw_SetDrawMode(drawMode);
+}
+int DxLib_GetDrawMode() {
+    return PL_Draw_GetDrawMode();
+}
 int DxLib_SetDrawBlendMode(int blendMode, int alpha) {
     return PL_Draw_SetDrawBlendMode(blendMode, alpha);
 }

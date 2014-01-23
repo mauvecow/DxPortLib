@@ -252,6 +252,9 @@ extern int PL_Draw_ModiGraphF(float x1, float y1, float x2, float y2,
                               int graphID, int blendFlag);
 
 extern int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2);
+
+extern int PL_Draw_SetDrawMode(int drawMode);
+extern int PL_Draw_GetDrawMode();
 extern int PL_Draw_SetDrawBlendMode(int blendMode, int alpha);
 extern int PL_Draw_GetDrawBlendMode(int *blendMode, int *alpha);
 extern int PL_Draw_SetBright(int redBright, int greenBright, int blueBright);
