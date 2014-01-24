@@ -126,8 +126,7 @@ static void s_BindActiveFramebuffer() {
     PL_GL.glDisable(GL_CULL_FACE);
     
     PL_GL.glViewport(0, 0, PL_drawScreenWidth, PL_drawScreenHeight);
-    PL_GL.glClearColor(0, 0, 0, 1);
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    
     PL_GL.glColor4f(1, 1, 1, 1);
     
     PL_GL.glMatrixMode(GL_PROJECTION);

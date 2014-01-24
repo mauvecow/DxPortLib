@@ -265,6 +265,9 @@ extern int PL_Draw_SetBright(int redBright, int greenBright, int blueBright);
 extern int PL_Draw_GetBright(int *redBright, int *greenBright, int *blueBright);
 extern int PL_Draw_SetBasicBlendFlag(int blendFlag);
 
+extern int PL_Draw_SetBackgroundColor(int red, int green, int blue);
+extern int PL_Draw_ClearDrawScreen(const RECT *clearRect);
+
 extern void PL_Draw_ResizeWindow(int width, int height);
 extern void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect);
 extern void PL_Draw_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect);

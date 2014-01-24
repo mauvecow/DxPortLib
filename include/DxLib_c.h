@@ -341,6 +341,10 @@ extern DXCALL int DxLib_SetDrawBright(int redBright,
 
 extern DXCALL int DxLib_SetBasicBlendFlag(int blendFlag);
 
+extern DXCALL int DxLib_SetBackgroundColor(int red, int green, int blue);
+extern DXCALL int DxLib_ClearDrawScreen(const RECT *clearRect);
+extern DXCALL int DxLib_ClsDrawScreen();
+
 extern DXCALL DXCOLOR DxLib_GetColor(int red, int green, int blue);
 
 /* ----------------------------------------------------------- DxFont.cpp */

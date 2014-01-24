@@ -37,6 +37,9 @@ static Uint32 s_drawColorR = 0xff;
 static Uint32 s_drawColorG = 0xff;
 static Uint32 s_drawColorB = 0xff;
 static Uint32 s_drawColorA = 0xff000000;
+static Uint32 s_bgColorR = 0x00;
+static Uint32 s_bgColorG = 0x00;
+static Uint32 s_bgColorB = 0x00;
 
 int PL_Draw_ResetSettings() {
     s_blendMode = DX_BLENDMODE_NOBLEND;
@@ -47,6 +50,10 @@ int PL_Draw_ResetSettings() {
     s_drawColorG = 0xff;
     s_drawColorB = 0xff;
     s_drawColorA = 0xff000000;
+    
+    s_bgColorR = 0x00;
+    s_bgColorG = 0x00;
+    s_bgColorB = 0x00;
     
     return 0;
 }
@@ -1124,15 +1131,61 @@ int PL_Draw_TurnGraph(int x, int y, int graphID, int blendFlag) {
     return PL_Draw_TurnGraphF((float)x, (float)y, graphID, blendFlag);
 }
 
+static int s_scissorEnabled = DXFALSE;
+static int s_scissorX = 0;
+static int s_scissorY = 0;
+static int s_scissorW = 0;
+static int s_scissorH = 0;
+
+static void s_RefreshScissor() {
+    if (s_scissorEnabled == DXFALSE) {
+        PL_GL.glDisable(GL_SCISSOR_TEST);
+    } else {
+        PL_GL.glEnable(GL_SCISSOR_TEST);
+        PL_GL.glScissor(s_scissorX, s_scissorY, s_scissorW, s_scissorH);
+    }
+}
+
 int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2) {
     PL_Draw_FlushCache();
     
     if (x1 == 0 && y1 == 0 && x2 == PL_drawScreenWidth && y2 == PL_drawScreenHeight) {
+        s_scissorEnabled = DXFALSE;
+    } else {
+        
+        s_scissorEnabled = DXTRUE;
+        s_scissorX = x1;
+        s_scissorY = y1;
+        s_scissorW = x2 - x1;
+        s_scissorH = y2 - y1;
+    }
+    
+    s_RefreshScissor();
+    
+    return 0;
+}
+
+int PL_Draw_SetBackgroundColor(int red, int green, int blue) {
+    s_bgColorR = red;
+    s_bgColorG = green;
+    s_bgColorB = blue;
+    return 0;
+}
+
+int PL_Draw_ClearDrawScreen(const RECT *rect) {
+    PL_Draw_FlushCache();
+    
+    PL_GL.glClearColor(s_bgColorR / 255.0f, s_bgColorG / 255.0f, s_bgColorB / 255.0f, 1);
+    if (rect == NULL) {
         PL_GL.glDisable(GL_SCISSOR_TEST);
+        PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     } else {
         PL_GL.glEnable(GL_SCISSOR_TEST);
-        PL_GL.glScissor(x1, y1, x2 - x1, y2 - y1);
+        PL_GL.glScissor(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
+        PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     }
+    
+    s_RefreshScissor();
     
     return 0;
 }
@@ -1193,6 +1246,8 @@ int PL_Draw_SetBasicBlendFlag(int blendFlag) {
 
 int PL_Draw_ForceUpdate() {
     s_lastBlendMode = -1;
+    
+    s_RefreshScissor();
     
     return 0;
 }

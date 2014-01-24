@@ -567,6 +567,16 @@ int SetBasicBlendFlag(int blendFlag) {
     return ::DxLib_SetBasicBlendFlag(blendFlag);
 }
 
+int SetBackgroundColor(int red, int green, int blue) {
+    return ::DxLib_SetBackgroundColor(red, green, blue);
+}
+int ClearDrawScreen(const RECT *clearRect) {
+    return ::DxLib_ClearDrawScreen(clearRect);
+}
+int ClsDrawScreen() {
+    return ::DxLib_ClsDrawScreen();
+}
+
 DXCOLOR GetColor(int red, int green, int blue) {
     return red | (green << 8) | (blue << 16);
 }

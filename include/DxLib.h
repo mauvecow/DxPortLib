@@ -497,6 +497,13 @@ extern DXCALL int SetDrawBright(int redBright,
 // NOTICE: This does nothing, as software rendering is not supported.
 extern DXCALL int SetBasicBlendFlag(int blendFlag);
 
+// - Sets background color for use with ClearDrawScreen.
+extern DXCALL int SetBackgroundColor(int red, int green, int blue);
+
+// - Clears the current screen. If clearRect is NULL, clears whole screen.
+extern DXCALL int ClearDrawScreen(const RECT *clearRect = NULL);
+extern DXCALL int ClsDrawScreen();
+
 // - Given the three RGB components, returns a color value.
 extern DXCALL DXCOLOR GetColor(int red, int green, int blue);
 

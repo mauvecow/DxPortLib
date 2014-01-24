@@ -838,6 +838,16 @@ int PL_Draw_GetBright(int *redBright, int *greenBright, int *blueBright) {
     return 0;
 }
 
+int PL_Draw_SetBackgroundColor(int red, int green, int blue) {
+    /* FIXME */
+    return 0;
+}
+
+int PL_Draw_ClearDrawScreen(const RECT *rect) {
+    /* FIXME */
+    return 0;
+}
+
 int PL_Draw_SetBasicBlendFlag(int blendFlag) {
     /* Reseved for software renderer, so it won't be used at all. */
     return 0;

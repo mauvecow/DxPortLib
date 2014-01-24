@@ -665,6 +665,16 @@ int DxLib_SetBasicBlendFlag(int blendFlag) {
     return PL_Draw_SetBasicBlendFlag(blendFlag);
 }
 
+int DxLib_SetBackgroundColor(int red, int green, int blue) {
+    return PL_Draw_SetBackgroundColor(red, green, blue);
+}
+int DxLib_ClearDrawScreen(const RECT *clearRect) {
+    return PL_Draw_ClearDrawScreen(clearRect);
+}
+int DxLib_ClsDrawScreen() {
+    return PL_Draw_ClearDrawScreen(NULL);
+}
+
 DXCOLOR DxLib_GetColor(int red, int green, int blue) {
     return red | (green << 8) | (blue << 16);
 }

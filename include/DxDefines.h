@@ -28,10 +28,18 @@
 #include <wchar.h>
 #endif
 
-/* Include tchar.h if available, fake it on other systems. */
 #if defined _WIN32
-#include <tchar.h>
+#  include <windows.h>
+#  include <tchar.h>
 #else
+/* On non-Windows, replicate some of the common types used. */
+typedef struct _RECT {
+    int left;
+    int top;
+    int right;
+    int bottom;
+} RECT;
+
 #  ifdef UNICODE
 #    define _TEXT(s) L ## s
 typedef wchar_t TCHAR;
@@ -42,7 +50,7 @@ typedef char TCHAR;
 #  define _T(s) _TEXT(s)
 #endif
 
-#ifdef __cplusplus   
+#ifdef __cplusplus
 namespace DxLib {
 #endif
 
