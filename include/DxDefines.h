@@ -40,6 +40,12 @@ typedef struct _RECT {
     int bottom;
 } RECT;
 
+typedef int BOOL;
+typedef long LONG;
+typedef unsigned long DWORD;
+typedef unsigned short WORD;
+typedef unsigned char BYTE;
+
 #  ifdef UNICODE
 #    define _TEXT(s) L ## s
 typedef wchar_t TCHAR;
@@ -113,6 +119,11 @@ namespace DxLib {
 #define DX_SCREEN_TEMPFRONT     (0xfffffffb)
 
 #define DX_NONE_GRAPH           (0xfffffffb)
+
+/* Placeholders for now. */
+#define DX_IMAGESAVETYPE_BMP            (0)
+#define DX_IMAGESAVETYPE_JPEG           (1)
+#define DX_IMAGESAVETYPE_PNG            (2)
 
 /* Only nearest/bilinear are supported at current time. */
 #define DX_DRAWMODE_NEAREST             (0)
@@ -426,8 +437,11 @@ typedef struct XINPUT_STATE {
 #define DX_PLAYTYPE_BACK        (DX_PLAYTYPE_BACKBIT)
 #define DX_PLAYTYPE_LOOP        (DX_PLAYTYPE_BACKBIT | DX_PLAYTYPE_LOOPBIT)
 
-/* Only MEMNOPRESS is supported. */
-#define DX_SOUNDDATATYPE_MEMNOPRESS     (0)
+/* Only MEMPRESS is supported. */
+#define DX_SOUNDDATATYPE_MEMNOPRESS             (0)
+#define DX_SOUNDDATATYPE_MEMNOPRESS_PLUS        (1)
+#define DX_SOUNDDATATYPE_MEMPRESS               (2)
+#define DX_SOUNDDATATYPE_FILE                   (3)
 
 #ifdef __cplusplus   
 }

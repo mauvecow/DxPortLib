@@ -181,6 +181,23 @@ static int s_AllocateTextureRefID(GLuint textureID) {
     return textureRefID;
 }
 
+static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const SDL_Rect *rect) {
+    GLuint textureTarget = textureRef->glTarget;
+    
+    PL_GL.glEnable(textureTarget);
+    PL_GL.glBindTexture(textureTarget, textureRef->textureID);
+    PL_GL.glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH, (surface->pitch / surface->format->BytesPerPixel));
+    PL_GL.glTexSubImage2D(
+        textureTarget, 0,
+        rect->x, rect->y, rect->w, rect->h,
+        textureRef->glFormat, textureRef->glType,
+        surface->pixels
+    );
+    
+    PL_GL.glDisable(textureTarget);
+}
+
 int PL_Texture_Bind(int textureRefID, int drawMode) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     GLuint textureTarget;
@@ -419,23 +436,6 @@ int PL_Texture_Release(int textureRefID) {
         PL_Handle_ReleaseID(textureRefID, DXTRUE);
     }
     return 0;
-}
-
-static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const SDL_Rect *rect) {
-    GLuint textureTarget = textureRef->glTarget;
-    
-    PL_GL.glEnable(textureTarget);
-    PL_GL.glBindTexture(textureTarget, textureRef->textureID);
-    PL_GL.glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH, (surface->pitch / surface->format->BytesPerPixel));
-    PL_GL.glTexSubImage2D(
-        textureTarget, 0,
-        rect->x, rect->y, rect->w, rect->h,
-        textureRef->glFormat, textureRef->glType,
-        surface->pixels
-    );
-    
-    PL_GL.glDisable(textureTarget);
 }
 
 int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const SDL_Rect *rect) {

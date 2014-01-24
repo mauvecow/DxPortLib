@@ -1211,6 +1211,10 @@ int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
         s_blendMode = blendMode;
     }
     
+    if (blendMode == DX_BLENDMODE_NOBLEND) {
+        alpha = 255;
+    }
+    
     /* Changing draw color does not cause a cache flush. */
     s_drawColorA = (Uint32)alpha << 24;
     

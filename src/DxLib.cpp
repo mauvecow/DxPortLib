@@ -577,6 +577,31 @@ int ClsDrawScreen() {
     return ::DxLib_ClsDrawScreen();
 }
 
+int SaveDrawScreen(int x1, int y1, int x2, int y2,
+                   const DXCHAR *filename, int saveType,
+                   int jpegQuality, int jpegSample2x1,
+                   int pngCompressionLevel) {
+    return ::DxLib_SaveDrawScreen(x1, y1, x2, y2, filename,
+                                  saveType, jpegQuality, jpegSample2x1,
+                                  pngCompressionLevel);
+}
+int SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
+                        const DXCHAR *filename) {
+    return ::DxLib_SaveDrawScreenToBMP(x1, y1, x2, y2, filename);
+}
+int DxLib_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
+                               const DXCHAR *filename,
+                               int quality, int sample2x1) {
+    return ::DxLib_SaveDrawScreenToJPEG(x1, y1, x2, y2, filename,
+                                        quality, sample2x1);
+}
+int DxLib_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
+                              const DXCHAR *filename,
+                              int compressionLevel) {
+    return ::DxLib_SaveDrawScreenToPNG(x1, y1, x2, y2, filename,
+                                       compressionLevel);
+}
+
 DXCOLOR GetColor(int red, int green, int blue) {
     return red | (green << 8) | (blue << 16);
 }

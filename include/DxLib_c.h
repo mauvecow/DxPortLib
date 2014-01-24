@@ -345,6 +345,19 @@ extern DXCALL int DxLib_SetBackgroundColor(int red, int green, int blue);
 extern DXCALL int DxLib_ClearDrawScreen(const RECT *clearRect);
 extern DXCALL int DxLib_ClsDrawScreen();
 
+extern DXCALL int DxLib_SaveDrawScreen(int x1, int y1, int x2, int y2,
+                                       const DXCHAR *filename, int saveType,
+                                       int jpegQuality, int jpegSample2x1,
+                                       int pngCompressionLevel);
+extern DXCALL int DxLib_SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
+                                            const DXCHAR *filename);
+extern DXCALL int DxLib_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
+                                             const DXCHAR *filename,
+                                             int quality, int sample2x1);
+extern DXCALL int DxLib_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
+                                            const DXCHAR *filename,
+                                            int compressionLevel);
+
 extern DXCALL DXCOLOR DxLib_GetColor(int red, int green, int blue);
 
 /* ----------------------------------------------------------- DxFont.cpp */

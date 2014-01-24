@@ -229,7 +229,9 @@ static int s_GenericGraphLoad(SDL_Surface *surface, int flipFlag) {
     int hasAlphaChannel = DXFALSE;
     
     /* Convert to 32bpp from 24bpp. */
-    if (surface->format->BitsPerPixel == 24) {
+    if (surface->format->BitsPerPixel == 32) {
+        hasAlphaChannel = DXTRUE;
+    } else if (surface->format->BitsPerPixel == 24) {
         SDL_Surface *newSurface;
         newSurface = SDL_ConvertSurfaceFormat(
             surface, SDL_PIXELFORMAT_ARGB8888, 0);

@@ -504,6 +504,23 @@ extern DXCALL int SetBackgroundColor(int red, int green, int blue);
 extern DXCALL int ClearDrawScreen(const RECT *clearRect = NULL);
 extern DXCALL int ClsDrawScreen();
 
+// - Saves a region of the current screen to an image file.
+extern DXCALL int SaveDrawScreen(int x1, int y1, int x2, int y2,
+                                 const DXCHAR *filename,
+                                 int saveType = DX_IMAGESAVETYPE_BMP,
+                                 int jpegQuality = 80,
+                                 int jpegSample2x1 = DXTRUE,
+                                 int pngCompressionLevel = -1);
+extern DXCALL int SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
+                                      const DXCHAR *filename);
+extern DXCALL int SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
+                                       const DXCHAR *filename,
+                                       int quality = 80,
+                                       int sample2x1 = DXTRUE);
+extern DXCALL int SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
+                                      const DXCHAR *filename,
+                                      int compressionLevel = -1);
+
 // - Given the three RGB components, returns a color value.
 extern DXCALL DXCOLOR GetColor(int red, int green, int blue);
 

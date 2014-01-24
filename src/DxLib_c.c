@@ -675,6 +675,42 @@ int DxLib_ClsDrawScreen() {
     return PL_Draw_ClearDrawScreen(NULL);
 }
 
+int DxLib_SaveDrawScreen(int x1, int y1, int x2, int y2,
+                         const DXCHAR *filename, int saveType,
+                         int jpegQuality, int jpegSample2x1,
+                         int pngCompressionLevel) {
+    switch(saveType) {
+        case DX_IMAGESAVETYPE_BMP:
+            return DxLib_SaveDrawScreenToBMP(x1, y1, x2, y2, filename);
+        case DX_IMAGESAVETYPE_JPEG:
+            return DxLib_SaveDrawScreenToJPEG(x1, y1, x2, y2, filename,
+                                              jpegQuality, jpegSample2x1);
+        case DX_IMAGESAVETYPE_PNG:
+            return DxLib_SaveDrawScreenToPNG(x1, y1, x2, y2, filename,
+                                             pngCompressionLevel);
+        default:
+            return -1;
+    }
+}
+
+int DxLib_SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
+                              const DXCHAR *filename) {
+    /* FIXME STUB */
+    return -1;
+}
+int DxLib_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
+                               const DXCHAR *filename,
+                               int quality, int sample2x1) {
+    /* FIXME STUB */
+    return -1;
+}
+int DxLib_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
+                              const DXCHAR *filename,
+                              int compressionLevel) {
+    /* FIXME STUB */
+    return -1;
+}
+
 DXCOLOR DxLib_GetColor(int red, int green, int blue) {
     return red | (green << 8) | (blue << 16);
 }
