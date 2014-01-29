@@ -612,11 +612,15 @@ DXCOLOR GetColor(int red, int green, int blue) {
 int EXT_MapFontFileToName(const DXCHAR *filename,
                           const DXCHAR *fontname,
                           int thickness,
-                          int boldFlag
+                          int boldFlag,
+                          double exRateX,
+                          double exRateY
                          ) {
     return ::DxLib_EXT_MapFontFileToName(filename,
                                          fontname,
-                                         thickness, boldFlag);
+                                         thickness, boldFlag,
+                                         exRateX, exRateY
+                                        );
 }
 int EXT_InitFontMappings() {
     return ::DxLib_EXT_InitFontMappings();

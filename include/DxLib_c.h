@@ -366,7 +366,9 @@ extern DXCALL DXCOLOR DxLib_GetColor(int red, int green, int blue);
 extern DXCALL int DxLib_EXT_MapFontFileToName(const DXCHAR *filename,
                                               const DXCHAR *fontname,
                                               int thickness,
-                                              int boldFlag
+                                              int boldFlag,
+                                              double exRateX,
+                                              double exRateY
                                              );
 extern DXCALL int DxLib_EXT_InitFontMappings();
 

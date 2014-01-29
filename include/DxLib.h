@@ -531,11 +531,14 @@ extern DXCALL DXCOLOR GetColor(int red, int green, int blue);
 //   Given a .ttf filename, it will 'map' that .ttf to a fontname,
 //   a minimum thickness value, and a flag for whether or not the font is
 //   bolded.
+//   exRateX/exRateY are a global Extend multiplier used.
 // NOTICE: This must be used for all fonts.
 extern DXCALL int EXT_MapFontFileToName(const DXCHAR *filename,
                                         const DXCHAR *fontname,
                                         int thickness,
-                                        int boldFlag
+                                        int boldFlag,
+                                        double exRateX = 1.0,
+                                        double exRateY = 1.0
                                         );
 // - DxPortLib Extension.
 //   Deletes all existing font mappings.

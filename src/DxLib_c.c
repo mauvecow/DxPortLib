@@ -720,10 +720,13 @@ DXCOLOR DxLib_GetColor(int red, int green, int blue) {
 int DxLib_EXT_MapFontFileToName(const DXCHAR *filename,
                                 const DXCHAR *fontname,
                                 int thickness,
-                                int boldFlag
+                                int boldFlag,
+                                double exRateX,
+                                double exRateY
                                ) {
     return PLEXT_Font_MapFontFileToName(filename,
-                                   fontname, thickness, boldFlag);
+                                   fontname, thickness, boldFlag,
+                                   exRateX, exRateY);
 }
 int DxLib_EXT_InitFontMappings() {
     return PLEXT_Font_InitFontMappings();

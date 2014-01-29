@@ -375,7 +375,8 @@ extern int PL_Font_GetDefaultFontHandle();
 /* Font mappings and upkeep. */
 extern int PLEXT_Font_MapFontFileToName(const DXCHAR *filename,
                                    const DXCHAR *fontname,
-                                   int thickness, int boldFlag
+                                   int thickness, int boldFlag,
+                                   double exRateX, double exRateY
                                   );
 extern int PLEXT_Font_InitFontMappings();
 

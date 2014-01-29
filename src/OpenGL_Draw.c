@@ -763,7 +763,7 @@ int PL_EXT_Draw_RectGraphFastF(
         float tx2 = tx1 + (tw * xMult);
         float ty2 = ty1 + (th * yMult);
         
-        dx2 = dx1 + tw; dy2 = dy1 + th;
+        dx2 = dx1 + dw; dy2 = dy1 + dh;
         
         v[0].x = dx1; v[0].y = dy1; v[0].tcx = tx1; v[0].tcy = ty1; v[0].color = vColor;
         v[1].x = dx2; v[1].y = dy1; v[1].tcx = tx2; v[1].tcy = ty1; v[1].color = vColor;

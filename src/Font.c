@@ -63,6 +63,9 @@ typedef struct FontMapping {
     int thickness;
     int boldFlag;
     
+    double exRateX;
+    double exRateY;
+    
     struct FontMapping *next;
 } FontMapping;
 
@@ -107,6 +110,9 @@ typedef struct FontData {
     int spacing;
     
     int charset;
+    
+    double exRateX;
+    double exRateY;
     
     GlyphTexture glyphTexture;
     
@@ -182,6 +188,8 @@ static int s_AllocateFontDataID(
     fontData->edgeSize = 1;
     fontData->boldFlag = mapping->boldFlag;
     fontData->spacing = 0;
+    fontData->exRateX = mapping->exRateX;
+    fontData->exRateY = mapping->exRateY;
     
     fontData->glyphTexture.textureID = -1;
     fontData->glyphTexture.graphID = -1;
@@ -246,7 +254,9 @@ int PLEXT_Font_MapFontFileToName(
     const DXCHAR *filename,
     const DXCHAR *fontname,
     int thickness,
-    int boldFlag
+    int boldFlag,
+    double exRateX,
+    double exRateY
 ) {
     FontMapping *mapping;
     
@@ -260,6 +270,8 @@ int PLEXT_Font_MapFontFileToName(
     mapping->thickness = thickness;
     mapping->boldFlag = boldFlag;
     mapping->next = s_fontMappings;
+    mapping->exRateX = exRateX;
+    mapping->exRateY = exRateY;
     
     s_fontMappings = mapping;
     
@@ -695,12 +707,13 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
     int spacing;
     int edgeSize;
     int loop;
-    float scaleX = (float)exRateX;
-    float scaleY = (float)exRateY;
+    float scaleX;
+    float scaleY;
 #ifndef UNICODE
     int charset;
 #endif
     int redBright, greenBright, blueBright;
+    int origDrawMode;
     
     if (string == NULL || *string == 0) {
         return -1;
@@ -710,6 +723,9 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
     if (fontData == NULL) {
         return -1;
     }
+    
+    scaleX = (float)(exRateX * fontData->exRateX);
+    scaleY = (float)(exRateY * fontData->exRateY);
     
     /* - Cache all glyphs beforehand, so as not to thrash the texture. */
     s = string;
@@ -733,6 +749,9 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
         /* Nothing to do. */
         return 0;
     }
+    
+    origDrawMode = PL_Draw_GetDrawMode();
+    PL_Draw_SetDrawMode(DX_DRAWMODE_BILINEAR);
     
     PL_Draw_GetBright(&redBright, &greenBright, &blueBright);
     
@@ -790,6 +809,7 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
     }
     
     PL_Draw_SetBright(redBright, greenBright, blueBright);
+    PL_Draw_SetDrawMode(origDrawMode);
     
     return 0;
 }
