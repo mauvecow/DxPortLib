@@ -214,9 +214,9 @@ typedef struct XINPUT_STATE {
 #define DX_INPUT_KEY_PAD1       (0x1001)
 
 #define PAD_INPUT_DOWN          (0x00000001)
-#define PAD_INPUT_UP            (0x00000002)
-#define PAD_INPUT_LEFT          (0x00000004)
-#define PAD_INPUT_RIGHT         (0x00000008)
+#define PAD_INPUT_LEFT          (0x00000002)
+#define PAD_INPUT_RIGHT         (0x00000004)
+#define PAD_INPUT_UP            (0x00000008)
 #define PAD_INPUT_1             (0x00000010)
 #define PAD_INPUT_2             (0x00000020)
 #define PAD_INPUT_3             (0x00000040)

@@ -54,9 +54,9 @@ namespace DxLibDLL
 		public const int DX_INPUT_KEY_PAD1       = (0x1001);
 
 		public const int PAD_INPUT_DOWN          = (0x00000001);
-		public const int PAD_INPUT_UP            = (0x00000002);
-		public const int PAD_INPUT_LEFT          = (0x00000004);
-		public const int PAD_INPUT_RIGHT         = (0x00000008);
+		public const int PAD_INPUT_LEFT          = (0x00000002);
+		public const int PAD_INPUT_RIGHT         = (0x00000004);
+		public const int PAD_INPUT_UP            = (0x00000008);
 		public const int PAD_INPUT_1             = (0x00000010);
 		public const int PAD_INPUT_2             = (0x00000020);
 		public const int PAD_INPUT_3             = (0x00000040);

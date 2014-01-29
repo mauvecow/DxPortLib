@@ -566,10 +566,7 @@ int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *sta
                 state->Y = (int)SDL_JoystickGetAxis(js, 1) * 1000 / 32767;
             }
             
-            n = SDL_JoystickNumHats(js);
-            if (n > 4) { n = 4; }
-            
-            for (i = 0; i < n; ++i) {
+            for (i = 0; i < 4; ++i) {
                 unsigned int hat = 0;
                 switch(SDL_JoystickGetHat(js, i)) {
                     case SDL_HAT_UP: hat = 0; break;
@@ -580,9 +577,9 @@ int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *sta
                     case SDL_HAT_LEFTDOWN: hat = 22500; break;
                     case SDL_HAT_LEFT: hat = 27000; break;
                     case SDL_HAT_LEFTUP: hat = 31500; break;
-                    default: hat = 0; break;
+                    default: hat = -1; break;
                 }
-                state->POV[n] = hat;
+                state->POV[i] = hat;
             }
             
             n = SDL_JoystickNumButtons(js);
