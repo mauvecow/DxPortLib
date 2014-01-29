@@ -55,7 +55,7 @@ unsigned int PL_Text_ReadUTF8Char(const char **textRef) {
             value = ch & 0x01;
             bytes = 6;
         } else {
-            value = 0;
+            value = '?';
             bytes = 0;
         }
         

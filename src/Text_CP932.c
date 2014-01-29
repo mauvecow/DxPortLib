@@ -2220,7 +2220,7 @@ int PL_Text_WriteSJISChar(char *pStr, unsigned int ch, int maxLen) {
 int PL_Text_IsIncompleteSJISChar(const char *buffer, int length) {
     unsigned char ch = (unsigned char)buffer[0];
     
-    if (length > 1 && ((ch >= 0x81 && ch <= 0x9f) || (ch >= 0xe0 && ch <= 0xfc))) {
+    if (length == 1 && ((ch >= 0x81 && ch <= 0x9f) || (ch >= 0xe0 && ch <= 0xfc))) {
         return DXTRUE;
     }
     
