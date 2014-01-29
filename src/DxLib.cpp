@@ -589,13 +589,13 @@ int SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
                         const DXCHAR *filename) {
     return ::DxLib_SaveDrawScreenToBMP(x1, y1, x2, y2, filename);
 }
-int DxLib_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
+int SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
                                const DXCHAR *filename,
                                int quality, int sample2x1) {
     return ::DxLib_SaveDrawScreenToJPEG(x1, y1, x2, y2, filename,
                                         quality, sample2x1);
 }
-int DxLib_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
+int SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
                               const DXCHAR *filename,
                               int compressionLevel) {
     return ::DxLib_SaveDrawScreenToPNG(x1, y1, x2, y2, filename,

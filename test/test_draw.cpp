@@ -115,6 +115,7 @@ int main(int argc, char **argv) {
     int wasPressed = 0;
     int timerDelta = 0;
     int timeLast = GetNowCount();
+    int screenshotWasPressed = 0;
     
     while (ProcessMessage() == 0
 #ifndef DX_NON_INPUT
@@ -146,6 +147,15 @@ int main(int argc, char **argv) {
         DrawFillBox(20, 20, 620, 460, GetColor(0x90, 0x80, 0x70));
         
         DrawBounceThings();
+        
+        if (CheckHitKey(KEY_INPUT_S)) {
+            if (screenshotWasPressed == 0) {
+                SaveDrawScreenToPNG(0, 0, 640, 480, "test_draw_screenshot.png");
+                screenshotWasPressed = 1;
+            }
+        } else {
+            screenshotWasPressed = 0;
+        }
         
         ScreenFlip();
 

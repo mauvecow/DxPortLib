@@ -63,6 +63,7 @@ static void s_LoadGL() {
     PL_GL.glTexParameteri = SDL_GL_GetProcAddress("glTexParameteri");
     PL_GL.glTexImage2D = SDL_GL_GetProcAddress("glTexImage2D");
     PL_GL.glTexSubImage2D = SDL_GL_GetProcAddress("glTexSubImage2D");
+    PL_GL.glReadPixels = SDL_GL_GetProcAddress("glReadPixels");
     
     PL_GL.glClearColor = SDL_GL_GetProcAddress("glClearColor");
     PL_GL.glClear = SDL_GL_GetProcAddress("glClear");

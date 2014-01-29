@@ -18,6 +18,7 @@ libDxPortLib_la_SOURCES =	\
 	OpenGL_DxInternal.h	\
 	OpenGL_Texture.c	\
 	RNG.c			\
+	SaveScreen.c		\
 	SDL2Render_Draw.c	\
 	SDL2Render_DxInternal.h	\
 	SDL2Render_Texture.c	\

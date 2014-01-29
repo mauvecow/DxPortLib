@@ -308,6 +308,18 @@ extern int PL_Texture_BlitSurface(int textureID, SDL_Surface *surface, const SDL
 extern int PL_Texture_AddRef(int textureID);
 extern int PL_Texture_Release(int textureID);
 
+extern int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface);
+
+/* -------------------------------------------------------- SaveScreen.c */
+extern int PL_SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
+                                  const DXCHAR *filename);
+extern int PL_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
+                                   const DXCHAR *filename,
+                                   int quality, int sample2x1);
+extern int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
+                                  const DXCHAR *filename,
+                                  int compressionLevel);
+
 /* -------------------------------------------------------------- Font.c */
 /* Handle font functions */
 extern int PL_Font_DrawStringToHandle(int x, int y, const DXCHAR *string,

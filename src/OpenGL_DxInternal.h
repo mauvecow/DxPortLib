@@ -88,6 +88,10 @@ typedef struct GLInfo_t {
                                         GLsizei width, GLsizei height,
                                         GLenum format, GLenum type,
                                         const GLvoid *pixels );
+    void (APIENTRY *glReadPixels)( GLint x, GLint y,
+                                   GLsizei width, GLsizei height,
+                                   GLenum format, GLenum type,
+                                   GLvoid *pixels );
 
     /* Drawing functions */
     void (APIENTRY *glClearColor)( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha );

@@ -129,6 +129,29 @@ static int s_GLFrameBuffer_Release(int handleID) {
     return 0;
 }
 
+int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface) {
+    SDL_Surface *surface;
+    
+    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, rect->w, rect->h, 32,
+                                   0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    
+    if (surface == NULL) {
+        return -1;
+    }
+    
+    PL_GL.glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH, (surface->pitch / surface->format->BytesPerPixel));
+    PL_GL.glReadPixels(
+        rect->x, rect->y, rect->w, rect->h,
+        GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
+        surface->pixels
+    );
+    
+    *dSurface = surface;
+    
+    return 0;
+}
+
 /* ------------------------------------------------------------- Textures */
 
 typedef struct TextureRef {

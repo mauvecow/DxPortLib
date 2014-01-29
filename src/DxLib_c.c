@@ -695,20 +695,19 @@ int DxLib_SaveDrawScreen(int x1, int y1, int x2, int y2,
 
 int DxLib_SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
                               const DXCHAR *filename) {
-    /* FIXME STUB */
-    return -1;
+    return PL_SaveDrawScreenToBMP(x1, y1, x2, y2, filename);
 }
 int DxLib_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
                                const DXCHAR *filename,
                                int quality, int sample2x1) {
-    /* FIXME STUB */
-    return -1;
+    return PL_SaveDrawScreenToJPEG(x1, y1, x2, y2, filename,
+                                   quality, sample2x1);
+
 }
 int DxLib_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
                               const DXCHAR *filename,
                               int compressionLevel) {
-    /* FIXME STUB */
-    return -1;
+    return PL_SaveDrawScreenToPNG(x1, y1, x2, y2, filename, compressionLevel);
 }
 
 DXCOLOR DxLib_GetColor(int red, int green, int blue) {
