@@ -429,6 +429,10 @@ int PL_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
     int ch;
     int remaining = bufferSize - 1;
     
+    if (PL_FileRead_eof(fileHandle)) {
+        return -1;
+    }
+    
     while (remaining > 0 && (ch = PL_FileRead_getWholeChar(fileHandle)) != -1) {
         int chSize;
         
@@ -445,7 +449,7 @@ int PL_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
     
     *buffer = '\0';
     
-    return bufferSize - remaining + 1;
+    return bufferSize - remaining - 1;
 }
 
 DXCHAR PL_FileRead_getc(int fileHandle) {
