@@ -37,6 +37,7 @@ static int s_windowRealHeight = 480;
 static SDL_Surface *s_windowIcon = NULL;
 static int s_windowVSync = DXTRUE;
 static int s_alwaysRunFlag = DXFALSE;
+static int s_firstFlip = DXTRUE;
 
 static Uint32 s_windowFlags =
         SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE;
@@ -94,6 +95,7 @@ int PL_Window_Init(void) {
     
     s_windowRealWidth = 0;
     s_windowRealHeight = 0;
+    s_firstFlip = DXTRUE;
     
     s_initialized = DXTRUE;
     
@@ -164,6 +166,7 @@ static void PL_Window_Refresh() {
 
 int PL_Window_SwapBuffers() {
     if (s_initialized == DXTRUE) {
+        s_firstFlip = DXFALSE;
         PL_Draw_SwapBuffers(s_window, &s_targetRect);
     }
     return 0;
@@ -262,7 +265,9 @@ int PL_Window_ProcessMessages() {
                             break;
                         case SDL_WINDOWEVENT_EXPOSED:
                         case SDL_WINDOWEVENT_RESTORED:
-                            PL_Window_Refresh();
+                            if (!s_firstFlip) {
+                                PL_Window_Refresh();
+                            }
                             break;
                         case SDL_WINDOWEVENT_RESIZED:
                             PL_Window_HandleResize(event.window.data1, event.window.data2);
