@@ -28,6 +28,7 @@ static char s_defaultArchiveString[DXA_KEY_LENGTH + 1] = { '\0' };
 static DXCHAR s_archiveExtension[64] = { '\0' };
 static int s_initialized = DXFALSE;
 static int s_filePriorityFlag = DXFALSE;
+static int s_fileUseCharset = DX_CHARSET_DEFAULT;
 
 /* ------------------------------------------------------------- ARCHIVE MANAGER */
 #ifndef DX_NON_DXA
@@ -326,6 +327,12 @@ typedef struct FileHandle {
     SDL_RWops *rwops;
 } FileHandle;
 
+int PLEXT_FileRead_SetCharSet(int charset) {
+    s_fileUseCharset = charset;
+    
+    return 0;
+}
+
 int PL_FileRead_open(const DXCHAR *filename) {
     SDL_RWops *rwops = PL_File_OpenStream(filename);
     int fileDataID;
@@ -417,10 +424,10 @@ static int PL_FileRead_getWholeChar(int fileHandle) {
                 return -1;
             }
             pos += 1;
-        } while (pos < 7 && PL_Text_IsIncompleteMultibyte(buffer, pos));
+        } while (pos < 7 && PL_Text_IsIncompleteMultibyte(buffer, pos, s_fileUseCharset));
         buffer[pos] = '\0';
         
-        return PL_Text_ReadDxChar(&reader);
+        return PL_Text_ReadChar(&reader, s_fileUseCharset);
     }
     return -1;
 }

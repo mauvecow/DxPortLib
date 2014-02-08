@@ -72,7 +72,7 @@ extern void PL_Text_DxStrncpyFromString(DXCHAR *str, const char *srcStr, int max
 
 extern int PL_Text_IsIncompleteSJISChar(const char *string, int length);
 extern int PL_Text_IsIncompleteUTF8Char(const char *string, int length);
-extern int PL_Text_IsIncompleteMultibyte(const char *string, int length);
+extern int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset);
 extern int PL_Text_SetUseCharSet(int charset);
 extern int PL_Text_GetUseCharSet();
 
@@ -427,6 +427,8 @@ extern int PL_File_DXArchivePreLoad(const DXCHAR *dxaFilename, int async);
 extern int PL_File_DXArchiveCheckIdle(const DXCHAR *dxaFilename);
 extern int PL_File_DXArchiveRelease(const DXCHAR *dxaFilename);
 extern int PL_File_DXArchiveCheckFile(const DXCHAR *dxaFilename, const DXCHAR *filename);
+
+extern int PLEXT_FileRead_SetCharSet(int charset);
 
 extern int PL_FileRead_open(const DXCHAR *filename);
 extern long long PL_FileRead_size(int fileHandle);

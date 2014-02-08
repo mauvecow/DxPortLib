@@ -86,6 +86,10 @@ extern DXCALL int SetDeleteHandleFlag(int handleID, int *flag);
 extern DXCALL int SetUseCharSet(int charset);
 
 // ------------------------------------------------------------- DxFile.cpp
+// - DxPortLib extension: Sets the charset to use with FileRead strings.
+// Defaults to the currently active character set.
+extern DXCALL int EXT_FileRead_SetCharSet(int charset);
+
 // - Opens a file stream handle to the given file.
 // Returns -1 on failure, otherwise returns the stream handle.
 extern DXCALL int FileRead_open(const DXCHAR *filename);

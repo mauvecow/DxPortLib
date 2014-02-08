@@ -343,8 +343,8 @@ int PL_Text_DxStrncmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
     return v;
 }
 
-int PL_Text_IsIncompleteMultibyte(const char *string, int length) {
-    switch(s_useCharSet) {
+int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
+    switch(charset) {
 #ifndef DXPORTLIB_NON_SJIS
         case DX_CHARSET_SHFTJIS:
             return PL_Text_IsIncompleteSJISChar(string, length);
@@ -352,7 +352,7 @@ int PL_Text_IsIncompleteMultibyte(const char *string, int length) {
         case DX_CHARSET_EXT_UTF8:
             return PL_Text_IsIncompleteUTF8Char(string, length);
         default:
-            return DXFALSE;
+            return PL_Text_IsIncompleteMultibyte(string, length, s_useCharSet);
     }
 }
 

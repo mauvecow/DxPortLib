@@ -190,6 +190,10 @@ int DxLib_SetUseCharSet(int charset) {
 }
 
 /* ---------------------------------------------------- DxFile.cpp */
+int DxLib_EXT_FileRead_SetCharSet(int charset) {
+    return PLEXT_FileRead_SetCharSet(charset);
+}
+
 int DxLib_FileRead_open(const DXCHAR *filename) {
     return PL_FileRead_open(filename);
 }

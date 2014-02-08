@@ -81,6 +81,10 @@ int SetUseCharSet(int charset) {
 }
 
 // ---------------------------------------------------- DxFile.cpp
+int EXT_FileRead_SetCharSet(int charset) {
+    return ::DxLib_EXT_FileRead_SetCharSet(charset);
+}
+
 int FileRead_open(const DXCHAR *filename) {
     return ::DxLib_FileRead_open(filename);
 }

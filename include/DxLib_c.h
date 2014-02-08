@@ -62,6 +62,8 @@ extern DXCALL int DxLib_SetDeleteHandleFlag(int handleID, int *flag);
 extern DXCALL int DxLib_SetUseCharSet(int charset);
 
 /* ----------------------------------------------------------- DxFile.cpp */
+extern DXCALL int DxLib_EXT_FileRead_SetCharSet(int charset);
+
 extern DXCALL int DxLib_FileRead_open(const DXCHAR *filename);
 
 extern DXCALL long long DxLib_FileRead_size(int fileHandle);
