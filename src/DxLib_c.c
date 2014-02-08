@@ -31,6 +31,22 @@
 static int s_calledMainReady = DXFALSE;
 static int s_initialized = DXFALSE;
 
+/* For setting the floating precision to the system value.
+ * There is no real architecture agnostic answer here, so
+ * add more of these as needed. */
+static void inline s_SetFPUState() {
+#if defined(__GNUC__) && defined(i386)
+    unsigned int mode;
+    
+    __asm__ volatile ("fnstcw %0" : "=m" (*&mode));
+    
+    mode &= ~0x300;
+    mode |= 0x200;
+    
+    __asm__ volatile ("fldcw %0" :: "m" (*&mode));
+#endif
+}
+
 int DxLib_DxLib_Init(void) {
     if (s_initialized == DXTRUE) {
         return 0;
@@ -40,6 +56,8 @@ int DxLib_DxLib_Init(void) {
         s_calledMainReady = DXTRUE;
         SDL_SetMainReady();
     }
+    
+    s_SetFPUState();
     
     SDL_Init(
         SDL_INIT_VIDEO
