@@ -688,7 +688,7 @@ static GlyphData *s_CacheGlyph(FontData *fontData, unsigned int glyphID) {
     s_AddGlyphToTexture(fontData, glyph);
     
     if (minX < 0) {
-        glyph->xOffset = (short)-minX;
+        glyph->xOffset = (short)minX;
     }
     
     return glyph;
