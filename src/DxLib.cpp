@@ -170,6 +170,9 @@ int GetJoypadNum() {
 int GetJoypadInputState(int controllerIndex) {
     return ::DxLib_GetJoypadInputState(controllerIndex);
 }
+int GetJoypadPOVState(int controllerIndex, int povNumber) {
+    return ::DxLib_GetJoypadPOVState(controllerIndex, povNumber);
+}
 int GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *state) {
     return ::DxLib_GetJoypadDirectInputState(controllerIndex, state);
 }

@@ -180,6 +180,10 @@ extern DXCALL int GetJoypadNum();
 // - Gets the bitmasked state of the given joypad index.
 extern DXCALL int GetJoypadInputState(int controllerIndex);
 
+// - Gets the DirectInput POV of a given joypad index.
+// Returns -1 if POV is in neutral, otherwise its position.
+extern DXCALL int GetJoypadPOVState(int controllerIndex, int povNumber);
+
 // - Gets the DirectInput state of a given joypad index.
 // Returns -1 if invalid.
 extern DXCALL int GetJoypadDirectInputState(int controllerIndex,

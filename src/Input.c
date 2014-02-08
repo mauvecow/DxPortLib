@@ -37,6 +37,7 @@
  * - If available, GameController is preferable to Joystick (see also: DS3)
  */
 
+#define DX_INPUT_RANGE (1000)
 #define DX_MAX_PADS (16)
 
 typedef struct Keybind {
@@ -427,32 +428,31 @@ int PL_Input_GetJoypadState(int inputIndex) {
                 } else if (Y > 16384) {
                     joypadState |= PAD_INPUT_DOWN;
                 }
+
+                /* DxLib treats the dpad as a POV hat, so it is not handled here.
+                 * uncomment to use dpad input as normal input.
+                 * if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_UP)) { joypadState |= PAD_INPUT_UP; }
+                 * if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_LEFT)) { joypadState |= PAD_INPUT_LEFT; }
+                 * if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) { joypadState |= PAD_INPUT_RIGHT; }
+                 * if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_DOWN)) { joypadState |= PAD_INPUT_DOWN; }
+                 */
+
+                /* DxLib maps XInput controller buttons in this order, so we do the same. */
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_A)) { joypadState |= PAD_INPUT_1; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_B)) { joypadState |= PAD_INPUT_2; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_X)) { joypadState |= PAD_INPUT_3; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_Y)) { joypadState |= PAD_INPUT_4; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_LEFTSHOULDER)) { joypadState |= PAD_INPUT_5; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) { joypadState |= PAD_INPUT_6; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_BACK)) { joypadState |= PAD_INPUT_7; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_START)) { joypadState |= PAD_INPUT_8; }
                 
-                /* FIXME Not sure if correct. */
-                if (SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 16384) {
-                    joypadState |= PAD_INPUT_C;
-                }
-                if (SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > 16384) {
-                    joypadState |= PAD_INPUT_Z;
-                }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_LEFTSTICK)) { joypadState |= PAD_INPUT_9; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_RIGHTSTICK)) { joypadState |= PAD_INPUT_10; }
                 
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_UP)) { joypadState |= PAD_INPUT_UP; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_LEFT)) { joypadState |= PAD_INPUT_LEFT; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) { joypadState |= PAD_INPUT_RIGHT; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_DOWN)) { joypadState |= PAD_INPUT_DOWN; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_A)) { joypadState |= PAD_INPUT_A; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_B)) { joypadState |= PAD_INPUT_B; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_X)) { joypadState |= PAD_INPUT_X; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_Y)) { joypadState |= PAD_INPUT_Y; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_START)) { joypadState |= PAD_INPUT_START; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_LEFTSHOULDER)) { joypadState |= PAD_INPUT_L; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) { joypadState |= PAD_INPUT_R; }
-                
-                /* This is a PL extension. Because why not. */
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_BACK)) { joypadState |= PAD_INPUT_M; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_LEFTSTICK)) { joypadState |= PAD_INPUT_D; }
-                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_RIGHTSTICK)) { joypadState |= PAD_INPUT_F; }
-                
+                /* PL extension. */
+                if (SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 16384) { joypadState |= PAD_INPUT_11; }
+                if (SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > 16384) { joypadState |= PAD_INPUT_12; }
             } else if (controller->joystick != NULL) {
                 SDL_Joystick *joystick = controller->joystick;
                 int nButtons = SDL_JoystickNumButtons(joystick);
@@ -546,40 +546,111 @@ int PL_Input_SetJoypadInputToKeyInput(int controllerIndex, int input,
     return 0;
 }
 
+int PL_Input_GetJoypadPOVState(int controllerIndex, int povNumber) {
+    if (controllerIndex >= DX_INPUT_PAD1 && controllerIndex <= DX_INPUT_PAD16) {
+        int index = controllerIndex - DX_INPUT_PAD1;
+        Controller *controller = s_GetController(index);
+        if (controller != NULL && controller->gamecontroller != NULL) {
+            SDL_GameController *gc = controller->gamecontroller;
+            /* For an XInput style controller, DPad becomes the only pov. */
+            if (povNumber == 0) {
+                int dpadState = 0;
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_UP)) { dpadState |= PAD_INPUT_UP; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_LEFT)) { dpadState |= PAD_INPUT_LEFT; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) { dpadState |= PAD_INPUT_RIGHT; }
+                if (SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_DOWN)) { dpadState |= PAD_INPUT_DOWN; }
+                switch(dpadState) {
+                    case (PAD_INPUT_UP): return 0; break;
+                    case (PAD_INPUT_UP|PAD_INPUT_RIGHT): return 4500; break;
+                    case (PAD_INPUT_RIGHT): return 9000; break;
+                    case (PAD_INPUT_DOWN|PAD_INPUT_RIGHT): return 13500; break;
+                    case (PAD_INPUT_DOWN): return 18000; break;
+                    case (PAD_INPUT_DOWN|PAD_INPUT_LEFT): return 22500; break;
+                    case (PAD_INPUT_LEFT): return 27000; break;
+                    case (PAD_INPUT_UP|PAD_INPUT_LEFT): return 31500; break;
+                    default: return -1; break;
+                }
+            } else /* if (povNumber != 0) */ {
+                return -1;
+            }
+        } else if (controller != NULL && controller->joystick != NULL) {
+            SDL_Joystick *js = controller->joystick;
+            switch(SDL_JoystickGetHat(js, povNumber)) {
+                case SDL_HAT_UP: return 0; break;
+                case SDL_HAT_RIGHTUP: return 4500; break;
+                case SDL_HAT_RIGHT: return 9000; break;
+                case SDL_HAT_RIGHTDOWN: return 13500; break;
+                case SDL_HAT_DOWN: return 18000; break;
+                case SDL_HAT_LEFTDOWN: return 22500; break;
+                case SDL_HAT_LEFT: return 27000; break;
+                case SDL_HAT_LEFTUP: return 31500; break;
+                default: return -1; break;
+            }
+        }
+    }
+    
+    return -1;
+}
+
 int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *state) {
     if (controllerIndex >= DX_INPUT_PAD1 && controllerIndex <= DX_INPUT_PAD16) {
         int index = controllerIndex - DX_INPUT_PAD1;
         Controller *controller = s_GetController(index);
-        if (controller != NULL && controller->joystick != NULL) {
+        if (controller != NULL && controller->gamecontroller != NULL) {
+            SDL_GameController *gc = controller->gamecontroller;
+            int axis;
+            
+            SDL_memset(state, 0, sizeof(DINPUT_JOYSTATE));
+            
+            state->X = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_LEFTX) * DX_INPUT_RANGE / 32767;
+            state->Y = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_LEFTY) * DX_INPUT_RANGE / 32767;
+            state->Rx = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_RIGHTX) * DX_INPUT_RANGE / 32767;
+            state->Ry = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_RIGHTY) * DX_INPUT_RANGE / 32767;
+            
+            state->Buttons[0] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_A) ? 0x80 : 0x00;
+            state->Buttons[1] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_B) ? 0x80 : 0x00;
+            state->Buttons[2] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_X) ? 0x80 : 0x00;
+            state->Buttons[3] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_Y) ? 0x80 : 0x00;
+            state->Buttons[4] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_LEFTSHOULDER) ? 0x80 : 0x00;
+            state->Buttons[5] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) ? 0x80 : 0x00;
+            state->Buttons[6] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_BACK) ? 0x80 : 0x00;
+            state->Buttons[7] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_START) ? 0x80 : 0x00;
+            state->Buttons[8] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_LEFTSTICK) ? 0x80 : 0x00;
+            state->Buttons[9] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_RIGHTSTICK) ? 0x80 : 0x00;
+            
+            /* Triggers are treated as a single axis in DirectInput mode. */
+            if ((axis = SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_TRIGGERLEFT)) > 16384) {
+                state->Z = ((axis - 16384) * DX_INPUT_RANGE) / 16383;
+                state->Buttons[10] = 0x80; /* PL extension. */
+            } else if ((axis = SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) > 16384) {
+                state->Z = ((axis - 16384) * DX_INPUT_RANGE) / -16383;
+                state->Buttons[11] = 0x80; /* PL extension. */
+            } else {
+                state->Z = 0;
+            }
+            
+            state->POV[0] = PL_Input_GetJoypadPOVState(controllerIndex, 0);
+            state->POV[1] = -1;
+            state->POV[2] = -1;
+            state->POV[3] = -1;
+            
+            return 0;
+        } else if (controller != NULL && controller->joystick != NULL) {
             SDL_Joystick *js = controller->joystick;
             int n;
             int i;
             
             SDL_memset(state, 0, sizeof(DINPUT_JOYSTATE));
             
-            /* FIXME pretty sure this is wrong. */
+            /* SDL's axis data has no direct mapping to DirectInput,
+             * even though it converts from DirectInput in the first place.
+             * So it's best that we just don't try to guess, in the end. */
             n = SDL_JoystickNumAxes(js);
-            if (n >= 0) {
-                state->X = (int)SDL_JoystickGetAxis(js, 0) * 1000 / 32767;
-            }
-            if (n >= 1) {
-                state->Y = (int)SDL_JoystickGetAxis(js, 1) * 1000 / 32767;
-            }
+            if (n >= 0) { state->X = (int)SDL_JoystickGetAxis(js, 0) * DX_INPUT_RANGE / 32767; }
+            if (n >= 1) { state->Y = (int)SDL_JoystickGetAxis(js, 1) * DX_INPUT_RANGE / 32767; }
             
             for (i = 0; i < 4; ++i) {
-                unsigned int hat = 0;
-                switch(SDL_JoystickGetHat(js, i)) {
-                    case SDL_HAT_UP: hat = 0; break;
-                    case SDL_HAT_RIGHTUP: hat = 4500; break;
-                    case SDL_HAT_RIGHT: hat = 9000; break;
-                    case SDL_HAT_RIGHTDOWN: hat = 13500; break;
-                    case SDL_HAT_DOWN: hat = 18000; break;
-                    case SDL_HAT_LEFTDOWN: hat = 22500; break;
-                    case SDL_HAT_LEFT: hat = 27000; break;
-                    case SDL_HAT_LEFTUP: hat = 31500; break;
-                    default: hat = -1; break;
-                }
-                state->POV[i] = hat;
+                state->POV[i] = PL_Input_GetJoypadPOVState(controllerIndex, i);
             }
             
             n = SDL_JoystickNumButtons(js);
