@@ -144,6 +144,8 @@ extern DXCALL int DxLib_SetMainWindowText(const DXCHAR *windowName);
 extern DXCALL int DxLib_ScreenFlip();
 extern DXCALL int DxLib_ChangeWindowMode(int fullscreenFlag);
 extern DXCALL int DxLib_SetDrawScreen(int flag);
+extern DXCALL int DxLib_GetDrawScreen();
+extern DXCALL int DxLib_GetActiveGraph();
 extern DXCALL int DxLib_SetMouseDispFlag(int flag);
 extern DXCALL int DxLib_GetMouseDispFlag();
 extern DXCALL int DxLib_SetWaitVSyncFlag(int flag);
@@ -160,6 +162,9 @@ extern DXCALL int DxLib_EXT_MessageBoxYesNo(const DXCHAR *title,
                                             const DXCHAR *button2);
 
 /* ------------------------------------------------------- DxGraphics.cpp */
+extern DXCALL int DxLib_MakeScreen(int width, int height,
+                                   int hasAlphaChannel);
+
 extern DXCALL int DxLib_LoadGraph(const DXCHAR *name);
 
 extern DXCALL int DxLib_LoadReverseGraph(const DXCHAR *name);

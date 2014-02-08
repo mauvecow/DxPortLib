@@ -165,6 +165,31 @@ int PL_Graph_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel) {
     return graphID;
 }
 
+int PL_Graph_MakeScreen(int width, int height, int hasAlphaChannel) {
+    int textureRefID;
+    int graphID;
+    SDL_Rect rect;
+    
+    textureRefID = PL_Texture_CreateFramebuffer(width, height, hasAlphaChannel);
+    if (textureRefID < 0) {
+        return -1;
+    }
+    
+    /* Success, fill out the new graph entry. */
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = width;
+    rect.h = height;
+    graphID = s_AllocateGraphID(textureRefID, rect, -1);
+    
+    if (graphID < 0) {
+        PL_Texture_Release(textureRefID);
+    }
+    
+    return graphID;
+}
+
+
 int s_FlipSurface(SDL_Surface *surface) {
     int w = surface->w;
     int h = surface->h;

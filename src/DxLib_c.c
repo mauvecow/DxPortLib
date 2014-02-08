@@ -352,11 +352,14 @@ int DxLib_ChangeWindowMode(int fullscreenFlag) {
     PL_Window_SetFullscreen(fullscreenFlag ? 0 : 1);
     return 0;
 }
-int DxLib_SetDrawScreen(int flag) {
-    /* This sets if we render to back or front buffer,
-     * but there is no front buffer so we ignore this.
-     */
-    return 0;
+int DxLib_SetDrawScreen(int screen) {
+    return PL_Draw_SetDrawScreen(screen);
+}
+int DxLib_GetDrawScreen() {
+    return PL_Draw_GetDrawScreen();
+}
+int DxLib_GetActiveGraph() {
+    return PL_Draw_GetDrawScreen();
 }
 
 int DxLib_EXT_SetIconImageFile(const DXCHAR *filename) {
@@ -392,6 +395,9 @@ int DxLib_EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
 
 /* ---------------------------------------------------- DxGraphics.cpp */
 
+int DxLib_MakeScreen(int width, int height, int hasAlphaChannel) {
+    return PL_Graph_MakeScreen(width, height, hasAlphaChannel);
+}
 int DxLib_LoadGraph(const DXCHAR *name) {
     return PL_Graph_Load(name, DXFALSE);
 }

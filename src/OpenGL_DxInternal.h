@@ -136,6 +136,7 @@ extern GLInfo PL_GL;
 extern int PL_drawScreenWidth;
 extern int PL_drawScreenHeight;
 
+extern int PL_Draw_UpdateDrawScreen();
 extern int PL_Draw_FlushCache();
 extern int PL_Draw_InitCache();
 extern int PL_Draw_DestroyCache();

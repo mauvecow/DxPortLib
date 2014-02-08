@@ -64,6 +64,17 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
             PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
             return -1;
         }
+        
+        PL_GL.glViewport(0, 0, info->width, info->height);
+    
+        PL_GL.glMatrixMode(GL_PROJECTION);
+        PL_GL.glLoadIdentity();
+        PL_GL.glOrtho((GLdouble)0, (GLdouble)info->width,
+                    (GLdouble)0, (GLdouble)info->height,
+                    0.0, 1.0);
+        
+        PL_GL.glMatrixMode(GL_MODELVIEW);
+        PL_GL.glLoadIdentity();
     }
     
     return 0;

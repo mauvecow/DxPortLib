@@ -112,7 +112,8 @@ namespace DxLib {
 /* These are chosen to match DxLib itself when possible.
  */
 
-/* DX_SCREEN not supported at this time, but the defines are here. */
+/* DxPortLib treats all of these screens as identical, so there is no
+ * difference. */
 #define DX_SCREEN_FRONT         (0xfffffffc)
 #define DX_SCREEN_BACK          (0xfffffffe)
 #define DX_SCREEN_WORK          (0xfffffffd)

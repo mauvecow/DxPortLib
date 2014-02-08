@@ -37,7 +37,6 @@ static int s_windowRealHeight = 480;
 static SDL_Surface *s_windowIcon = NULL;
 static int s_windowVSync = DXTRUE;
 static int s_alwaysRunFlag = DXFALSE;
-static int s_firstFlip = DXTRUE;
 
 static Uint32 s_windowFlags =
         SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE;
@@ -63,60 +62,6 @@ int PL_Window_ResetSettings() {
         DXFREE(s_windowTitle);
     }
     s_windowTitle = NULL;
-    
-    return 0;
-}
-
-int PL_Window_Init(void) {
-    const char *windowTitle = s_windowTitle;
-    if (windowTitle == NULL) {
-        windowTitle = "DxPortLib App";
-    }
-    s_windowFlags |= 
-        SDL_WINDOW_OPENGL |
-        SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
-    
-    s_window = SDL_CreateWindow(
-        windowTitle,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        PL_windowWidth, PL_windowHeight,
-        s_windowFlags
-        );
-    
-    if (s_windowIcon != NULL) {
-        SDL_SetWindowIcon(s_window, s_windowIcon);
-    }
-    
-    SDL_ShowWindow(s_window);
-    
-    SDL_DisableScreenSaver();
-    
-    PL_Draw_Init(s_window, PL_windowWidth, PL_windowHeight, s_windowVSync);
-    
-    s_windowRealWidth = 0;
-    s_windowRealHeight = 0;
-    s_firstFlip = DXTRUE;
-    
-    s_initialized = DXTRUE;
-    
-    SDL_ShowCursor(s_mouseVisible);
-    
-    return 0;
-}
-
-int PL_Window_End(void) {
-    if (s_initialized == DXFALSE) {
-        return -1;
-    }
-    
-    s_initialized = DXFALSE;
-    
-    PL_Draw_End();
-    
-    SDL_EnableScreenSaver();
-    
-    SDL_DestroyWindow(s_window);
-    s_window = NULL;
     
     return 0;
 }
@@ -164,9 +109,62 @@ static void PL_Window_Refresh() {
     PL_Draw_Refresh(s_window, &s_targetRect);
 }
 
+int PL_Window_Init(void) {
+    const char *windowTitle = s_windowTitle;
+    if (windowTitle == NULL) {
+        windowTitle = "DxPortLib App";
+    }
+    s_windowFlags |= 
+        SDL_WINDOW_OPENGL |
+        SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
+    
+    s_window = SDL_CreateWindow(
+        windowTitle,
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        PL_windowWidth, PL_windowHeight,
+        s_windowFlags
+        );
+    
+    if (s_windowIcon != NULL) {
+        SDL_SetWindowIcon(s_window, s_windowIcon);
+    }
+    
+    SDL_ShowWindow(s_window);
+    
+    SDL_DisableScreenSaver();
+    
+    PL_Draw_Init(s_window, PL_windowWidth, PL_windowHeight, s_windowVSync);
+    
+    s_windowRealWidth = 0;
+    s_windowRealHeight = 0;
+    
+    s_initialized = DXTRUE;
+    
+    SDL_ShowCursor(s_mouseVisible);
+    PL_Window_Refresh();
+    
+    return 0;
+}
+
+int PL_Window_End(void) {
+    if (s_initialized == DXFALSE) {
+        return -1;
+    }
+    
+    s_initialized = DXFALSE;
+    
+    PL_Draw_End();
+    
+    SDL_EnableScreenSaver();
+    
+    SDL_DestroyWindow(s_window);
+    s_window = NULL;
+    
+    return 0;
+}
+
 int PL_Window_SwapBuffers() {
     if (s_initialized == DXTRUE) {
-        s_firstFlip = DXFALSE;
         PL_Draw_SwapBuffers(s_window, &s_targetRect);
     }
     return 0;
@@ -265,9 +263,7 @@ int PL_Window_ProcessMessages() {
                             break;
                         case SDL_WINDOWEVENT_EXPOSED:
                         case SDL_WINDOWEVENT_RESTORED:
-                            if (!s_firstFlip) {
-                                PL_Window_Refresh();
-                            }
+                            PL_Window_Refresh();
                             break;
                         case SDL_WINDOWEVENT_RESIZED:
                             PL_Window_HandleResize(event.window.data1, event.window.data2);

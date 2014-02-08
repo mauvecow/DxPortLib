@@ -116,6 +116,7 @@ int main(int argc, char **argv) {
     int timerDelta = 0;
     int timeLast = GetNowCount();
     int screenshotWasPressed = 0;
+    int drawScreen = MakeScreen(640, 480, DXFALSE);
     
     while (ProcessMessage() == 0
 #ifndef DX_NON_INPUT
@@ -139,6 +140,7 @@ int main(int argc, char **argv) {
         MoveBounceThings();
         
         /* Draw logic here */
+        SetDrawScreen(drawScreen);
         SetDrawBright(255, 255, 255);
         SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
         DrawFillBox(0, 0, 640, 480, 0xFF000000);
@@ -156,6 +158,9 @@ int main(int argc, char **argv) {
         } else {
             screenshotWasPressed = 0;
         }
+        
+        SetDrawScreen(DX_SCREEN_BACK);
+        DrawGraph(0, 0, drawScreen, DXFALSE);
         
         ScreenFlip();
 

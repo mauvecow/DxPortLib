@@ -246,9 +246,15 @@ extern DXCALL int ScreenFlip();
 // - TRUE to use a window, FALSE(default) for fullscreen mode.
 extern DXCALL int ChangeWindowMode(int fullscreenFlag);
 
-// - Sets the screen currently drawn to.
-// NOTICE: DxPortLib always draws to backbuffer, so this does nothing!
-extern DXCALL int SetDrawScreen(int flag);
+// - Sets the screen graph that is currently drawn to.
+// NOTICE: DxPortLib treats all internally named buffers as identical.
+extern DXCALL int SetDrawScreen(int screenName);
+
+// - Gets the screen graph that is currently drawn to.
+// Both functions are identical.
+// NOTICE: DxPortLib always returns DX_SCREEN_BACK for the main screen.
+extern DXCALL int GetDrawScreen();
+extern DXCALL int GetActiveGraph();
 
 // - If TRUE, waits for VSync to draw, in order to remove tearing.
 // NOTICE: Can only be called before DxLib_Init!
@@ -281,6 +287,10 @@ extern DXCALL int EXT_MessageBoxYesNo(const DXCHAR *title,
                                       const DXCHAR *button2);
 
 // --------------------------------------------------------- DxGraphics.cpp
+// - Creates a screen graph that can be used with SetDrawScreen.
+// Note that you can't use it to draw with while bound.
+extern DXCALL int MakeScreen(int width, int height, int hasAlphaChannel);
+
 // - Loads the given image file into the returned handle.
 extern DXCALL int LoadGraph(const DXCHAR *name);
 

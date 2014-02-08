@@ -279,7 +279,11 @@ extern void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFla
 extern void PL_Draw_End();
 extern int PL_Draw_ResetSettings();
 
+extern int PL_Draw_SetDrawScreen(int drawScreen);
+extern int PL_Draw_GetDrawScreen();
+
 /* ------------------------------------------------------------- Graph.c */
+extern int PL_Graph_MakeScreen(int width, int height, int hasAlphaChannel);
 extern int PL_Graph_Load(const DXCHAR *filename, int flipFlag);
 extern int PL_Graph_LoadDiv(const DXCHAR *filename, int graphCount,
                             int xCount, int yCount, int xSize, int ySize,
@@ -306,6 +310,7 @@ extern int PL_Graph_GetTextureID(int graphID, SDL_Rect *rect);
 /* ----------------------------------------------------------- Texture.c */
 extern int PL_Texture_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel);
 extern int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel);
+extern int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel);
 
 extern int PL_Texture_BlitSurface(int textureID, SDL_Surface *surface, const SDL_Rect *rect);
 

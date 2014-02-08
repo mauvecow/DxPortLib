@@ -241,8 +241,14 @@ int ScreenFlip() {
 int ChangeWindowMode(int fullscreenFlag) {
     return ::DxLib_ChangeWindowMode(fullscreenFlag);
 }
-int SetDrawScreen(int flag) {
-    return ::DxLib_SetDrawScreen(flag);
+int SetDrawScreen(int screen) {
+    return ::DxLib_SetDrawScreen(screen);
+}
+int GetDrawScreen() {
+    return ::DxLib_GetDrawScreen();
+}
+int GetActiveGraph() {
+    return ::DxLib_GetDrawScreen();
 }
 
 int SetWaitVSyncFlag(int flag) {
@@ -278,6 +284,9 @@ int EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
 
 // ---------------------------------------------------- DxGraphics.cpp
 
+int MakeScreen(int width, int height, int hasAlphaChannel) {
+    return ::DxLib_MakeScreen(width, height, hasAlphaChannel);
+}
 int LoadGraph(const DXCHAR *name) {
     return ::DxLib_LoadGraph(name);
 }

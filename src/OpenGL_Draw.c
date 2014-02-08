@@ -268,6 +268,8 @@ int PL_Draw_FlushCache() {
         return 0;
     }
     
+    PL_Draw_UpdateDrawScreen();
+    
     /* Apply blending mode */
     if (s_cache.blendFlag) {
         s_ApplyBlendMode(s_blendMode, PL_Texture_HasAlphaChannel(s_cache.textureRefID));
@@ -1138,6 +1140,7 @@ static int s_scissorW = 0;
 static int s_scissorH = 0;
 
 static void s_RefreshScissor() {
+    PL_Draw_UpdateDrawScreen();
     if (s_scissorEnabled == DXFALSE) {
         PL_GL.glDisable(GL_SCISSOR_TEST);
     } else {
@@ -1174,6 +1177,7 @@ int PL_Draw_SetBackgroundColor(int red, int green, int blue) {
 
 int PL_Draw_ClearDrawScreen(const RECT *rect) {
     PL_Draw_FlushCache();
+    PL_Draw_UpdateDrawScreen();
     
     PL_GL.glClearColor(s_bgColorR / 255.0f, s_bgColorG / 255.0f, s_bgColorB / 255.0f, 1);
     if (rect == NULL) {
