@@ -49,10 +49,11 @@ static void s_Enlarge() {
     int first = s_handleCount;
     int last;
     int i;
-    HandleData *handle;
+    HandleData *handle = NULL; /* Make compiler happy */
     
     if (s_handleTable == NULL) {
         s_handleTable = DXALLOC((size_t)n * sizeof(HandleData));
+        first = s_handleCount + 1; /* Reserve the first handle. */
     } else {
         s_handleTable = DXREALLOC(s_handleTable, (size_t)n * sizeof(HandleData));
     }

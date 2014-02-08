@@ -198,7 +198,7 @@ static int s_AllocateTextureRefID(GLuint textureID) {
     
     textureref = (TextureRef *)PL_Handle_AllocateData(textureRefID, sizeof(TextureRef));
     textureref->textureID = textureID;
-    textureref->framebufferID = 0;
+    textureref->framebufferID = -1;
     textureref->refCount = 0;
     
     return textureRefID;
