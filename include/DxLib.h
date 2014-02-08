@@ -269,6 +269,17 @@ extern DXCALL int GetAlwaysRunFlag();
 extern DXCALL int SetMouseDispFlag(int flag);
 extern DXCALL int GetMouseDispFlag(int flag);
 
+// - Creates an error message box.
+extern DXCALL int EXT_MessageBoxError(const DXCHAR *title,
+                                      const DXCHAR *text);
+// - Creates a message box asking a yes/no question.
+// Default selected button is button1.
+// MessageBoxYesNo returns -1 on error, 0 for button1, 1 for button2.
+extern DXCALL int EXT_MessageBoxYesNo(const DXCHAR *title,
+                                      const DXCHAR *text,
+                                      const DXCHAR *button1,
+                                      const DXCHAR *button2);
+
 // --------------------------------------------------------- DxGraphics.cpp
 // - Loads the given image file into the returned handle.
 extern DXCALL int LoadGraph(const DXCHAR *name);

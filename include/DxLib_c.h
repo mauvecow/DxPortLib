@@ -152,6 +152,13 @@ extern DXCALL int DxLib_EXT_SetIconImageFile(const DXCHAR *filename);
 extern DXCALL int DxLib_SetAlwaysRunFlag(int flag);
 extern DXCALL int DxLib_GetAlwaysRunFlag();
 
+extern DXCALL int DxLib_EXT_MessageBoxError(const DXCHAR *title,
+                                            const DXCHAR *text);
+extern DXCALL int DxLib_EXT_MessageBoxYesNo(const DXCHAR *title,
+                                            const DXCHAR *text,
+                                            const DXCHAR *button1,
+                                            const DXCHAR *button2);
+
 /* ------------------------------------------------------- DxGraphics.cpp */
 extern DXCALL int DxLib_LoadGraph(const DXCHAR *name);
 

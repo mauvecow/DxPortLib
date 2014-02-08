@@ -433,3 +433,58 @@ int PL_Window_SetAlwaysRunFlag(int flag) {
 int PL_Window_GetAlwaysRunFlag() {
     return s_alwaysRunFlag;
 }
+
+/* System agnostic message box stuff */
+int PLEXT_Window_MessageBoxError(
+            const DXCHAR *title,
+            const DXCHAR *text
+) {
+    char titleBuf[1024];
+    char textBuf[1024];
+    
+    PL_Text_DxStringToString(title, titleBuf, 1024, DX_CHARSET_EXT_UTF8);
+    PL_Text_DxStringToString(text, textBuf, 1024, DX_CHARSET_EXT_UTF8);
+    
+    return SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, text, s_window);
+}
+
+int PLEXT_Window_MessageBoxYesNo(
+            const DXCHAR *title,
+            const DXCHAR *text,
+            const DXCHAR *yes,
+            const DXCHAR *no
+) {
+    SDL_MessageBoxButtonData buttons[2];
+    SDL_MessageBoxData data;
+    int resultButton;
+    char titleBuf[1024];
+    char textBuf[1024];
+    char yesBuf[512];
+    char noBuf[512];
+    
+    PL_Text_DxStringToString(title, titleBuf, 1024, DX_CHARSET_EXT_UTF8);
+    PL_Text_DxStringToString(text, textBuf, 1024, DX_CHARSET_EXT_UTF8);
+    PL_Text_DxStringToString(yes, yesBuf, 1024, DX_CHARSET_EXT_UTF8);
+    PL_Text_DxStringToString(no, noBuf, 1024, DX_CHARSET_EXT_UTF8);
+    
+    buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
+    buttons[0].buttonid = 1;
+    buttons[0].text = yesBuf;
+    buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
+    buttons[1].buttonid = 0;
+    buttons[1].text = noBuf;
+    
+    data.flags = SDL_MESSAGEBOX_INFORMATION;
+    data.window = s_window;
+    data.title = title;
+    data.message = text;
+    data.numbuttons = 2;
+    data.buttons = buttons;
+    data.colorScheme = NULL;
+    
+    if (SDL_ShowMessageBox(&data, &resultButton) < 0) {
+        return -1;
+    }
+    
+    return resultButton;
+}

@@ -382,6 +382,14 @@ int DxLib_GetAlwaysRunFlag() {
     return PL_Window_GetAlwaysRunFlag();
 }
 
+int DxLib_EXT_MessageBoxError(const DXCHAR *title, const DXCHAR *text) {
+    return PLEXT_Window_MessageBoxError(title, text);
+}
+int DxLib_EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
+                              const DXCHAR *button1, const DXCHAR *button2) {
+    return PLEXT_Window_MessageBoxYesNo(title, text, button1, button2);
+}
+
 /* ---------------------------------------------------- DxGraphics.cpp */
 
 int DxLib_LoadGraph(const DXCHAR *name) {

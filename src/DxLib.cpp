@@ -268,6 +268,14 @@ int GetAlwaysRunFlag() {
     return ::DxLib_GetAlwaysRunFlag();
 }
 
+int EXT_MessageBoxError(const DXCHAR *title, const DXCHAR *text) {
+    return ::DxLib_EXT_MessageBoxError(title, text);
+}
+int EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
+                        const DXCHAR *button1, const DXCHAR *button2) {
+    return ::DxLib_EXT_MessageBoxYesNo(title, text, button1, button2);
+}
+
 // ---------------------------------------------------- DxGraphics.cpp
 
 int LoadGraph(const DXCHAR *name) {

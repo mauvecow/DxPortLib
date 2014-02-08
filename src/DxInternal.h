@@ -149,6 +149,10 @@ extern int PL_Window_GetAlwaysRunFlag();
 
 extern int PLEXT_Window_SetIconImageFile(const DXCHAR *filename);
 
+extern int PLEXT_Window_MessageBoxError(const DXCHAR *title, const DXCHAR *text);
+extern int PLEXT_Window_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
+                                        const DXCHAR *yes, const DXCHAR *no);
+
 /* ------------------------------------------------------------- Draw.c */
 
 extern int PL_EXT_Draw_RectGraphFastF(
