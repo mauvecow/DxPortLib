@@ -404,11 +404,32 @@ int PL_FileRead_eof(int fileHandle) {
     return DXFALSE;
 }
 
+static int PL_FileRead_getWholeChar(int fileHandle) {
+    FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
+    if (handle != NULL) {
+        SDL_RWops *rwops = handle->rwops;
+        char buffer[8];
+        const char *reader = buffer;
+        int pos = 0;
+        
+        do {
+            if (SDL_RWread(rwops, buffer + pos, sizeof(char), 1) < 1) {
+                return -1;
+            }
+            pos += 1;
+        } while (pos < 7 && PL_Text_IsIncompleteMultibyte(buffer, pos));
+        buffer[pos] = '\0';
+        
+        return PL_Text_ReadDxChar(&reader);
+    }
+    return -1;
+}
+
 int PL_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
-    DXCHAR ch;
+    int ch;
     int remaining = bufferSize - 1;
     
-    while (remaining > 0 && (ch = PL_FileRead_getc(fileHandle)) != (DXCHAR)-1) {
+    while (remaining > 0 && (ch = PL_FileRead_getWholeChar(fileHandle)) != -1) {
         int chSize;
         
         if (ch == '\r') {
@@ -431,19 +452,12 @@ DXCHAR PL_FileRead_getc(int fileHandle) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
     if (handle != NULL) {
         SDL_RWops *rwops = handle->rwops;
-        char buffer[8];
-        const char *reader = buffer;
-        int pos = 0;
+        char ch;
+        if (SDL_RWread(rwops, &ch, sizeof(char), 1) < 1) {
+            return (DXCHAR)-1;
+        }
         
-        do {
-            if (SDL_RWread(rwops, buffer + pos, sizeof(char), 1) < 1) {
-                return (DXCHAR)-1;
-            }
-            pos += 1;
-        } while (pos < 7 && PL_Text_IsIncompleteMultibyte(buffer, pos));
-        buffer[pos] = '\0';
-        
-        return PL_Text_ReadDxChar(&reader);
+        return ch;
     }
     return (DXCHAR)-1;
 }
