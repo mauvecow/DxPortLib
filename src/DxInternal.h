@@ -300,6 +300,9 @@ extern int PL_Graph_SetTransColor(int r, int g, int b);
 extern int PL_Graph_GetTransColor(int *r, int *g, int *b);
 extern int PL_Graph_SetUseTransColor(int flag);
 
+extern int PL_Graph_ApplyPMAToSurface(SDL_Surface *surface);
+extern int PL_Graph_SetUsePremulAlphaConvertLoad(int flag);
+
 extern int PL_Graph_InitGraph();
 
 extern int PL_Graph_ResetSettings();
@@ -391,6 +394,9 @@ extern int PLEXT_Font_InitFontMappings();
 
 extern void PL_Font_Init();
 extern void PL_Font_End();
+
+extern int PL_Font_SetFontCacheUsePremulAlphaFlag(int flag);
+extern int PL_Font_GetFontCacheUsePremulAlphaFlag();
 
 /* --------------------------------------------------------------- DXA.c */
 #ifndef DX_NOT_DXA

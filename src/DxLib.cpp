@@ -342,6 +342,10 @@ int SetUseTransColor(int flag) {
     return ::DxLib_SetUseTransColor(flag);
 }
 
+int SetUsePremulAlphaConvertLoad(int flag) {
+    return ::DxLib_SetUsePremulAlphaConvertLoad(flag);
+}
+
 int DrawPixel(int x, int y, DXCOLOR color) {
     return ::DxLib_DrawPixel(x, y, color);
 }
@@ -828,6 +832,12 @@ int GetDefaultFontHandle() {
     return ::DxLib_GetDefaultFontHandle();
 }
 
+int SetFontCacheUsePremulAlphaFlag(int flag) {
+    return ::DxLib_SetFontCacheUsePremulAlphaFlag(flag);
+}
+int GetFontCacheUsePremulAlphaFlag() {
+    return ::DxLib_GetFontCacheUsePremulAlphaFlag();
+}
 
 #endif /* #ifndef DX_NON_FONT */
 

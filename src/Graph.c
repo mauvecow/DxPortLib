@@ -32,6 +32,7 @@
 static unsigned int s_transparentColor = 0x000000;
 static int s_useTransparency = DXTRUE;
 static int s_graphCount = 0;
+static int s_applyPMA = DXFALSE;
 
 typedef struct Graph {
     SDL_Rect rect;
@@ -141,10 +142,44 @@ static int s_ApplyTransparentColor(SDL_Surface *surface) {
     return hasAlphaChannel;
 }
 
+int PL_Graph_ApplyPMAToSurface(SDL_Surface *surface) {
+    /* Only 32BPP is supported. */
+    if (surface->format->BitsPerPixel == 32) {
+        unsigned int *pixels = surface->pixels;
+        int width = surface->w;
+        int height = surface->h;
+        int pitch = surface->pitch / 4;
+        int x, y;
+
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width; ++x) {
+                unsigned int p = pixels[x];
+                unsigned int a = p >> 24;
+                if (a != 0xff) {
+                    if (a == 0) {
+                        pixels[x] = 0;
+                    } else {
+                        pixels[x] = (((p & 0xff0000) * a / 0xff) & 0xff0000)
+                                    | (((p & 0xff00) * a / 0xff) & 0xff00)
+                                    | ((p & 0xff) * a / 0xff)
+                                    | (a << 24);
+                    }
+                }
+            }
+            pixels += pitch;
+        }
+    }
+    return 0;
+}
+
 int PL_Graph_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel) {
     int textureRefID;
     int graphID;
     SDL_Rect rect;
+    
+    if (hasAlphaChannel != DXFALSE && s_applyPMA != DXFALSE) {
+        PL_Graph_ApplyPMAToSurface(surface);
+    }
     
     textureRefID = PL_Texture_CreateFromSurface(surface, hasAlphaChannel);
     if (textureRefID < 0) {
@@ -441,10 +476,15 @@ int PL_Graph_SetUseTransColor(int flag) {
     s_useTransparency = (flag == 0) ? DXFALSE : DXTRUE;
     return 0;
 }
+int PL_Graph_SetUsePremulAlphaConvertLoad(int flag) {
+    s_applyPMA = (flag == 0) ? DXFALSE : DXTRUE;
+    return 0;
+}
 
 int PL_Graph_ResetSettings() {
     s_transparentColor = 0x000000;
     s_useTransparency = DXTRUE;
+    s_applyPMA = DXFALSE;
     
     return 0;
 }

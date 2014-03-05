@@ -337,12 +337,18 @@ extern DXCALL int GetGraphSize(int graphID, int *width, int *height);
 
 // - Sets the transparent color key to be used when loading images.
 // NOTICE: This is not valid after the image has been loaded.
+// Default is (0,0,0).
 extern DXCALL int SetTransColor(int r, int g, int b);
 // - Gets the current transparent color key.
 extern DXCALL int GetTransColor(int *r, int *g, int *b);
 // - TRUE if the transparent color key is to be used.
 // Default is TRUE.
 extern DXCALL int SetUseTransColor(int flag);
+
+// - TRUE if loaded graphs are to be automatically converted to
+//   premultiplied alpha.
+// Default is FALSE.
+extern DXCALL int SetUsePremulAlphaConvertLoad(int flag);
 
 // NOTICE: For all drawing functions, the following applies:
 // - FillFlag, if TRUE, will draw a solid. Otherwise, edges only.
@@ -720,6 +726,13 @@ extern DXCALL int SetDefaultFontState(const DXCHAR *fontName,
 // - Gets the current default font handle.
 // NOTICE: This will change if the font is changed.
 extern DXCALL int GetDefaultFontHandle();
+
+// - Sets if font textures will be generated with premultiplied alpha.
+// Default is FALSE.
+// NOTICE: Will not change already loaded fonts.
+extern DXCALL int SetFontCacheUsePremulAlphaFlag(int flag);
+// - Gets if font textures will be generated with premultiplied alpha.
+extern DXCALL int GetFontCacheUsePremulAlphaFlag();
 
 #endif /* #ifndef DX_NON_FONT */
 

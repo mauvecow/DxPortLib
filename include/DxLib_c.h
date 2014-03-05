@@ -193,6 +193,8 @@ extern DXCALL int DxLib_SetTransColor(int r, int g, int b);
 extern DXCALL int DxLib_GetTransColor(int *r, int *g, int *b);
 extern DXCALL int DxLib_SetUseTransColor(int flag);
 
+extern DXCALL int DxLib_SetUsePremulAlphaConvertLoad(int flag);
+
 extern DXCALL int DxLib_DrawPixel(int x, int y, DXCOLOR color);
 
 extern DXCALL int DxLib_DrawLine(int x1, int y1, int x2, int y2,
@@ -488,6 +490,9 @@ extern DXCALL int DxLib_SetDefaultFontState(const DXCHAR *fontName,
                                             int fontSize,
                                             int fontThickness);
 extern DXCALL int DxLib_GetDefaultFontHandle();
+
+extern DXCALL int DxLib_SetFontCacheUsePremulAlphaFlag(int flag);
+extern DXCALL int DxLib_GetFontCacheUsePremulAlphaFlag();
 
 #endif /* #ifndef DX_NON_FONT */
 

@@ -21,9 +21,19 @@
 int main(int argc, char **argv) {
     const int screenWidth = 1024;
     const int screenHeight = 768; 
+    int fontBlendMode = DX_BLENDMODE_ALPHA;
     
-    if (argc < 2) {
-        printf("Usage: %s blah.ttf\n", argv[0]);
+    int n = 1;
+    while (n < argc && argv[n][0] == '-') {
+        if (!strcmp(argv[n], "-premultipliedalpha")) {
+            fontBlendMode = DX_BLENDMODE_PMA_ALPHA;
+            SetFontCacheUsePremulAlphaFlag(TRUE);
+        }
+        n += 1;
+    }
+     
+    if (n >= argc) {
+        printf("Usage: %s [-premultipliedalpha] blah.ttf\n", argv[0]);
         return -1;
     }
     
@@ -39,8 +49,8 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    EXT_MapFontFileToName(argv[1], _T("TestFont"), -1, DXFALSE);
-    EXT_MapFontFileToName(argv[1], _T("TestFontBold"), -1, DXTRUE);
+    EXT_MapFontFileToName(argv[n], _T("TestFont"), -1, DXFALSE);
+    EXT_MapFontFileToName(argv[n], _T("TestFontBold"), -1, DXTRUE);
     
     int fonts[17];
     fonts[0] = CreateFontToHandle(_T("TestFont"), 10);
@@ -74,7 +84,7 @@ int main(int argc, char **argv) {
         SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
         DrawFillBox(20, 20, screenWidth - 20, screenHeight - 20, GetColor(0x90, 0x80, 0x70));
         
-        SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+        SetDrawBlendMode(fontBlendMode, 255);
         
         for (int i = 0; i < 17; ++i) {
             DrawStringToHandle(30, 30 + (i * 32), _T("The quick brown fox jumped over the lazy dog. あいうえお"), 0xffffff, fonts[i]);

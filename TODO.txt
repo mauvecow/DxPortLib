@@ -40,6 +40,8 @@ Graphics:
   - Does not support ANTIALIASING_4x4 or 8x8. Will automatically
     fall back to ANTIALIASING.
   - No vertical font rendering.
+  - Would like to support other forms of loading fonts in, not just
+    ttf. (An option to disable SDL_ttf entirely would be nice.)
 
 Sound:
 - AudioBuffer support needs to be split away from AudioInstance.
@@ -60,3 +62,4 @@ Immediate list:
 - Movie playback somehow. (theora or bust)
 - Asynchronous loading, yayyyyy.
 - Audio revamp.
+

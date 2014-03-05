@@ -148,6 +148,7 @@ static DefaultFontInfo s_defaultFontInfo = {
     -1
 };
 static int s_defaultFontRefreshFlag = DXTRUE;
+static int s_applyPMA = DXFALSE;
 
 /* ------------------------------------------------------- FONT MAPPINGS */
 
@@ -610,6 +611,10 @@ static void s_AddGlyphToTexture(FontData *fontData, GlyphData *glyph) {
     surface = s_GetGlyphSurface(fontData, glyph);
     if (surface == NULL) {
         return;
+    }
+    
+    if (s_applyPMA) {
+        PL_Graph_ApplyPMAToSurface(surface);
     }
     
     retval = s_FitSurface(fontData, surface, &glyph->rect);
@@ -1218,6 +1223,14 @@ int PL_Font_InitFontToHandle() {
     }
     
     return 0;
+}
+
+int PL_Font_SetFontCacheUsePremulAlphaFlag(int flag) {
+    s_applyPMA = (flag == 0) ? DXFALSE : DXTRUE;
+    return 0;
+}
+int PL_Font_GetFontCacheUsePremulAlphaFlag() {
+    return s_applyPMA;
 }
 
 void PL_Font_Init() {

@@ -455,6 +455,10 @@ int DxLib_SetUseTransColor(int flag) {
     return PL_Graph_SetUseTransColor(flag);
 }
 
+int DxLib_SetUsePremulAlphaConvertLoad(int flag) {
+    return PL_Graph_SetUsePremulAlphaConvertLoad(flag);
+}
+
 int DxLib_DrawPixel(int x, int y, DXCOLOR color) {
     return PL_Draw_Pixel(x, y, color);
 }
@@ -948,6 +952,13 @@ int DxLib_SetDefaultFontState(const DXCHAR *fontName, int fontSize, int fontThic
 }
 int DxLib_GetDefaultFontHandle() {
     return PL_Font_GetDefaultFontHandle();
+}
+
+int DxLib_SetFontCacheUsePremulAlphaFlag(int flag) {
+    return PL_Font_SetFontCacheUsePremulAlphaFlag(flag);
+}
+int DxLib_GetFontCacheUsePremulAlphaFlag() {
+    return PL_Font_GetFontCacheUsePremulAlphaFlag();
 }
 
 #endif /* #ifndef DX_NON_FONT */
