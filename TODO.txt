@@ -10,7 +10,6 @@ IMPORTANT NOTE:
 System:
 - DxLib general:
   - No asynchronous loading support anywhere.
-  - Doesn't quit work right on Windows right now.
 - Memory:
   - None of the debugging information is supported or used.
   - Would like Handle to manage its own data heap for allocated stuff.
@@ -29,8 +28,8 @@ File I/O:
   - No support for custom streaming functions.
 
 Graphics:
+- SDL2Render backend is now broken. Remove it? It is the most portable...
 - Functions unsupported:
-  - Blend modes other than NONE/ADD/MUL.
   - Vertex buffers.
   - Shader filter nonsense.
   - 3D.
@@ -54,5 +53,11 @@ Other:
 
 ---------------------------------------------------------------------------
 
-OpenGL:
-- Fix remaining blending issues.
+Immediate list:
+- Finish blend modes.
+- Switch Draw code to use an index array / have a larger vertex buffer.
+- 3d Math (vectors, matrices, etc).
+- Vertex buffers.
+- Movie playback somehow. (theora or bust)
+- Asynchronous loading, yayyyyy.
+- Audio revamp.

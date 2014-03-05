@@ -31,8 +31,8 @@
 
 static int s_blendMode = DX_BLENDMODE_NOBLEND;
 static int s_lastBlendMode = -1;
+static int s_lastTextureRefID = -1;
 static int s_drawMode = DX_DRAWMODE_NEAREST;
-static Uint32 s_blendFlags;
 static Uint32 s_drawColorR = 0xff;
 static Uint32 s_drawColorG = 0xff;
 static Uint32 s_drawColorB = 0xff;
@@ -40,6 +40,7 @@ static Uint32 s_drawColorA = 0xff000000;
 static Uint32 s_bgColorR = 0x00;
 static Uint32 s_bgColorG = 0x00;
 static Uint32 s_bgColorB = 0x00;
+static int s_pixelTexture = -1;
 
 int PL_Draw_ResetSettings() {
     s_blendMode = DX_BLENDMODE_NOBLEND;
@@ -60,60 +61,100 @@ int PL_Draw_ResetSettings() {
 
 /* ------------------------------------------------------- BLENDING MODES */
 
+typedef enum {
+    BLEND_NONE,
+    BLEND_NORMAL,
+    BLEND_MULA,
+    BLEND_INVERT,
+    BLEND_X4,
+    BLEND_PMA,
+    BLEND_PMA_INVERT,
+    BLEND_PMA_X4
+} BlendType;
+
 typedef struct BlendInfo {
-    GLfloat texEnvParam;
+    BlendType blendType;
     GLenum blendEquation;
     GLenum srcRGBBlend;
     GLenum destRGBBlend;
     GLenum srcAlphaBlend;
     GLenum destAlphaBlend;
-    Uint32 blendFlags;
 } BlendInfo;
 
-#define NOBLEND 0xfffffff
+#define NOBLEND (0xffffffff)
 
-#define BLENDFLAG_4X    (0x1)
+/* NOTICE:
+ * All unimplemented blend modes require multiple texture stages, so as
+ * to properly blend the vertex color with the texture color.
+ */
 
 static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
-    { GL_MODULATE,      GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* NOBLEND */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, 0 }, /* ALPHA */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* ADD */
+    /* NOBLEND = s */
+    { BLEND_NONE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND },
+    /* ALPHA = (d*(1-a)) + (s*a) */
+    { BLEND_NORMAL,     GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE },
+    /* ADD = d + (s*a) */
+    { BLEND_NORMAL,     GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
     
     /* This is different from DxLib's implementation of DX_BLENDMODE_SUB,
-     * but it looks the same as far as I know. */
-    { GL_MODULATE,      GL_FUNC_REVERSE_SUBTRACT, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* SUB */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ZERO, GL_SRC_COLOR, GL_ZERO, GL_ONE, 0 }, /* MUL */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* SUB2 */
+     * but it looks identical as far as I know. */
+    /* SUB = d - (s*a) */
+    { BLEND_NORMAL,     GL_FUNC_REVERSE_SUBTRACT, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
+    /* MUL = (d*s) */
+    { BLEND_NORMAL,     GL_FUNC_ADD, GL_ZERO, GL_SRC_COLOR, GL_ZERO, GL_ONE },
+    /* SUB2 = d + (s*a) */ /* It's the same as ADD. I don't get it, either. */
+    { BLEND_NORMAL,     GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
     
-    { GL_MODULATE,      GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* XOR (unsupported) */
-    { GL_MODULATE,      GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND, 0 }, /* reserved */
+    /* XOR (unsupported) */
+    { BLEND_NONE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND },
+    /* reserved */
+    { BLEND_NONE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND },
+
+    /* DESTCOLOR = d */
+    { BLEND_NORMAL,     GL_FUNC_ADD, GL_ZERO, GL_ONE, GL_ZERO, GL_ONE },
+    /* INVDESTCOLOR = 1 - d */
+    { BLEND_NORMAL,     GL_FUNC_ADD, GL_ONE_MINUS_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE },
     
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ZERO, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* DESTCOLOR */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE_MINUS_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE, 0 }, /* INVDESTCOLOR */
-    { GL_BLEND,         GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE, 0 }, /* INVSRC */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE, 0 }, /* MULA */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, BLENDFLAG_4X }, /* ALPHA_X4 */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, BLENDFLAG_4X }, /* ADD_X4 */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ZERO, GL_ONE, GL_ZERO, 0 }, /* SRCCOLOR */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE, 0 }, /* HALF_ADD */
-    { GL_MODULATE,      GL_FUNC_REVERSE_SUBTRACT, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE, 0 }, /* SUB1 */
+    /* INVSRC = (d*(1-a)) + ((1-s)*a) */
+    { BLEND_INVERT,     GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE }, /* FIXME */
     
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, 0 }, /* PMA_ALPHA */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ONE, GL_ONE, 0 }, /* PMA_ADD */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_REVERSE_SUBTRACT, GL_ONE, GL_ONE, GL_ONE, GL_ONE, 0 }, /* PMA_SUB */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE, 0 }, /* PMA_INVSRC */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, BLENDFLAG_4X }, /* PMA_ALPHA_X4 */ /* FIXME */
-    { GL_MODULATE,      GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ONE, GL_ONE, BLENDFLAG_4X }, /* PMA_ADD_X4 */ /* FIXME */
+    /* MULA = (d*(1-a)) + (s*d*a) */
+    { BLEND_MULA,       GL_FUNC_ADD, GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE }, /* FIXME */
+    
+    /* ALPHA_X4 = (d*(1-a)) + (clamp(s*4)*a) */
+    { BLEND_X4,         GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA },
+    /* ADD_X4 = d + ((clamp(s*4)*a) */
+    { BLEND_X4,         GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
+    /* SRCCOLOR = s */
+    { BLEND_NONE,       GL_FUNC_ADD, GL_ONE, GL_ZERO, GL_ONE, GL_ZERO },
+    /* HALF_ADD = (d*(1-a)) + s */
+    { BLEND_NORMAL,     GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE },
+    /* SUB1 = d - (s*(1-a)) */
+    { BLEND_NORMAL,     GL_FUNC_REVERSE_SUBTRACT, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
+    
+    /* PMA_ALPHA = (d*(1-a)) + s */
+    { BLEND_PMA,        GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE }, /* FIXME */
+    /* PMA_ADD = d + s */
+    { BLEND_PMA,        GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ZERO, GL_ONE }, /* FIXME */
+    /* PMA_SUB = d - s */
+    { BLEND_PMA,        GL_FUNC_REVERSE_SUBTRACT, GL_ONE, GL_ONE, GL_ZERO, GL_ONE }, /* FIXME */
+    /* PMA_INVSRC = d - (1 - s) */
+    { BLEND_PMA_INVERT, GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE }, /* FIXME */
+    /* PMA_ALPHA_X4 = (d*(1-a)) + clamp(s*4) */
+    { BLEND_PMA_X4,     GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE }, /* FIXME */
+    /* PMA_ADD_X4 = d + clamp(s*4) */
+    { BLEND_PMA_X4,     GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ZERO, GL_ONE}, /* FIXME */
 };
 
-static int s_ApplyBlendMode(int blendMode, int forceBlend) {
+static int s_ApplyBlendMode(int blendMode, int forceBlend, int *textureRefID) {
     const BlendInfo *blend;
+    void (APIENTRY *glTexEnvi)(GLenum, GLenum, GLint);
     
     if (forceBlend != 0 && blendMode == DX_BLENDMODE_NOBLEND) {
         blendMode = DX_BLENDMODE_ALPHA;
     }
     
-    if (blendMode == s_lastBlendMode) {
+    if (blendMode == s_lastBlendMode && *textureRefID == s_lastTextureRefID) {
         return 0;
     }
     if (blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) {
@@ -124,19 +165,137 @@ static int s_ApplyBlendMode(int blendMode, int forceBlend) {
     }
     
     s_lastBlendMode = blendMode;
+    s_lastTextureRefID = *textureRefID;
     
     blend = &s_blendModeTable[blendMode];
-    s_blendFlags = blend->blendFlags;
     
-    if (blend->srcRGBBlend == NOBLEND) {
-        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        PL_GL.glDisable(GL_BLEND);
-    } else {
-        PL_GL.glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, blend->texEnvParam);
-        PL_GL.glBlendFuncSeparate(blend->srcRGBBlend, blend->destRGBBlend, blend->srcAlphaBlend, blend->destAlphaBlend);
-        PL_GL.glBlendEquation(blend->blendEquation);
-        PL_GL.glEnable(GL_BLEND);
+    /* Cache glTexEnvi locally so we don't do lookups every time we come back. */
+    glTexEnvi = PL_GL.glTexEnvi;
+    
+    switch (blend->blendType) {
+        case BLEND_NONE:
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+            PL_GL.glDisable(GL_BLEND);
+            return 0; /* return, not break! */
+        case BLEND_MULA:
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+            if (*textureRefID < 0) {
+                *textureRefID = s_pixelTexture;
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+            } else {
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
+            }
+            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_ALPHA);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+            glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+            break;
+        case BLEND_INVERT:
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_ONE_MINUS_SRC_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+            if (*textureRefID < 0) {
+                *textureRefID = s_pixelTexture; /* Force texture env on */
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+            } else {
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_ONE_MINUS_SRC_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+            }
+            break;
+        case BLEND_X4:
+            if (*textureRefID < 0) {
+                *textureRefID = s_pixelTexture;
+            }
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
+            glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 4);
+            break;
+        case BLEND_PMA:
+            if (*textureRefID < 0) {
+                *textureRefID = s_pixelTexture;
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+                glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+            } else {
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+            }
+            break;
+        case BLEND_PMA_INVERT:
+            if (*textureRefID < 0) {
+                *textureRefID = s_pixelTexture;
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_ONE_MINUS_SRC_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+                glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+            } else {
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+            }
+            break;
+        case BLEND_PMA_X4:
+            if (*textureRefID < 0) {
+                *textureRefID = s_pixelTexture;
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
+                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
+            } else {
+                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+            }
+            glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 4);
+            break;
+        default: /* BLEND_NORMAL */
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+            break;
     }
+    
+    PL_GL.glBlendFuncSeparate(blend->srcRGBBlend, blend->destRGBBlend, blend->srcAlphaBlend, blend->destAlphaBlend);
+    PL_GL.glBlendEquation(blend->blendEquation);
+    PL_GL.glEnable(GL_BLEND);
     
     return 0;
 }
@@ -272,9 +431,11 @@ int PL_Draw_FlushCache() {
     
     /* Apply blending mode */
     if (s_cache.blendFlag) {
-        s_ApplyBlendMode(s_blendMode, PL_Texture_HasAlphaChannel(s_cache.textureRefID));
+        s_ApplyBlendMode(s_blendMode, PL_Texture_HasAlphaChannel(s_cache.textureRefID),
+                         &s_cache.textureRefID);
     } else {
-        s_ApplyBlendMode(DX_BLENDMODE_NOBLEND, DXFALSE);
+        s_ApplyBlendMode(DX_BLENDMODE_NOBLEND, DXFALSE,
+                         &s_cache.textureRefID);
     }
     
     /* State vertex info */
@@ -330,11 +491,14 @@ int PL_Draw_FlushCache() {
     
     s_cache.vertexCount = 0;
     s_cache.vertexDataPosition = 0;
+    s_cache.textureRefID = -1;
     
     return 0;
 }
 
 int PL_Draw_InitCache() {
+    SDL_Surface *surface;
+    
     SDL_memset(&s_cache, 0, sizeof(s_cache));
     
     s_cache.defArray = NULL;
@@ -347,10 +511,20 @@ int PL_Draw_InitCache() {
     s_cache.vertexDataSize = 64 * 1024;
     s_cache.vertexData = SDL_malloc((size_t)s_cache.vertexDataSize);
     
+    /* Create a texture that's a single white pixel. */
+    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 1, 1, 32,
+                                   0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+    *((unsigned int *)(surface->pixels)) = 0xffffffff;
+    s_pixelTexture = PL_Texture_CreateFromSurface(surface, DXFALSE);
+    SDL_FreeSurface(surface);
+    
     return 0;
 }
 
 int PL_Draw_DestroyCache() {
+    if (s_pixelTexture > 0) {
+        PL_Texture_Release(s_pixelTexture);
+    }
     if (s_cache.vertexData != NULL) {
         SDL_free(s_cache.vertexData);
     }
@@ -387,6 +561,7 @@ int PL_Draw_Pixel(int x, int y, DXCOLOR color) {
 
 int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thickness) {
     Uint32 vColor = s_modulateColor(color);
+    x1 += 0.5f; y1 += 0.5f; x2 += 0.5f; y2 += 0.5f;
     if (thickness <= 1) {
         START(v, VertexPosition2Color, GL_LINES, -1, 2, DXTRUE);
     
@@ -1254,6 +1429,7 @@ int PL_Draw_SetBasicBlendFlag(int blendFlag) {
 
 int PL_Draw_ForceUpdate() {
     s_lastBlendMode = -1;
+    s_lastTextureRefID = -1;
     
     s_RefreshScissor();
     

@@ -102,6 +102,7 @@ typedef struct GLInfo_t {
     void (APIENTRY *glLineWidth)( GLfloat width );
 
     void (APIENTRY *glTexEnvf)( GLenum target, GLenum pname, GLfloat param );
+    void (APIENTRY *glTexEnvi)( GLenum target, GLenum pname, GLint param );
     void (APIENTRY *glBlendFuncSeparate) ( GLenum srcRGB, GLenum dstRGB,
                                            GLenum srcAlpha, GLenum dstAlpha);
     void (APIENTRY *glBlendFunc) ( GLenum src, GLenum srcAlpha );
@@ -143,7 +144,6 @@ extern int PL_Draw_DestroyCache();
 
 extern int PL_Draw_ForceUpdate();
 
-extern int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel);
 extern int PL_Texture_Bind(int textureRefID, int drawMode);
 extern int PL_Texture_Unbind(int textureRefID);
 extern int PL_Texture_BindFramebuffer(int textureRefID);

@@ -33,6 +33,8 @@ int main(int argc, char **argv) {
     int timerDelta = 0;
     int timeLast = GetNowCount();
     
+    int pixelGraph = LoadGraph("pixel.png");
+    
     while (ProcessMessage() == 0
 #ifndef DX_NON_INPUT
         && CheckHitKey(KEY_INPUT_ESCAPE) == 0
@@ -101,7 +103,10 @@ int main(int argc, char **argv) {
             int x1 = ((640 - 540) / 2) + (90 * x);
             int y1 = 40 + (90 * y);
             SetDrawBlendMode(i, 128);
-            DrawFillBox(x1, y1, x1 + 70, y1 + 70, color);
+            SetDrawBright(0xff, 0xff, 0xff);
+            DrawFillBox(x1, y1, x1 + 70, y1 + 35, color);
+            SetDrawBright(0x00, 0x80, 0x80);
+            DrawExtendGraph(x1, y1 + 35, x1 + 70, y1 + 70, pixelGraph, DXTRUE);
         }
         
         ScreenFlip();
