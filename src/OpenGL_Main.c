@@ -58,6 +58,7 @@ static void s_LoadGL() {
     PL_GL.glGenTextures = SDL_GL_GetProcAddress("glGenTextures");
     PL_GL.glDeleteTextures = SDL_GL_GetProcAddress("glDeleteTextures");
     
+    PL_GL.glClientActiveTexture = SDL_GL_GetProcAddress("glClientActiveTexture");
     PL_GL.glActiveTexture = SDL_GL_GetProcAddress("glActiveTexture");
     PL_GL.glBindTexture = SDL_GL_GetProcAddress("glBindTexture");
     PL_GL.glTexParameteri = SDL_GL_GetProcAddress("glTexParameteri");

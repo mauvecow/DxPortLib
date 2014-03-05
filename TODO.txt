@@ -54,7 +54,6 @@ Other:
 ---------------------------------------------------------------------------
 
 Immediate list:
-- Finish blend modes.
 - Switch Draw code to use an index array / have a larger vertex buffer.
 - 3d Math (vectors, matrices, etc).
 - Vertex buffers.

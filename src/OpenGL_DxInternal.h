@@ -76,6 +76,7 @@ typedef struct GLInfo_t {
     void (APIENTRY *glDeleteTextures)( GLsizei n, const GLuint *textures);
 
     void (APIENTRY *glActiveTexture)( GLenum texture );
+    void (APIENTRY *glClientActiveTexture)( GLenum texture );
     void (APIENTRY *glBindTexture)( GLenum target, GLuint texture );
     void (APIENTRY *glTexParameteri)( GLenum target, GLenum pname, GLint param );
     void (APIENTRY *glTexImage2D)( GLenum target, GLint level,
