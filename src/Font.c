@@ -1127,7 +1127,9 @@ int PL_Font_CreateFontToHandle(const DXCHAR *fontname,
     for (mapping = s_fontMappings; mapping != NULL; mapping = mapping->next) {
         if (!DXSTRCMP(fontname, mapping->fontname)) {
             if (bestMapping == NULL
-                || (bestMapping != NULL && mapping->thickness > bestMapping->thickness)
+                || (bestMapping != NULL
+                    && mapping->thickness <= thickness
+                    && (mapping->thickness > bestMapping->thickness || bestMapping->thickness > thickness))
             ) {
                 bestMapping = mapping;
             }

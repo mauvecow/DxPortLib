@@ -657,7 +657,7 @@ extern DXCALL int SetFontSpaceToHandle(int fontSpacing, int fontHandle);
 //   Default edgeSize is 1.
 // italics draws the font italicized. defualt is DXFALSE.
 extern DXCALL int CreateFontToHandle(const DXCHAR *fontname,
-                                     int size, int thickness = -1,
+                                     int size, int thickness,
                                      int fontType = -1, int charset = -1,
                                      int edgeSize = -1, int italic = DXFALSE
                                      );

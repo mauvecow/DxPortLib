@@ -13,7 +13,9 @@
 
 #include "DxLib.h"
 
-#include "SDL_main.h"
+#ifdef DXPORTLIB
+#  include "SDL_main.h"
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,43 +35,54 @@ int main(int argc, char **argv) {
     }
      
     if (n >= argc) {
-        printf("Usage: %s [-premultipliedalpha] blah.ttf\n", argv[0]);
+#ifdef DXPORTLIB
+        printf("Usage: %s [-premultipliedalpha] fontfile.ttf\n", argv[0]);
+#else
+        printf("Usage: %s [-premultipliedalpha] \"Font Name\"\n", argv[0]);
+#endif
         return -1;
     }
     
+#ifdef DXPORTLIB
     SetUseCharSet(DX_CHARSET_EXT_UTF8);
+#endif
     
     SetWindowText(_T("DxPortLib Test App"));
-    SetWindowSizeChangeEnableFlag(DXTRUE);
+    SetWindowSizeChangeEnableFlag(TRUE);
     
     SetGraphMode(screenWidth, screenHeight, 32);
-    ChangeWindowMode(DXTRUE);
+    ChangeWindowMode(TRUE);
     
     if (DxLib_Init() == -1) {
         return -1;
     }
-    
-    EXT_MapFontFileToName(argv[n], _T("TestFont"), -1, DXFALSE);
-    EXT_MapFontFileToName(argv[n], _T("TestFontBold"), -1, DXTRUE);
+
+    const TCHAR *fontName = "TestFont";
+#ifdef DXPORTLIB
+    EXT_MapFontFileToName(argv[n], fontName, -1, FALSE);
+    EXT_MapFontFileToName(argv[n], fontName, 7, TRUE);
+#else
+    fontName = argv[n];
+#endif
     
     int fonts[17];
-    fonts[0] = CreateFontToHandle(_T("TestFont"), 10);
-    fonts[1] = CreateFontToHandle(_T("TestFont"), 14);
-    fonts[2] = CreateFontToHandle(_T("TestFont"), 18);
-    fonts[3] = CreateFontToHandle(_T("TestFont"), 22);
-    fonts[4] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_EDGE, -1, 1);
-    fonts[5] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_EDGE, -1, 2);
-    fonts[6] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_EDGE, -1, 3);
-    fonts[7] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_EDGE, -1, 4);
-    fonts[8] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING, -1, 1);
-    fonts[9] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 1);
-    fonts[10] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 2);
-    fonts[11] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 3);
-    fonts[12] = CreateFontToHandle(_T("TestFont"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 4);
-    fonts[13] = CreateFontToHandle(_T("TestFontBold"), 22);
-    fonts[14] = CreateFontToHandle(_T("TestFontBold"), 22, -1, DX_FONTTYPE_EDGE, -1, 4);
-    fonts[15] = CreateFontToHandle(_T("TestFontBold"), 22, -1, DX_FONTTYPE_ANTIALIASING, -1, 1);
-    fonts[16] = CreateFontToHandle(_T("TestFontBold"), 22, -1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 1);
+    fonts[0] = CreateFontToHandle(fontName, 10, 4);
+    fonts[1] = CreateFontToHandle(fontName, 14, 4);
+    fonts[2] = CreateFontToHandle(fontName, 18, 4);
+    fonts[3] = CreateFontToHandle(fontName, 22, 4);
+    fonts[4] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_EDGE, -1, 1);
+    fonts[5] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_EDGE, -1, 2);
+    fonts[6] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_EDGE, -1, 3);
+    fonts[7] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_EDGE, -1, 4);
+    fonts[8] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_ANTIALIASING, -1, 1);
+    fonts[9] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 1);
+    fonts[10] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 2);
+    fonts[11] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 3);
+    fonts[12] = CreateFontToHandle(fontName, 22, 4, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 4);
+    fonts[13] = CreateFontToHandle(fontName, 22, 7);
+    fonts[14] = CreateFontToHandle(fontName, 22, 7, DX_FONTTYPE_EDGE, -1, 4);
+    fonts[15] = CreateFontToHandle(fontName, 22, 7, DX_FONTTYPE_ANTIALIASING, -1, 1);
+    fonts[16] = CreateFontToHandle(fontName, 22, 7, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 1);
     
     while (ProcessMessage() == 0
 #ifndef DX_NON_INPUT

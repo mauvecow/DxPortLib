@@ -13,14 +13,16 @@
 
 #include "DxLib.h"
 
-#include "SDL_main.h"
+#ifdef DXPORTLIB
+#  include "SDL_main.h"
+#endif
 
 static const int BOUNCETHINGCOUNT = 50;
 
 struct BounceThing {
     int x, y, w, h;
     int dx, dy;
-    DXCOLOR color;
+    unsigned int color;
     int isCircle;
     int isFilled;
 };
@@ -80,8 +82,8 @@ static void DrawBounceThings() {
         if (thing->isCircle) {
             float halfW = (float)thing->w * 0.5f;
             float halfH = (float)thing->h * 0.5f;
-            DrawOvalF(
-                (float)thing->x + halfW, (float)thing->y + halfH,
+            DrawOval(
+                (int)(thing->x + halfW), (int)(thing->y + halfH),
                 halfW, halfH,
                 thing->color, thing->isFilled
             );
@@ -96,13 +98,15 @@ static void DrawBounceThings() {
 }
 
 int main(int argc, char **argv) {
+#ifdef DXPORTLIB
     SetUseCharSet(DX_CHARSET_EXT_UTF8);
+#endif
     
     SetWindowText(_T("DxPortLib Test App"));
-    SetWindowSizeChangeEnableFlag(DXTRUE);
+    SetWindowSizeChangeEnableFlag(TRUE);
     
     SetGraphMode(640, 480, 32);
-    ChangeWindowMode(DXTRUE);
+    ChangeWindowMode(TRUE);
     
     if (DxLib_Init() == -1) {
         return -1;
@@ -111,12 +115,12 @@ int main(int argc, char **argv) {
     SRand(0);
     InitBounceThings();
     
-    int isWindowed = DXTRUE;
+    int isWindowed = TRUE;
     int wasPressed = 0;
     int timerDelta = 0;
     int timeLast = GetNowCount();
     int screenshotWasPressed = 0;
-    int drawScreen = MakeScreen(640, 480, DXFALSE);
+    int drawScreen = MakeScreen(640, 480, FALSE);
     
     while (ProcessMessage() == 0
 #ifndef DX_NON_INPUT
@@ -160,7 +164,7 @@ int main(int argc, char **argv) {
         }
         
         SetDrawScreen(DX_SCREEN_BACK);
-        DrawGraph(0, 0, drawScreen, DXFALSE);
+        DrawGraph(0, 0, drawScreen, FALSE);
         
         ScreenFlip();
 

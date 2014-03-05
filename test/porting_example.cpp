@@ -1,10 +1,15 @@
-This is basically an annotated C program which shows how much  work you
-need to do in order to port an application from DxLib to DxPortLib,
-provided all functions are available.
-
-This can also be found in test/porting_example.cpp
-
----------------------------------------------------------------------------
+/*
+  DxPortLib - A portability library for DxLib-based software.
+  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+  
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+ */
 
 /* - Any comments starting with "-" are relevant to DxPortLib. */
 #include "DxLib.h"
@@ -76,7 +81,7 @@ int main(int argc, char **argv) {
 #endif
     
     /* Creates a handle to the NotAnArialClone font. */
-    int fontHandle = CreateFontToHandle("Arial", 22);
+    int fontHandle = CreateFontToHandle("Arial", 22, -1);
     
     /* - DxPortLib does not have a "default" font.
      *   If you use the default font, you must set it manually.
@@ -119,28 +124,3 @@ int main(int argc, char **argv) {
     
     return 0;
 }
-
----------------------------------------------------------------------------
-
-That's all you should have to change, as long as nothing was removed.
-
-If you want to convert files from SJIS to UTF8, you can run the following
-command line:
-$ iconv -f sjis-win -t utf8 filename.c >filename_utf8.c
-
-Or to dump everything in batch to a directory named utf8:
-$ for i in *.c *.cpp *.h ; do iconv -f sjis-win -t utf8 $i >utf8/$i ; done
-
-Easy!
-
----------------------------------------------------------------------------
-
-In DxLib_c.h is a completely C interface to DxLib's functions, simply
-preface any normal function DxLib_ and it will work.
-
-e.g.: ProcessMessage() becomes DxLib_ProcessMessage()
-      DxLib_Init() becomes DxLib_DxLib_Init()
-
-This is suitable for interop libraries with other languages, such as C#.
-
----------------------------------------------------------------------------
