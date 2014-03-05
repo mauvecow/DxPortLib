@@ -83,11 +83,6 @@ typedef struct BlendInfo {
 
 #define NOBLEND (0xffffffff)
 
-/* NOTICE:
- * All unimplemented blend modes require multiple texture stages, so as
- * to properly blend the vertex color with the texture color.
- */
-
 static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
     /* NOBLEND = s */
     { BLEND_NONE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND },
@@ -151,18 +146,8 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
         blendMode = DX_BLENDMODE_ALPHA;
     }
     
-    /*
-    if (blendMode == s_lastBlendMode) {
-        return 0;
-    }
-     */
     if (blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) {
         blendMode = DX_BLENDMODE_NOBLEND;
-        /*
-        if (blendMode == s_lastBlendMode) {
-            return 0;
-        }
-         */
     }
     
     s_lastBlendMode = blendMode;
@@ -181,6 +166,7 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
         case BLEND_NONE:
             glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
             PL_GL.glDisable(GL_BLEND);
+            PL_Texture_Bind(textureRefID, s_drawMode);
             return 0; /* return, not break! */
         case BLEND_MULA:
             glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
@@ -209,7 +195,7 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
             glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_ONE_MINUS_SRC_COLOR);
             glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
             if (textureRefID < 0) {
-                textureRefID = s_pixelTexture; /* Force texture env on */
+                textureRefID = s_pixelTexture;
                 glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
                 glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
             } else {
@@ -329,16 +315,6 @@ static void s_FinishDrawMode(int textureRefID) {
     const BlendInfo *blend = &s_blendModeTable[s_lastBlendMode];
     
     switch(blend->blendType) {
-        case BLEND_MULA:
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                if (PL_GL.glActiveTexture != 0) {
-                    PL_GL.glActiveTexture(GL_TEXTURE0);
-                }
-                PL_Texture_Unbind(s_pixelTexture);
-            }
-            break;
         case BLEND_PMA_INVERT:
         case BLEND_INVERT:
         case BLEND_X4:
@@ -346,16 +322,8 @@ static void s_FinishDrawMode(int textureRefID) {
                 textureRefID = s_pixelTexture;
             }
             break;
+        case BLEND_MULA:
         case BLEND_PMA:
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                if (PL_GL.glActiveTexture != 0) {
-                    PL_GL.glActiveTexture(GL_TEXTURE0);
-                }
-                PL_Texture_Unbind(s_pixelTexture);
-            }
-            break;
         case BLEND_PMA_X4:
             if (textureRefID < 0) {
                 textureRefID = s_pixelTexture;
@@ -598,8 +566,9 @@ int PL_Draw_InitCache() {
 }
 
 int PL_Draw_DestroyCache() {
-    if (s_pixelTexture > 0) {
+    if (s_pixelTexture >= 0) {
         PL_Texture_Release(s_pixelTexture);
+        s_pixelTexture = -1;
     }
     if (s_cache.vertexData != NULL) {
         SDL_free(s_cache.vertexData);
