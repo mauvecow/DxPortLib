@@ -241,6 +241,9 @@ int ScreenFlip() {
 int ChangeWindowMode(int fullscreenFlag) {
     return ::DxLib_ChangeWindowMode(fullscreenFlag);
 }
+int GetWindowModeFlag() {
+    return ::DxLib_GetWindowModeFlag();
+}
 int SetDrawScreen(int screen) {
     return ::DxLib_SetDrawScreen(screen);
 }
@@ -272,6 +275,12 @@ int SetAlwaysRunFlag(int flag) {
 }
 int GetAlwaysRunFlag() {
     return ::DxLib_GetAlwaysRunFlag();
+}
+int GetWindowActiveFlag() {
+    return ::DxLib_GetWindowActiveFlag();
+}
+int GetActiveFlag() {
+    return ::DxLib_GetActiveFlag();
 }
 
 int EXT_MessageBoxError(const DXCHAR *title, const DXCHAR *text) {

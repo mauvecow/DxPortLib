@@ -309,6 +309,16 @@ int PL_Window_ProcessMessages() {
     return 0;
 }
 
+int PL_Window_GetActiveFlag() {
+    return s_lacksFocus == 0 ? DXTRUE : DXFALSE;
+}
+int PL_Window_GetWindowModeFlag() {
+    if ((s_windowFlags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0) {
+        return DXFALSE;
+    }
+    return DXTRUE;
+}
+
 int PL_Window_SetWindowResizeFlag(int flag) {
     if (flag == DXFALSE) {
         s_windowFlags &= (Uint32)~SDL_WINDOW_RESIZABLE;

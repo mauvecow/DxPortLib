@@ -352,6 +352,9 @@ int DxLib_ChangeWindowMode(int fullscreenFlag) {
     PL_Window_SetFullscreen(fullscreenFlag ? 0 : 1);
     return 0;
 }
+int DxLib_GetWindowModeFlag() {
+    return PL_Window_GetWindowModeFlag();
+}
 int DxLib_SetDrawScreen(int screen) {
     return PL_Draw_SetDrawScreen(screen);
 }
@@ -383,6 +386,12 @@ int DxLib_SetAlwaysRunFlag(int flag) {
 }
 int DxLib_GetAlwaysRunFlag() {
     return PL_Window_GetAlwaysRunFlag();
+}
+int DxLib_GetWindowActiveFlag() {
+    return PL_Window_GetActiveFlag();
+}
+int DxLib_GetActiveFlag() {
+    return PL_Window_GetActiveFlag();
 }
 
 int DxLib_EXT_MessageBoxError(const DXCHAR *title, const DXCHAR *text) {

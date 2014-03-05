@@ -147,6 +147,9 @@ extern int PL_Window_GetWaitVSyncFlag();
 extern int PL_Window_SetAlwaysRunFlag(int flag);
 extern int PL_Window_GetAlwaysRunFlag();
 
+extern int PL_Window_GetActiveFlag();
+extern int PL_Window_GetWindowModeFlag();
+
 extern int PLEXT_Window_SetIconImageFile(const DXCHAR *filename);
 
 extern int PLEXT_Window_MessageBoxError(const DXCHAR *title, const DXCHAR *text);

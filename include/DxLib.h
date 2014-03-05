@@ -245,6 +245,8 @@ extern DXCALL int ScreenFlip();
 
 // - TRUE to use a window, FALSE(default) for fullscreen mode.
 extern DXCALL int ChangeWindowMode(int fullscreenFlag);
+// - If TRUE, is windowed. Otherwise, fullscreen.
+extern DXCALL int GetWindowModeFlag();
 
 // - Sets the screen graph that is currently drawn to.
 // NOTICE: DxPortLib treats all internally named buffers as identical.
@@ -274,6 +276,11 @@ extern DXCALL int GetAlwaysRunFlag();
 // Default is TRUE.
 extern DXCALL int SetMouseDispFlag(int flag);
 extern DXCALL int GetMouseDispFlag(int flag);
+
+// - If TRUE, window is currently in focus and active.
+extern DXCALL int GetWindowActiveFlag();
+// - If TRUE, window is currently in focus and active.
+extern DXCALL int GetActiveFlag();
 
 // - Creates an error message box.
 extern DXCALL int EXT_MessageBoxError(const DXCHAR *title,

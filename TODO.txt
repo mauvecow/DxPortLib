@@ -60,6 +60,7 @@ Immediate list:
 - 3d Math (vectors, matrices, etc).
 - Vertex buffers.
 - Movie playback somehow. (theora or bust)
+- Optimize blending/rendering state. (tied into shader code)
 - Asynchronous loading, yayyyyy.
 - Audio revamp.
 

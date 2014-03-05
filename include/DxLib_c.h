@@ -143,6 +143,7 @@ extern DXCALL int DxLib_SetWindowText(const DXCHAR *windowName);
 extern DXCALL int DxLib_SetMainWindowText(const DXCHAR *windowName);
 extern DXCALL int DxLib_ScreenFlip();
 extern DXCALL int DxLib_ChangeWindowMode(int fullscreenFlag);
+extern DXCALL int DxLib_GetWindowModeFlag();
 extern DXCALL int DxLib_SetDrawScreen(int flag);
 extern DXCALL int DxLib_GetDrawScreen();
 extern DXCALL int DxLib_GetActiveGraph();
@@ -153,6 +154,8 @@ extern DXCALL int DxLib_GetWaitVSyncFlag();
 extern DXCALL int DxLib_EXT_SetIconImageFile(const DXCHAR *filename);
 extern DXCALL int DxLib_SetAlwaysRunFlag(int flag);
 extern DXCALL int DxLib_GetAlwaysRunFlag();
+extern DXCALL int DxLib_GetWindowActiveFlag();
+extern DXCALL int DxLib_GetActiveFlag();
 
 extern DXCALL int DxLib_EXT_MessageBoxError(const DXCHAR *title,
                                             const DXCHAR *text);
