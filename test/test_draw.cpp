@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
         
         if (CheckHitKey(KEY_INPUT_S)) {
             if (screenshotWasPressed == 0) {
-                SaveDrawScreenToPNG(0, 0, 640, 480, "test_draw_screenshot.png");
+                SaveDrawScreenToPNG(0, 0, 640, 480, _T("test_draw_screenshot.png"));
                 screenshotWasPressed = 1;
             }
         } else {

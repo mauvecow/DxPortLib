@@ -311,7 +311,7 @@ int LoadDivGraph(const DXCHAR *filename, int graphCount,
 int LoadDivBmpGraph(const DXCHAR *filename, int graphCount,
                     int xCount, int yCount, int xSize, int ySize,
                     int *handleBuf, int textureFlag, int flipFlag) {
-    return ::LoadDivBmpGraph(filename, graphCount, xCount, yCount,
+    return ::DxLib_LoadDivBmpGraph(filename, graphCount, xCount, yCount,
                              xSize, ySize, handleBuf,
                              textureFlag, flipFlag);
 }

@@ -23,6 +23,11 @@
 
 #include "SDL.h"
 
+#if defined(__WIN32__) && !defined(__GNUC__)
+/* For vsscanf hack down below. */
+#include <stdio.h>
+#endif
+
 static int s_useArchiveFlag = DXTRUE;
 static char s_defaultArchiveString[DXA_KEY_LENGTH + 1] = { '\0' };
 static DXCHAR s_archiveExtension[64] = { '\0' };
@@ -472,6 +477,89 @@ DXCHAR PL_FileRead_getc(int fileHandle) {
     }
     return (DXCHAR)-1;
 }
+
+#if !defined(HAVE_SSCANF) && defined(__WIN32__) && !defined(__GNUC__)
+/* Visual Studio pre-2013 does not have vsscanf for whatever reason.
+ *
+ * More confusingly, SDL2 has SDL_sscanf, but not SDL_vsscanf. Why?
+ *
+ * The source to the following code was acquired from:
+ * http://www.flipcode.com/archives/vsscanf_for_Win32.shtml
+ *
+ * And then I cleaned up so it's actually compliant C,
+ * supports unicode, and without a silly crash bug with %%.
+ *
+ * FIXME: move this and other system-specific hacks to their own file.
+ */
+
+/*
+ * vsscanf for Win32
+ *
+ * Written 5/2003 by <mgix@mgix.com>
+ *
+ * This code is in the Public Domain
+ *
+ */
+
+static int vsscanf(
+    const char  *buffer,
+#ifdef UNICODE
+	const wchar_t *format,
+#else
+    const char  *format,
+#endif
+    va_list     argPtr
+)
+{
+    size_t count;
+    const TCHAR *p;
+	size_t stackSize;
+	void **newStack;
+    int result;
+    void *savedESP;
+
+    /* Get an upper bound for the # of args */
+	count = 0;
+	p = format;
+
+    while(1)
+    {
+        TCHAR c = *(p++);
+        if(c==0) break;
+        if(c=='%') {
+			if (p[0]!='*' && p[0]!='%') {
+				++count;
+			} else if (p[0]!=0) {
+				++p;
+			}
+        }
+    }
+
+    /* Make a local stack */
+    stackSize = (2+count)*sizeof(void*);
+    newStack = (void**)alloca(stackSize);
+
+    /* Fill local stack the way sscanf likes it */
+    newStack[0] = (void*)buffer;
+    newStack[1] = (void*)format;
+    memcpy(newStack+2, argPtr, count*sizeof(void*));
+
+    /* Warp into system sscanf with new stack */
+    _asm
+    {
+        mov     savedESP, esp;
+        mov     esp, newStack;
+#ifdef UNICODE
+        call    swscanf_s;
+#else
+        call    sscanf_s;
+#endif
+        mov     esp, savedESP;
+        mov     result, eax;
+    }
+    return result;
+}
+#endif
 
 int PL_FileRead_vscanf(int fileHandle, const DXCHAR *format, va_list args) {
     DXCHAR dxBuffer[4096];

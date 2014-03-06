@@ -34,7 +34,7 @@ static int s_initialized = DXFALSE;
 /* For setting the floating precision to the system value.
  * There is no real architecture agnostic answer here, so
  * add more of these as needed. */
-static void inline s_SetFPUState() {
+static SDL_INLINE void s_SetFPUState() {
 #if defined(__GNUC__) && defined(i386)
     unsigned int mode;
     

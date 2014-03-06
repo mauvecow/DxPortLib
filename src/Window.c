@@ -456,7 +456,7 @@ int PLEXT_Window_MessageBoxError(
     PL_Text_DxStringToString(title, titleBuf, 1024, DX_CHARSET_EXT_UTF8);
     PL_Text_DxStringToString(text, textBuf, 1024, DX_CHARSET_EXT_UTF8);
     
-    return SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, text, s_window);
+    return SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, titleBuf, textBuf, s_window);
 }
 
 int PLEXT_Window_MessageBoxYesNo(
@@ -487,8 +487,8 @@ int PLEXT_Window_MessageBoxYesNo(
     
     data.flags = SDL_MESSAGEBOX_INFORMATION;
     data.window = s_window;
-    data.title = title;
-    data.message = text;
+    data.title = titleBuf;
+    data.message = textBuf;
     data.numbuttons = 2;
     data.buttons = buttons;
     data.colorScheme = NULL;

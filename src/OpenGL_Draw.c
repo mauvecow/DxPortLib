@@ -158,7 +158,7 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
     glTexEnvi = PL_GL.glTexEnvi;
     s_textureSlotMain = GL_TEXTURE0;
     if (PL_GL.glActiveTexture != 0) {
-        glActiveTexture(GL_TEXTURE0);
+        PL_GL.glActiveTexture(GL_TEXTURE0);
     }
     rgbScale = 1;
     
@@ -344,7 +344,7 @@ static void s_FinishDrawMode(int textureRefID) {
             PL_GL.glActiveTexture(s_textureSlotMain);
         }
         PL_Texture_Unbind(textureRefID);
-        glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
+        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
     }
 }
 
@@ -581,7 +581,7 @@ int PL_Draw_DestroyCache() {
 
 /* --------------------------------------------------------- DRAWING CODE */
 
-static inline Uint32 s_getColor() {
+static SDL_INLINE Uint32 s_getColor() {
     return (s_drawColorR) | (s_drawColorG << 8) | (s_drawColorB << 16) | s_drawColorA;
 }
 static SDL_INLINE Uint32 s_modulateColor(DXCOLOR color) {

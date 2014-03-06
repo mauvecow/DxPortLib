@@ -91,6 +91,7 @@
     <ClCompile Include="..\src\OpenGL_Main.c" />
     <ClCompile Include="..\src\OpenGL_Texture.c" />
     <ClCompile Include="..\src\RNG.c" />
+    <ClCompile Include="..\src\SaveScreen.c" />
     <ClCompile Include="..\src\SDL2Render_Draw.c" />
     <ClCompile Include="..\src\SDL2Render_Texture.c" />
     <ClCompile Include="..\src\Text.c" />
