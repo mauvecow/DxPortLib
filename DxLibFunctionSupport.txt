@@ -296,11 +296,9 @@ DxInputString:
   ? GetStringPoint
   ? GetStringPoint2
   ? GetStringLength
-
- ? DrawObtainsString
+  ? DrawObtainsString
   ? DrawObtainsBox
-
- ? InputStringToCustom
+  ? InputStringToCustom
   ? KeyInputString
   ? KeyInputSingleCharString
   ? KeyInputNumber
@@ -340,18 +338,16 @@ DxFile:
   * FileRead_tell
   * FileRead_seek
   * FileRead_read
-  * FileRead_idle_chk
-  . FileRead_eof
+  . FileRead_idle_chk
+  * FileRead_eof
   * FileRead_gets
   * FileRead_getc
   * FileRead_scanf
-
- . FileRead_createInfo
+  . FileRead_createInfo
   . FileRead_getInfoNum
   . FileRead_getInfo
   . FileRead_deleteInfo
-
- . FileRead_findFirst
+  . FileRead_findFirst
   . FileRead_findNext
   . FileRead_findClose
   . GetStreamFunctionDefault
