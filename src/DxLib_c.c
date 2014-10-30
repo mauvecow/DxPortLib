@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,8 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
+#include "DxBuildConfig.h"
+
+#ifdef DXPORTLIB_DXLIB_INTERFACE
+
 #include "DxLib_c.h"
 
+#include "PLInternal.h"
 #include "DxInternal.h"
 
 #include "SDL.h"
@@ -73,10 +78,15 @@ int DxLib_DxLib_Init(void) {
     
     PL_Handle_Init();
     PL_File_Init();
+    Dx_File_Init();
 #ifndef DX_NON_INPUT
     PL_Input_Init();
 #endif  /* #ifndef DX_NON_INPUT */
+    
     PL_Window_Init();
+    Dx_Draw_InitCache();
+    Dx_Draw_ResetDrawScreen();
+    
 #ifndef DX_NON_SOUND
     PL_Audio_Init();
 #endif /* #ifndef DX_NON_SOUND */
@@ -104,6 +114,7 @@ int DxLib_DxLib_End(void) {
     PL_Input_End();
 #endif /* #ifndef DX_NON_INPUT */
     PL_File_End();
+    Dx_File_End();
     PL_Handle_End();
     
     SDL_Quit();
@@ -119,8 +130,8 @@ int DxLib_GlobalStructInitialize(void) {
     }
     
     PL_Window_ResetSettings();
-    PL_Draw_ResetSettings();
-    PL_Graph_ResetSettings();
+    Dx_Draw_ResetSettings();
+    Dx_Graph_ResetSettings();
 #ifndef DX_NON_SOUND
     PL_Audio_ResetSettings();
 #endif
@@ -174,7 +185,7 @@ int DxLib_GetRand(int maxValue) {
     return PL_Random_Get(maxValue);
 }
 int DxLib_SRand(int randomSeed) {
-    return PL_Random_Seed(randomSeed);
+    return PL_Random_SeedDx(randomSeed);
 }
 
 int DxLib_SetOutApplicationLogValidFlag(int logFlag) {
@@ -195,45 +206,45 @@ int DxLib_EXT_FileRead_SetCharSet(int charset) {
 }
 
 int DxLib_FileRead_open(const DXCHAR *filename) {
-    return PL_FileRead_open(filename);
+    return Dx_FileRead_open(filename);
 }
 
 long long DxLib_FileRead_size(int fileHandle) {
-    return PL_FileRead_size(fileHandle);
+    return Dx_FileRead_size(fileHandle);
 }
 
 int DxLib_FileRead_close(int fileHandle) {
-    return PL_FileRead_close(fileHandle);
+    return Dx_FileRead_close(fileHandle);
 }
 
 long long DxLib_FileRead_tell(int fileHandle) {
-    return PL_FileRead_tell(fileHandle);
+    return Dx_FileRead_tell(fileHandle);
 }
 
 int DxLib_FileRead_seek(int fileHandle, long long position, int origin) {
-    return PL_FileRead_seek(fileHandle, position, origin);
+    return Dx_FileRead_seek(fileHandle, position, origin);
 }
 
 int DxLib_FileRead_read(void *data, int size, int fileHandle) {
-    return PL_FileRead_read(data, size, fileHandle);
+    return Dx_FileRead_read(data, size, fileHandle);
 }
 
 int DxLib_FileRead_eof(int fileHandle) {
-    return PL_FileRead_eof(fileHandle);
+    return Dx_FileRead_eof(fileHandle);
 }
 
 int DxLib_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
-    return PL_FileRead_gets(buffer, bufferSize, fileHandle);
+    return Dx_FileRead_gets(buffer, bufferSize, fileHandle);
 }
 DXCHAR DxLib_FileRead_getc(int fileHandle) {
-    return PL_FileRead_getc(fileHandle);
+    return Dx_FileRead_getc(fileHandle);
 }
 int DxLib_FileRead_scanf(int fileHandle, const DXCHAR *format, ...) {
     va_list args;
     int retval;
     
     va_start(args, format);
-    retval = PL_FileRead_vscanf(fileHandle, format, args);
+    retval = Dx_FileRead_vscanf(fileHandle, format, args);
     va_end(args);
     
     return retval;
@@ -242,29 +253,29 @@ int DxLib_FileRead_scanf(int fileHandle, const DXCHAR *format, ...) {
 /* ---------------------------------------------------- DxArchive.cpp */
 /* (actually DxFile) */
 int DxLib_SetUseDXArchiveFlag(int flag) {
-    PL_File_SetUseDXArchiveFlag(flag);
+    Dx_File_SetUseDXArchiveFlag(flag);
     return 0;
 }
 int DxLib_SetDXArchiveKeyString(const DXCHAR *keyString) {
-    return PL_File_SetDXArchiveKeyString(keyString);
+    return Dx_File_SetDXArchiveKeyString(keyString);
 }
 int DxLib_SetDXArchiveExtension(const DXCHAR *extension) {
-    return PL_File_SetDXArchiveExtension(extension);
+    return Dx_File_SetDXArchiveExtension(extension);
 }
 int DxLib_SetDXArchivePriority(int flag) {
-    return PL_File_SetDXArchivePriority(flag);
+    return Dx_File_SetDXArchivePriority(flag);
 }
 int DxLib_DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
-    return PL_File_DXArchivePreLoad(dxaFilename, async);
+    return Dx_File_DXArchivePreLoad(dxaFilename, async);
 }
 int DxLib_DXArchiveCheckIdle(const DXCHAR *dxaFilename) {
-    return PL_File_DXArchiveCheckIdle(dxaFilename);
+    return Dx_File_DXArchiveCheckIdle(dxaFilename);
 }
 int DxLib_DXArchiveRelease(const DXCHAR *dxaFilename) {
-    return PL_File_DXArchiveRelease(dxaFilename);
+    return Dx_File_DXArchiveRelease(dxaFilename);
 }
 int DxLib_DXArchiveCheckFile(const DXCHAR *dxaFilename, const DXCHAR *filename) {
-    return PL_File_DXArchiveCheckFile(dxaFilename, filename);
+    return Dx_File_DXArchiveCheckFile(dxaFilename, filename);
 }
 
 /* ---------------------------------------------------- DxInput.cpp */
@@ -345,7 +356,9 @@ int DxLib_SetMainWindowText(const DXCHAR *windowName) {
     return 0;
 }
 int DxLib_ScreenFlip() {
+    Dx_Draw_FlushCache();
     PL_Window_SwapBuffers();
+    Dx_Draw_ResetDrawScreen();
     return 0;
 }
 int DxLib_ChangeWindowMode(int fullscreenFlag) {
@@ -356,13 +369,13 @@ int DxLib_GetWindowModeFlag() {
     return PL_Window_GetWindowModeFlag();
 }
 int DxLib_SetDrawScreen(int screen) {
-    return PL_Draw_SetDrawScreen(screen);
+    return Dx_Draw_SetDrawScreen(screen);
 }
 int DxLib_GetDrawScreen() {
-    return PL_Draw_GetDrawScreen();
+    return Dx_Draw_GetDrawScreen();
 }
 int DxLib_GetActiveGraph() {
-    return PL_Draw_GetDrawScreen();
+    return Dx_Draw_GetDrawScreen();
 }
 
 int DxLib_EXT_SetIconImageFile(const DXCHAR *filename) {
@@ -405,159 +418,159 @@ int DxLib_EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
 /* ---------------------------------------------------- DxGraphics.cpp */
 
 int DxLib_MakeScreen(int width, int height, int hasAlphaChannel) {
-    return PL_Graph_MakeScreen(width, height, hasAlphaChannel);
+    return Dx_Graph_MakeScreen(width, height, hasAlphaChannel);
 }
 int DxLib_LoadGraph(const DXCHAR *name) {
-    return PL_Graph_Load(name, DXFALSE);
+    return Dx_Graph_Load(name, DXFALSE);
 }
 int DxLib_LoadReverseGraph(const DXCHAR *name) {
-    return PL_Graph_Load(name, DXTRUE);
+    return Dx_Graph_Load(name, DXTRUE);
 }
 int DxLib_LoadDivGraph(const DXCHAR *filename, int graphCount,
                        int xCount, int yCount, int xSize, int ySize,
                        int *handleBuf) {
-    return PL_Graph_LoadDiv(filename, graphCount, xCount, yCount,
+    return Dx_Graph_LoadDiv(filename, graphCount, xCount, yCount,
                             xSize, ySize, handleBuf,
                             DXFALSE, DXFALSE);
 }
 int DxLib_LoadDivBmpGraph(const DXCHAR *filename, int graphCount,
                           int xCount, int yCount, int xSize, int ySize,
                           int *handleBuf, int textureFlag, int flipFlag) {
-    return PL_Graph_LoadDiv(filename, graphCount, xCount, yCount,
+    return Dx_Graph_LoadDiv(filename, graphCount, xCount, yCount,
                             xSize, ySize, handleBuf,
                             textureFlag, flipFlag);
 }
 int DxLib_LoadReverseDivGraph(const DXCHAR *filename, int graphCount,
                               int xCount, int yCount, int xSize, int ySize,
                               int *handleBuf) {
-    return PL_Graph_LoadDiv(filename, graphCount, xCount, yCount,
+    return Dx_Graph_LoadDiv(filename, graphCount, xCount, yCount,
                             xSize, ySize, handleBuf,
                             DXFALSE, DXTRUE);
 }
 int DxLib_DeleteGraph(int graphID) {
-    return PL_Graph_Delete(graphID);
+    return Dx_Graph_Delete(graphID);
 }
 int DxLib_DeleteSharingGraph(int graphID) {
-    return PL_Graph_DeleteSharingGraph(graphID);
+    return Dx_Graph_DeleteSharingGraph(graphID);
 }
 int DxLib_InitGraph() {
-    return PL_Graph_InitGraph();
+    return Dx_Graph_InitGraph();
 }
 int DxLib_DerivationGraph(int x, int y, int w, int h, int graphID) {
-    return PL_Graph_Derivation(x, y, w, h, graphID);
+    return Dx_Graph_Derivation(x, y, w, h, graphID);
 }
 int DxLib_GetGraphNum() {
-    return PL_Graph_GetNum();
+    return Dx_Graph_GetNum();
 }
 
 int DxLib_GetGraphSize(int graphID, int *width, int *height) {
-    return PL_Graph_GetSize(graphID, width, height);
+    return Dx_Graph_GetSize(graphID, width, height);
 }
 
 int DxLib_SetTransColor(int r, int g, int b) {
-    return PL_Graph_SetTransColor(r, g, b);
+    return Dx_Graph_SetTransColor(r, g, b);
 }
 int DxLib_GetTransColor(int *r, int *g, int *b) {
-    return PL_Graph_GetTransColor(r, g, b);
+    return Dx_Graph_GetTransColor(r, g, b);
 }
 int DxLib_SetUseTransColor(int flag) {
-    return PL_Graph_SetUseTransColor(flag);
+    return Dx_Graph_SetUseTransColor(flag);
 }
 
 int DxLib_SetUsePremulAlphaConvertLoad(int flag) {
-    return PL_Graph_SetUsePremulAlphaConvertLoad(flag);
+    return Dx_Graph_SetUsePremulAlphaConvertLoad(flag);
 }
 
 int DxLib_DrawPixel(int x, int y, DXCOLOR color) {
-    return PL_Draw_Pixel(x, y, color);
+    return Dx_Draw_Pixel(x, y, color);
 }
 
 int DxLib_DrawLine(int x1, int y1, int x2, int y2, DXCOLOR color, int thickness) {
-    return PL_Draw_Line(x1, y1, x2, y2, color, thickness);
+    return Dx_Draw_Line(x1, y1, x2, y2, color, thickness);
 }
 int DxLib_DrawLineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thickness) {
-    return PL_Draw_LineF(x1, y1, x2, y2, color, thickness);
+    return Dx_Draw_LineF(x1, y1, x2, y2, color, thickness);
 }
 
 int DxLib_DrawBox(int x1, int y1, int x2, int y2, DXCOLOR color, int FillFlag) {
-    return PL_Draw_Box(x1, y1, x2, y2, color, FillFlag);
+    return Dx_Draw_Box(x1, y1, x2, y2, color, FillFlag);
 }
 int DxLib_DrawBoxF(float x1, float y1, float x2, float y2, DXCOLOR color, int FillFlag) {
-    return PL_Draw_BoxF(x1, y1, x2, y2, color, FillFlag);
+    return Dx_Draw_BoxF(x1, y1, x2, y2, color, FillFlag);
 }
 int DxLib_DrawFillBox(int x1, int y1, int x2, int y2, DXCOLOR color) {
-    return PL_Draw_Box(x1, y1, x2, y2, color, DXTRUE);
+    return Dx_Draw_Box(x1, y1, x2, y2, color, DXTRUE);
 }
 int DxLib_DrawFillBoxF(float x1, float y1, float x2, float y2, DXCOLOR color) {
-    return PL_Draw_BoxF(x1, y1, x2, y2, color, DXTRUE);
+    return Dx_Draw_BoxF(x1, y1, x2, y2, color, DXTRUE);
 }
 int DxLib_DrawLineBox(int x1, int y1, int x2, int y2, DXCOLOR color) {
-    return PL_Draw_Box(x1, y1, x2, y2, color, DXFALSE);
+    return Dx_Draw_Box(x1, y1, x2, y2, color, DXFALSE);
 }
 int DxLib_DrawLineBoxF(float x1, float y1, float x2, float y2, DXCOLOR color) {
-    return PL_Draw_BoxF(x1, y1, x2, y2, color, DXFALSE);
+    return Dx_Draw_BoxF(x1, y1, x2, y2, color, DXFALSE);
 }
 
 int DxLib_DrawCircle(int x, int y, int r, DXCOLOR color, int fillFlag) {
-    return PL_Draw_Circle(x, y, r, color, fillFlag);
+    return Dx_Draw_Circle(x, y, r, color, fillFlag);
 }
 int DxLib_DrawCircleF(float x, float y, float r, DXCOLOR color, int fillFlag) {
-    return PL_Draw_CircleF(x, y, r, color, fillFlag);
+    return Dx_Draw_CircleF(x, y, r, color, fillFlag);
 }
 int DxLib_DrawOval(int x, int y, int rx, int ry, DXCOLOR color, int fillFlag) {
-    return PL_Draw_Oval(x, y, rx, ry, color, fillFlag);
+    return Dx_Draw_Oval(x, y, rx, ry, color, fillFlag);
 }
 int DxLib_DrawOvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillFlag) {
-    return PL_Draw_OvalF(x, y, rx, ry, color, fillFlag);
+    return Dx_Draw_OvalF(x, y, rx, ry, color, fillFlag);
 }
 
 int DxLib_DrawTriangle(int x1, int y1, int x2, int y2,
                        int x3, int y3,
                        DXCOLOR color, int fillFlag) {
-    return PL_Draw_Triangle(x1, y1, x2, y2, x3, y3, color, fillFlag);
+    return Dx_Draw_Triangle(x1, y1, x2, y2, x3, y3, color, fillFlag);
 }
 int DxLib_DrawTriangleF(float x1, float y1, float x2, float y2,
                         float x3, float y3,
                         DXCOLOR color, int fillFlag) {
-    return PL_Draw_TriangleF(x1, y1, x2, y2, x3, y3, color, fillFlag);
+    return Dx_Draw_TriangleF(x1, y1, x2, y2, x3, y3, color, fillFlag);
 }
 int DxLib_DrawQuadrangle(int x1, int y1, int x2, int y2,
                          int x3, int y3, int x4, int y4,
                          DXCOLOR color, int fillFlag) {
-    return PL_Draw_Quadrangle(x1, y1, x2, y2, x3, y3, x4, y4, color, fillFlag);
+    return Dx_Draw_Quadrangle(x1, y1, x2, y2, x3, y3, x4, y4, color, fillFlag);
 }
 int DxLib_DrawQuadrangleF(float x1, float y1, float x2, float y2,
                           float x3, float y3, float x4, float y4,
                           DXCOLOR color, int fillFlag) {
-    return PL_Draw_QuadrangleF(x1, y1, x2, y2, x3, y3, x4, y4, color, fillFlag);
+    return Dx_Draw_QuadrangleF(x1, y1, x2, y2, x3, y3, x4, y4, color, fillFlag);
 }
 
 int DxLib_DrawGraph(int x, int y, int graphID, int blendFlag) {
-    return PL_Draw_Graph(x, y, graphID, blendFlag);
+    return Dx_Draw_Graph(x, y, graphID, blendFlag);
 }
 int DxLib_DrawGraphF(float x, float y, int graphID, int blendFlag) {
-    return PL_Draw_GraphF(x, y, graphID, blendFlag);
+    return Dx_Draw_GraphF(x, y, graphID, blendFlag);
 }
 int DxLib_DrawExtendGraph(int x1, int y1, int x2, int y2,
                     int graphID, int blendFlag) {
-    return PL_Draw_ExtendGraph(x1, y1, x2, y2,
+    return Dx_Draw_ExtendGraph(x1, y1, x2, y2,
                                graphID, blendFlag);
 }
 int DxLib_DrawExtendGraphF(float x1, float y1, float x2, float y2,
                     int graphID, int blendFlag) {
-    return PL_Draw_ExtendGraphF(x1, y1, x2, y2,
+    return Dx_Draw_ExtendGraphF(x1, y1, x2, y2,
                                graphID, blendFlag);
 }
 
 int DxLib_DrawRectGraph(int dx, int dy, int sx, int sy, int sw, int sh,
                   int graphID, int blendFlag, int turnFlag) {
-    return PL_Draw_RectGraph(dx, dy,
+    return Dx_Draw_RectGraph(dx, dy,
                              sx, sy, sw, sh,
                              graphID, blendFlag, turnFlag);
 }
 int DxLib_DrawRectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
                   int graphID, int blendFlag, int turnFlag) {
-    return PL_Draw_RectGraphF(dx, dy,
+    return Dx_Draw_RectGraphF(dx, dy,
                              sx, sy, sw, sh,
                              graphID, blendFlag, turnFlag);
 }
@@ -565,14 +578,14 @@ int DxLib_DrawRectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
 int DxLib_DrawRectExtendGraph(int dx1, int dy1, int dx2, int dy2,
                         int sx, int sy, int sw, int sh,
                         int graphID, int blendFlag, int turnFlag) {
-    return PL_Draw_RectExtendGraph(dx1, dy1, dx2, dy2,
+    return Dx_Draw_RectExtendGraph(dx1, dy1, dx2, dy2,
                                    sx, sy, sw, sh,
                                    graphID, blendFlag, turnFlag);
 }
 int DxLib_DrawRectExtendGraphF(float dx1, float dy1, float dx2, float dy2,
                         int sx, int sy, int sw, int sh,
                         int graphID, int blendFlag, int turnFlag) {
-    return PL_Draw_RectExtendGraphF(dx1, dy1, dx2, dy2,
+    return Dx_Draw_RectExtendGraphF(dx1, dy1, dx2, dy2,
                                    sx, sy, sw, sh,
                                    graphID, blendFlag, turnFlag);
 }
@@ -580,42 +593,42 @@ int DxLib_DrawRectExtendGraphF(float dx1, float dy1, float dx2, float dy2,
 int DxLib_DrawRotaGraph(int x, int y,
                   double scaleFactor, double angle,
                   int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraph(x, y,
+    return Dx_Draw_RotaGraph(x, y,
                              scaleFactor, angle,
                              graphID, blendFlag, turn);
 }
 int DxLib_DrawRotaGraphF(float x, float y,
                   double scaleFactor, double angle,
                   int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraphF(x, y,
+    return Dx_Draw_RotaGraphF(x, y,
                              scaleFactor, angle,
                              graphID, blendFlag, turn);
 }
 int DxLib_DrawRotaGraph2(int x, int y, int cx, int cy,
                    double scaleFactor, double angle,
                    int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraph2(x, y, cx, cy,
+    return Dx_Draw_RotaGraph2(x, y, cx, cy,
                               scaleFactor, angle,
                               graphID, blendFlag, turn);
 }
 int DxLib_DrawRotaGraph2F(float x, float y, float cx, float cy,
                    double scaleFactor, double angle,
                    int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraph2F(x, y, cx, cy,
+    return Dx_Draw_RotaGraph2F(x, y, cx, cy,
                               scaleFactor, angle,
                               graphID, blendFlag, turn);
 }
 int DxLib_DrawRotaGraph3(int x, int y, int cx, int cy,
                    double xScaleFactor, double yScaleFactor, double angle,
                    int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraph3(x, y, cx, cy,
+    return Dx_Draw_RotaGraph3(x, y, cx, cy,
                               xScaleFactor, yScaleFactor, angle,
                               graphID, blendFlag, turn);
 }
 int DxLib_DrawRotaGraph3F(float x, float y, float cx, float cy,
                    double xScaleFactor, double yScaleFactor, double angle,
                    int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraph3F(x, y, cx, cy,
+    return Dx_Draw_RotaGraph3F(x, y, cx, cy,
                               xScaleFactor, yScaleFactor, angle,
                               graphID, blendFlag, turn);
 }
@@ -624,7 +637,7 @@ int DxLib_DrawRectRotaGraph(int x, int y,
                             int sx, int sy, int sw, int sh,
                             double scaleFactor, double angle,
                             int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraph(x, y, sx, sy, sw, sh,
+    return Dx_Draw_RectRotaGraph(x, y, sx, sy, sw, sh,
                              scaleFactor, angle,
                              graphID, blendFlag, turn);
 }
@@ -632,7 +645,7 @@ int DxLib_DrawRectRotaGraphF(float x, float y,
                              int sx, int sy, int sw, int sh,
                              double scaleFactor, double angle,
                              int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraphF(x, y, sx, sy, sw, sh,
+    return Dx_Draw_RectRotaGraphF(x, y, sx, sy, sw, sh,
                              scaleFactor, angle,
                              graphID, blendFlag, turn);
 }
@@ -641,7 +654,7 @@ int DxLib_DrawRectRotaGraph2(int x, int y,
                              int cx, int cy,
                              double scaleFactor, double angle,
                              int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraph2(x, y, sx, sy, sw, sh, cx, cy,
+    return Dx_Draw_RectRotaGraph2(x, y, sx, sy, sw, sh, cx, cy,
                               scaleFactor, angle,
                               graphID, blendFlag, turn);
 }
@@ -650,7 +663,7 @@ int DxLib_DrawRectRotaGraph2F(float x, float y,
                               float cx, float cy,
                               double scaleFactor, double angle,
                               int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraph2F(x, y, sx, sy, sw, sh, cx, cy,
+    return Dx_Draw_RectRotaGraph2F(x, y, sx, sy, sw, sh, cx, cy,
                               scaleFactor, angle,
                               graphID, blendFlag, turn);
 }
@@ -660,7 +673,7 @@ int DxLib_DrawRectRotaGraph3(int x, int y,
                              double xScaleFactor, double yScaleFactor,
                              double angle,
                              int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraph3(x, y, sx, sy, sw, sh, cx, cy,
+    return Dx_Draw_RectRotaGraph3(x, y, sx, sy, sw, sh, cx, cy,
                               xScaleFactor, yScaleFactor, angle,
                               graphID, blendFlag, turn);
 }
@@ -670,61 +683,61 @@ int DxLib_DrawRectRotaGraph3F(float x, float y,
                               double xScaleFactor, double yScaleFactor,
                               double angle,
                               int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraph3F(x, y, sx, sy, sw, sh, cx, cy,
+    return Dx_Draw_RectRotaGraph3F(x, y, sx, sy, sw, sh, cx, cy,
                               xScaleFactor, yScaleFactor, angle,
                               graphID, blendFlag, turn);
 }
 
 int DxLib_DrawTurnGraph(int x, int y, int graphID, int blendFlag) {
-    return PL_Draw_TurnGraph(x, y, graphID, blendFlag);
+    return Dx_Draw_TurnGraph(x, y, graphID, blendFlag);
 }
 int DxLib_DrawTurnGraphF(float x, float y, int graphID, int blendFlag) {
-    return PL_Draw_TurnGraphF(x, y, graphID, blendFlag);
+    return Dx_Draw_TurnGraphF(x, y, graphID, blendFlag);
 }
 
 int DxLib_DrawModiGraph(int x1, int y1, int x2, int y2,
                         int x3, int y3, int x4, int y4,
                         int graphID, int blendFlag) {
-    return PL_Draw_ModiGraph(x1, y1, x2, y2, x3, y3, x4, y4, graphID, blendFlag);
+    return Dx_Draw_ModiGraph(x1, y1, x2, y2, x3, y3, x4, y4, graphID, blendFlag);
 }
 int DxLib_DrawModiGraphF(float x1, float y1, float x2, float y2,
                          float x3, float y3, float x4, float y4,
                          int graphID, int blendFlag) {
-    return PL_Draw_ModiGraphF(x1, y1, x2, y2, x3, y3, x4, y4, graphID, blendFlag);
+    return Dx_Draw_ModiGraphF(x1, y1, x2, y2, x3, y3, x4, y4, graphID, blendFlag);
 }
 
 int DxLib_SetDrawArea(int x1, int y1, int x2, int y2) {
-    return PL_Draw_SetDrawArea(x1, y1, x2, y2);
+    return Dx_Draw_SetDrawArea(x1, y1, x2, y2);
 }
 
 int DxLib_SetDrawMode(int drawMode) {
-    return PL_Draw_SetDrawMode(drawMode);
+    return Dx_Draw_SetDrawMode(drawMode);
 }
 int DxLib_GetDrawMode() {
-    return PL_Draw_GetDrawMode();
+    return Dx_Draw_GetDrawMode();
 }
 int DxLib_SetDrawBlendMode(int blendMode, int alpha) {
-    return PL_Draw_SetDrawBlendMode(blendMode, alpha);
+    return Dx_Draw_SetDrawBlendMode(blendMode, alpha);
 }
 int DxLib_GetDrawBlendMode(int *blendMode, int *alpha) {
-    return PL_Draw_GetDrawBlendMode(blendMode, alpha);
+    return Dx_Draw_GetDrawBlendMode(blendMode, alpha);
 }
 int DxLib_SetDrawBright(int redBright, int greenBright, int blueBright) {
-    return PL_Draw_SetBright(redBright, greenBright, blueBright);
+    return Dx_Draw_SetBright(redBright, greenBright, blueBright);
 }
 
 int DxLib_SetBasicBlendFlag(int blendFlag) {
-    return PL_Draw_SetBasicBlendFlag(blendFlag);
+    return Dx_Draw_SetBasicBlendFlag(blendFlag);
 }
 
 int DxLib_SetBackgroundColor(int red, int green, int blue) {
-    return PL_Draw_SetBackgroundColor(red, green, blue);
+    return Dx_Draw_SetBackgroundColor(red, green, blue);
 }
 int DxLib_ClearDrawScreen(const RECT *clearRect) {
-    return PL_Draw_ClearDrawScreen(clearRect);
+    return Dx_Draw_ClearDrawScreen(clearRect);
 }
 int DxLib_ClsDrawScreen() {
-    return PL_Draw_ClearDrawScreen(NULL);
+    return Dx_Draw_ClearDrawScreen(NULL);
 }
 
 int DxLib_SaveDrawScreen(int x1, int y1, int x2, int y2,
@@ -1032,3 +1045,4 @@ void DxLib_DxFree(void *memory) {
     PL_DxFree(memory);
 }
 
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */

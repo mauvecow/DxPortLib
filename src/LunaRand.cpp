@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,20 +19,36 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#ifndef DXLIB_SDL2RENDER_DXINTERNAL_H_HEADER
-#define DXLIB_SDL2RENDER_DXINTERNAL_H_HEADER
+#include "Luna.h"
 
-#include "DxInternal.h"
+#ifdef DXPORTLIB_LUNA_INTERFACE
 
-#include "SDL.h"
+#include "PLInternal.h"
 
-/* In the event this is not defined... */
-#ifndef M_PI
-#define M_PI    3.14159265358979323846
+/* TODO: LunaRand is thread-safe. We are not.
+ */
+
+void LunaRand::Seed(Uint32 Param) {
+    PL_Random_SeedLuna(Param);
+}
+Uint32 LunaRand::GetInt32() {
+    return PL_Random_Get32();
+}
+Uint64 LunaRand::GetInt64() {
+    Uint64 valueA = PL_Random_Get32();
+    Uint64 valueB = PL_Random_Get32();
+    return (valueA << 32) | valueB;
+}
+Float LunaRand::GetFloat32() {
+    return F(PL_Random_Get32() % 100000001) / F(100000000);
+}
+Sint32 LunaRand::GetInt(Sint32 Min, Sint32 Max) {
+    Sint32 range = Max + 1 - Min;
+    return Min + ((Sint32)(LunaRand::GetInt32() >> 1) % range);
+}
+Float LunaRand::GetFloat(Float Min, Float Max) {
+    Float f = GetFloat32();
+    return Min + (f * (Max - Min));
+}
+
 #endif
-
-extern SDL_Renderer *PL_renderer;
-
-extern int PL_Texture_RenderGetGraphTexture(int graphID, SDL_Texture **texture, SDL_Rect *rect);
-
-#endif /* #ifndef _DXLIB_SDL2RENDER_DXINTERNAL_H */

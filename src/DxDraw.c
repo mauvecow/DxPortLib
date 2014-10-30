@@ -1,7 +1,7 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
-  
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
+
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -19,11 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
+#include "DxBuildConfig.h"
+
+#ifdef DXPORTLIB_DXLIB_INTERFACE
+
+#include "PLInternal.h"
 #include "DxInternal.h"
-
-#ifdef DXPORTLIB_DRAW_OPENGL
-
-#include "OpenGL_DxInternal.h"
 
 /* Similar to DxLib, we maintain a rolling vertex buffer that is used to
  * store information in sequence as we go.
@@ -39,10 +40,8 @@ static Uint32 s_drawColorA = 0xff000000;
 static Uint32 s_bgColorR = 0x00;
 static Uint32 s_bgColorG = 0x00;
 static Uint32 s_bgColorB = 0x00;
-static int s_pixelTexture = -1;
-static int s_textureSlotMain = GL_TEXTURE0;
 
-int PL_Draw_ResetSettings() {
+int Dx_Draw_ResetSettings() {
     s_blendMode = DX_BLENDMODE_NOBLEND;
     s_drawMode = DX_DRAWMODE_NEAREST;
     s_lastBlendMode = -1;
@@ -61,86 +60,73 @@ int PL_Draw_ResetSettings() {
 
 /* ------------------------------------------------------- BLENDING MODES */
 
-typedef enum {
-    BLEND_NONE,
-    BLEND_NORMAL,
-    BLEND_MULA,
-    BLEND_INVERT,
-    BLEND_X4,
-    BLEND_PMA,
-    BLEND_PMA_INVERT,
-    BLEND_PMA_X4
-} BlendType;
-
-typedef struct BlendInfo {
-    BlendType blendType;
-    GLenum blendEquation;
-    GLenum srcRGBBlend;
-    GLenum destRGBBlend;
-    GLenum srcAlphaBlend;
-    GLenum destAlphaBlend;
+typedef struct _BlendInfo {
+    TexturePreset texturePreset;
+    int blendEquation;
+    int srcRGBBlend;
+    int destRGBBlend;
+    int srcAlphaBlend;
+    int destAlphaBlend;
 } BlendInfo;
 
 #define NOBLEND (0xffffffff)
 
 static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
-    /* NOBLEND = s */
-    { BLEND_NONE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND },
+    /* PL_BLEND_ONE = s */
+    { TEX_PRESET_COPY,      PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE },
     /* ALPHA = (d*(1-a)) + (s*a) */
-    { BLEND_NORMAL,     GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* ADD = d + (s*a) */
-    { BLEND_NORMAL,     GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* SUB = d - (s*a) */
-    { BLEND_NORMAL,     GL_FUNC_REVERSE_SUBTRACT, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_RSUB, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* MUL = (d*s) */
-    { BLEND_NORMAL,     GL_FUNC_ADD, GL_ZERO, GL_SRC_COLOR, GL_ZERO, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_ZERO, PL_BLEND_SRC_COLOR, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* SUB2 = d + (s*a) */ /* It's the same as ADD. I don't get it, either. */
-    { BLEND_NORMAL,     GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     
     /* XOR (unsupported) */
-    { BLEND_NONE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND },
+    { TEX_PRESET_COPY,      PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE },
     /* reserved */
-    { BLEND_NONE,       GL_FUNC_ADD, NOBLEND, NOBLEND, NOBLEND, NOBLEND },
+    { TEX_PRESET_COPY,      PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE },
 
     /* DESTCOLOR = d */
-    { BLEND_NORMAL,     GL_FUNC_ADD, GL_ZERO, GL_ONE, GL_ZERO, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_ZERO, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* INVDESTCOLOR = 1 - d */
-    { BLEND_NORMAL,     GL_FUNC_ADD, GL_ONE_MINUS_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_ONE_MINUS_DST_COLOR, PL_BLEND_ZERO, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* INVSRC = (d*(1-a)) + ((1-s)*a) */
-    { BLEND_INVERT,     GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE },
+    { TEX_PRESET_DX_INVERT, PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
     
     /* MULA = (d*(1-a)) + (s*d*a) */
-    { BLEND_MULA,       GL_FUNC_ADD, GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE },
+    { TEX_PRESET_DX_MULA,   PL_BLENDFUNC_ADD, PL_BLEND_DST_COLOR, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
     
     /* ALPHA_X4 = (d*(1-a)) + (clamp(s*4)*a) */
-    { BLEND_X4,         GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA },
+    { TEX_PRESET_DX_X4,     PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA },
     /* ADD_X4 = d + ((clamp(s*4)*a) */
-    { BLEND_X4,         GL_FUNC_ADD, GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
+    { TEX_PRESET_DX_X4,     PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* SRCCOLOR = s */
-    { BLEND_NONE,       GL_FUNC_ADD, GL_ONE, GL_ZERO, GL_ONE, GL_ZERO },
+    { TEX_PRESET_COPY,      PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE, PL_BLEND_ZERO },
     /* HALF_ADD = (d*(1-a)) + s */
-    { BLEND_NORMAL,     GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ONE },
     /* SUB1 = d - (s*(1-a)) */
-    { BLEND_NORMAL,     GL_FUNC_REVERSE_SUBTRACT, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_RSUB, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     
     /* PMA_ALPHA = (d*(1-a)) + s */
-    { BLEND_PMA,        GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE },
+    { TEX_PRESET_DX_PMA,    PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* PMA_ADD = d + s */
-    { BLEND_PMA,        GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ZERO, GL_ONE },
+    { TEX_PRESET_DX_PMA,    PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* PMA_SUB = d - s */
-    { BLEND_PMA,        GL_FUNC_REVERSE_SUBTRACT, GL_ONE, GL_ONE, GL_ZERO, GL_ONE },
+    { TEX_PRESET_DX_PMA,    PL_BLENDFUNC_RSUB, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* PMA_INVSRC = d - (1 - s) */
-    { BLEND_PMA_INVERT, GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE },
+    { TEX_PRESET_DX_PMA_INVERT,PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* PMA_ALPHA_X4 = (d*(1-a)) + clamp(s*4) */
-    { BLEND_PMA_X4,     GL_FUNC_ADD, GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE },
+    { TEX_PRESET_DX_PMA_X4, PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* PMA_ADD_X4 = d + clamp(s*4) */
-    { BLEND_PMA_X4,     GL_FUNC_ADD, GL_ONE, GL_ONE, GL_ZERO, GL_ONE},
+    { TEX_PRESET_DX_PMA_X4, PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE},
 };
 
 static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
     const BlendInfo *blend;
-    void (APIENTRY *glTexEnvi)(GLenum, GLenum, GLint);
-    int rgbScale;
     
     if (forceBlend != 0 && blendMode == DX_BLENDMODE_NOBLEND) {
         blendMode = DX_BLENDMODE_ALPHA;
@@ -154,207 +140,21 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
     
     blend = &s_blendModeTable[blendMode];
     
-    /* Cache glTexEnvi locally so we don't do lookups every time we come back. */
-    glTexEnvi = PL_GL.glTexEnvi;
-    s_textureSlotMain = GL_TEXTURE0;
-    if (PL_GL.glActiveTexture != 0) {
-        PL_GL.glActiveTexture(GL_TEXTURE0);
-    }
-    rgbScale = 1;
-    
-    switch (blend->blendType) {
-        case BLEND_NONE:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            PL_GL.glDisable(GL_BLEND);
-            PL_Texture_Bind(textureRefID, s_drawMode);
-            return 0; /* return, not break! */
-        case BLEND_MULA:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_ALPHA);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                PL_Texture_Bind(s_pixelTexture, s_drawMode);
-                
-                s_textureSlotMain = GL_TEXTURE1;
-            }
-            break;
-        case BLEND_INVERT:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_ONE_MINUS_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
-                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-            } else {
-                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
-                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
-                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_ONE_MINUS_SRC_COLOR);
-                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-            }
-            break;
-        case BLEND_X4:
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            }
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-            rgbScale = 4;
-            break;
-        case BLEND_PMA:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                PL_Texture_Bind(s_pixelTexture, s_drawMode);
-                
-                s_textureSlotMain = GL_TEXTURE1;
-            }
-            break;
-        case BLEND_PMA_INVERT:
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-                glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-                glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-                glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-                glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_ONE_MINUS_SRC_COLOR);
-                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
-                glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            } else {
-                glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-            }
-            break;
-        case BLEND_PMA_X4:
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                PL_Texture_Bind(s_pixelTexture, s_drawMode);
-                
-                s_textureSlotMain = GL_TEXTURE1;
-            }
-            rgbScale = 4;
-            break;
-        default: /* BLEND_NORMAL */
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            break;
-    }
-    
-    PL_GL.glBlendFuncSeparate(blend->srcRGBBlend, blend->destRGBBlend, blend->srcAlphaBlend, blend->destAlphaBlend);
-    PL_GL.glBlendEquation(blend->blendEquation);
-    PL_GL.glEnable(GL_BLEND);
-    
-    if (PL_GL.glActiveTexture != 0) {
-        PL_GL.glActiveTexture(s_textureSlotMain);
-        if (s_textureSlotMain == GL_TEXTURE1) {
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PREVIOUS);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PREVIOUS);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-        }
-    }
-    glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, rgbScale);
-    PL_Texture_Bind(textureRefID, s_drawMode);
+    PL_Render_SetBlendModeSeparate(
+        blend->blendEquation,
+        blend->srcRGBBlend, blend->destRGBBlend,
+        blend->srcAlphaBlend, blend->destAlphaBlend);
+    PL_Render_SetTexturePresetMode(
+        blend->texturePreset, textureRefID, s_drawMode);
     
     return 0;
 }
 
-static void s_FinishDrawMode(int textureRefID) {
-    const BlendInfo *blend = &s_blendModeTable[s_lastBlendMode];
-    
-    switch(blend->blendType) {
-        case BLEND_PMA_INVERT:
-        case BLEND_INVERT:
-        case BLEND_X4:
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            }
-            break;
-        case BLEND_MULA:
-        case BLEND_PMA:
-        case BLEND_PMA_X4:
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                if (PL_GL.glActiveTexture != 0) {
-                    PL_GL.glActiveTexture(GL_TEXTURE0);
-                }
-                PL_Texture_Unbind(s_pixelTexture);
-            }
-            break;
-        default:
-            break;
-    }
-    
-    /* Clean up */
-    if (textureRefID >= 0) {
-        if (PL_GL.glActiveTexture != 0) {
-            PL_GL.glActiveTexture(s_textureSlotMain);
-        }
-        PL_Texture_Unbind(textureRefID);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
-    }
+static void s_FinishDrawMode() {
+    PL_Render_ClearTexturePresetMode();
 }
 
 /* --------------------------------------------------------- VERTEX CACHE */
-
-enum VertexElementType {
-    VERTEX_POSITION,
-    VERTEX_TEXCOORD0,
-    VERTEX_COLOR
-};
 
 /* Rather than unnecessarily duplicating code, we include vertex
  * definitions for the various kinds we'll use.
@@ -363,46 +163,37 @@ enum VertexElementType {
  * shaders ever make their way in here we'll regret not having them.
  */
 
-typedef struct VertexDefinition {
-    int vertexType;
-    GLint size;
-    GLenum type;
-    int offset;
-} VertexDefinition;
-
-typedef struct VertexPosition2Color {
+typedef struct _VertexPosition2Color {
     float x, y;
-    Uint32 color;
+    unsigned int color;
 } VertexPosition2Color;
-
-static const VertexDefinition s_defVertexPosition2Color[] = {
-    { VERTEX_POSITION, 2, GL_FLOAT, offsetof(VertexPosition2Color, x) },
-    { VERTEX_COLOR, 4, GL_UNSIGNED_BYTE, offsetof(VertexPosition2Color, color) }
+static const VertexElement s_VertexPosition2ColorElements[] = {
+    { VERTEX_POSITION, 2, VERTEXSIZE_FLOAT, offsetof(VertexPosition2Color, x) },
+    { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(VertexPosition2Color, color) },
 };
+VERTEX_DEFINITION(VertexPosition2Color);
 
-typedef struct VertexPosition2Tex2Color {
+typedef struct _VertexPosition2Tex2Color {
     float x, y;
     float tcx, tcy;
-    Uint32 color;
+    unsigned int color;
 } VertexPosition2Tex2Color;
-
-static const VertexDefinition s_defVertexPosition2Tex2Color[] = {
-    { VERTEX_POSITION, 2, GL_FLOAT, offsetof(VertexPosition2Tex2Color, x) },
-    { VERTEX_TEXCOORD0, 2, GL_FLOAT, offsetof(VertexPosition2Tex2Color, tcx) },
-    { VERTEX_COLOR, 4, GL_UNSIGNED_BYTE, offsetof(VertexPosition2Tex2Color, color) }
+static const VertexElement s_VertexPosition2Tex2ColorElements[] = {
+    { VERTEX_POSITION, 2, VERTEXSIZE_FLOAT, offsetof(VertexPosition2Tex2Color, x) },
+    { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(VertexPosition2Tex2Color, tcx) },
+    { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(VertexPosition2Tex2Color, color) },
 };
+VERTEX_DEFINITION(VertexPosition2Tex2Color);
 
 typedef struct VertexCache {
-    const VertexDefinition *defArray;
-    int defCount;
-    int vertexSize;
+    const VertexDefinition *definition;
     
     int vertexCount;
     
     int textureRefID;
     int blendFlag;
     
-    GLenum drawMode;
+    int drawMode;
     
     unsigned char *vertexData;
     int vertexDataPosition;
@@ -411,17 +202,18 @@ typedef struct VertexCache {
 
 static VertexCache s_cache;
 
-
 /* Given a call with a vertex definition and the number of vertices,
  * returns the starting vertex pointer.
  */
 static void *s_BeginCache(
-    const VertexDefinition *definitionArray, int defCount,
-    int vertexSize, int vertexCount,
-    GLenum drawMode, int textureRefID, int blendFlag
+    const VertexDefinition *definition,
+    int vertexCount,
+    int drawMode, int textureRefID, int blendFlag
 ) {
     /* - If this is the same as the last definition, try to continue it. */
-    if (s_cache.defArray == definitionArray
+    int vertexSize = definition->vertexByteSize;
+    
+    if (s_cache.definition == definition
         && s_cache.drawMode == drawMode
         && s_cache.textureRefID == textureRefID
         && s_cache.blendFlag == blendFlag
@@ -438,15 +230,13 @@ static void *s_BeginCache(
     }
 
     /* - Flush the current cache */
-    PL_Draw_FlushCache();
+    Dx_Draw_FlushCache();
     
     /* - Set up the new definition. */
-    s_cache.defArray = definitionArray;
-    s_cache.defCount = defCount;
+    s_cache.definition = definition;
     s_cache.drawMode = drawMode;
     s_cache.blendFlag = blendFlag;
     s_cache.textureRefID = textureRefID;
-    s_cache.vertexSize = vertexSize;
     s_cache.vertexCount = vertexCount;
     s_cache.vertexDataPosition = vertexCount * vertexSize;
     
@@ -460,22 +250,17 @@ static void *s_BeginCache(
  */
 #define START(vertexName, VertexType, drawMode, textureRefID, vertexCount, blendFlag) \
     VertexType *vertexName = (VertexType *)s_BeginCache( \
-                               s_def ## VertexType, elementsof(s_def ## VertexType), \
-                               sizeof(VertexType), vertexCount, \
+                               &s_ ## VertexType ## Definition, \
+                               vertexCount, \
                                drawMode, textureRefID, blendFlag)
 
-int PL_Draw_FlushCache() {
-    int i;
-    int vertexSize;
-    unsigned char *vertexData;
-    const VertexDefinition *def;
-    
-    if (s_cache.defArray == NULL || s_cache.vertexCount == 0) {
+int Dx_Draw_FlushCache() {
+    if (s_cache.definition == NULL || s_cache.vertexCount == 0) {
         s_cache.vertexDataPosition = 0;
         return 0;
     }
     
-    PL_Draw_UpdateDrawScreen();
+    Dx_Draw_UpdateDrawScreen();
     
     /* Apply blending mode */
     if (s_cache.blendFlag) {
@@ -486,52 +271,13 @@ int PL_Draw_FlushCache() {
                         s_cache.textureRefID);
     }
     
-    /* State vertex info */
-    vertexSize = s_cache.vertexSize;
-    vertexData = s_cache.vertexData;
-    def = s_cache.defArray;
-    for (i = 0; i < s_cache.defCount; ++i, ++def) {
-        switch (def->vertexType) {
-            case VERTEX_POSITION:
-                PL_GL.glEnableClientState(GL_VERTEX_ARRAY);
-                PL_GL.glVertexPointer(def->size, def->type, vertexSize, vertexData + def->offset);
-                break; 
-            case VERTEX_TEXCOORD0:
-                PL_GL.glClientActiveTexture(s_textureSlotMain);
-                PL_GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                PL_GL.glTexCoordPointer(def->size, def->type, vertexSize, vertexData + def->offset);
-                break;
-            case VERTEX_COLOR:
-                PL_GL.glEnableClientState(GL_COLOR_ARRAY);
-                PL_GL.glColorPointer(def->size, def->type, vertexSize, vertexData + def->offset);
-                break;
-        }
-    }
+    PL_Render_DrawVertexArray(
+        s_cache.definition,
+        (const char *)s_cache.vertexData,
+        s_cache.drawMode,
+        0, s_cache.vertexCount);
     
-    /* Draw! */
-    /* This could be optimized a bit by storing a list of drawMode changes,
-     * and just reusing vertices.
-     */
-    
-    PL_GL.glDrawArrays(s_cache.drawMode, 0, s_cache.vertexCount);
-    
-    s_FinishDrawMode(s_cache.textureRefID);
-    
-    def = s_cache.defArray;
-    for (i = 0; i < s_cache.defCount; ++i, ++def) {
-        switch (def->vertexType) {
-            case VERTEX_POSITION:
-                PL_GL.glDisableClientState(GL_VERTEX_ARRAY);
-                break; 
-            case VERTEX_TEXCOORD0:
-                PL_GL.glClientActiveTexture(s_textureSlotMain);
-                PL_GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-                break; 
-            case VERTEX_COLOR:
-                PL_GL.glDisableClientState(GL_COLOR_ARRAY);
-                break;
-        }
-    }
+    s_FinishDrawMode();
     
     s_cache.vertexCount = 0;
     s_cache.vertexDataPosition = 0;
@@ -540,36 +286,18 @@ int PL_Draw_FlushCache() {
     return 0;
 }
 
-int PL_Draw_InitCache() {
-    SDL_Surface *surface;
-    
+int Dx_Draw_InitCache() {
     SDL_memset(&s_cache, 0, sizeof(s_cache));
     
-    s_cache.defArray = NULL;
-    s_cache.defCount = 0;
-    s_cache.vertexSize = 1;
-    s_cache.vertexCount = 0;
-    
-    /* 64kb should be enough for anybody */
+    /* 256kb should be enough for anybody */
     s_cache.vertexDataPosition = 0;
-    s_cache.vertexDataSize = 64 * 1024;
+    s_cache.vertexDataSize = 256 * 1024;
     s_cache.vertexData = SDL_malloc((size_t)s_cache.vertexDataSize);
-    
-    /* Create a texture that's a single white pixel. */
-    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 1, 1, 32,
-                                   0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-    *((unsigned int *)(surface->pixels)) = 0xffffffff;
-    s_pixelTexture = PL_Texture_CreateFromSurface(surface, DXFALSE);
-    SDL_FreeSurface(surface);
     
     return 0;
 }
 
-int PL_Draw_DestroyCache() {
-    if (s_pixelTexture >= 0) {
-        PL_Texture_Release(s_pixelTexture);
-        s_pixelTexture = -1;
-    }
+int Dx_Draw_DestroyCache() {
     if (s_cache.vertexData != NULL) {
         SDL_free(s_cache.vertexData);
     }
@@ -581,10 +309,10 @@ int PL_Draw_DestroyCache() {
 
 /* --------------------------------------------------------- DRAWING CODE */
 
-static SDL_INLINE Uint32 s_getColor() {
+static SDL_INLINE Uint32 s_GetColor() {
     return (s_drawColorR) | (s_drawColorG << 8) | (s_drawColorB << 16) | s_drawColorA;
 }
-static SDL_INLINE Uint32 s_modulateColor(DXCOLOR color) {
+static SDL_INLINE Uint32 s_ModulateColor(DXCOLOR color) {
     Uint32 r = ((color & 0xff) * s_drawColorR) / 0xff;
     Uint32 g = (((color & 0xff00) * s_drawColorG) / 0xff) & 0x0000ff00;
     Uint32 b = (((color & 0xff0000) * s_drawColorB) / 0xff) & 0x00ff0000;
@@ -592,23 +320,23 @@ static SDL_INLINE Uint32 s_modulateColor(DXCOLOR color) {
     return s_drawColorA | r | g | b;
 }
 
-int PL_Draw_PixelF(float x, float y, DXCOLOR color) {
-    Uint32 vColor = s_modulateColor(color);
-    START(v, VertexPosition2Color, GL_POINTS, -1, 1, DXTRUE);
+int Dx_Draw_PixelF(float x, float y, DXCOLOR color) {
+    Uint32 vColor = s_ModulateColor(color);
+    START(v, VertexPosition2Color, PL_PRIM_POINTS, -1, 1, DXTRUE);
     v[0].x = x; v[0].y = y; v[0].color = vColor;
     
     return 0;
 }
 
-int PL_Draw_Pixel(int x, int y, DXCOLOR color) {
-    return PL_Draw_PixelF((float)x, (float)y, color);
+int Dx_Draw_Pixel(int x, int y, DXCOLOR color) {
+    return Dx_Draw_PixelF((float)x, (float)y, color);
 }
 
-int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thickness) {
-    Uint32 vColor = s_modulateColor(color);
+int Dx_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thickness) {
+    Uint32 vColor = s_ModulateColor(color);
     x1 += 0.5f; y1 += 0.5f; x2 += 0.5f; y2 += 0.5f;
     if (thickness <= 1) {
-        START(v, VertexPosition2Color, GL_LINES, -1, 2, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_LINES, -1, 2, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y2; v[1].color = vColor;
@@ -618,7 +346,7 @@ int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thi
         float l = (float)SDL_sqrt((dx * dx) + (dy * dy));
         
         if (l > 0) {
-            START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6, DXTRUE);
+            START(v, VertexPosition2Color, PL_PRIM_TRIANGLES, -1, 6, DXTRUE);
             float t = (float)thickness * 0.5f;
             float nx = (dx / l) * t;
             float ny = (dy / l) * t;
@@ -635,11 +363,11 @@ int PL_Draw_LineF(float x1, float y1, float x2, float y2, DXCOLOR color, int thi
     return 0;
 }
 
-int PL_Draw_Line(int x1, int y1, int x2, int y2, DXCOLOR color, int thickness) {
-    return PL_Draw_LineF((float)x1, (float)y1, (float)x2, (float)y2, color, thickness);
+int Dx_Draw_Line(int x1, int y1, int x2, int y2, DXCOLOR color, int thickness) {
+    return Dx_Draw_LineF((float)x1, (float)y1, (float)x2, (float)y2, color, thickness);
 }
 
-int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillFlag) {
+int Dx_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillFlag) {
     /* DxLib's circle/oval drawing functions are not mimiced accurately.
      * 
      * DxLib draws them one pixel around the circumference at a time.
@@ -650,12 +378,12 @@ int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillF
      * We may want to adjust the number of points based on the
      * circumference of the ellipse.
      */
-    Uint32 vColor = s_modulateColor(color);
+    Uint32 vColor = s_ModulateColor(color);
     
     if (fillFlag) {
         int points = 36;
         float amount = ((float)M_PI * 2) / (float)points;
-        START(v, VertexPosition2Color, GL_TRIANGLE_FAN, -1, points, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_TRIANGLEFAN, -1, points, DXTRUE);
         int i;
         
         for (i = 0; i < points; ++i) {
@@ -665,11 +393,11 @@ int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillF
         }
         
         /* we don't want triangle fan to bleed over, so clear it out now. */
-        PL_Draw_FlushCache();
+        Dx_Draw_FlushCache();
     } else {
         int points = 36;
         float amount = ((float)M_PI * 2) / (float)points;
-        START(v, VertexPosition2Color, GL_LINES, -1, points * 2, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_LINES, -1, points * 2, DXTRUE);
         VertexPosition2Color *sv = v;
         int i;
         
@@ -691,30 +419,30 @@ int PL_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillF
     }
     return 0;
 }
-int PL_Draw_Oval(int x, int y, int rx, int ry, DXCOLOR color, int fillFlag) {
-    return PL_Draw_OvalF((float)x, (float)y, (float)rx, (float)ry, color, fillFlag);
+int Dx_Draw_Oval(int x, int y, int rx, int ry, DXCOLOR color, int fillFlag) {
+    return Dx_Draw_OvalF((float)x, (float)y, (float)rx, (float)ry, color, fillFlag);
 }
-int PL_Draw_Circle(int x, int y, int r, DXCOLOR color, int fillFlag) {
-    return PL_Draw_OvalF((float)x, (float)y, (float)r, (float)r, color, fillFlag);
+int Dx_Draw_Circle(int x, int y, int r, DXCOLOR color, int fillFlag) {
+    return Dx_Draw_OvalF((float)x, (float)y, (float)r, (float)r, color, fillFlag);
 }
-int PL_Draw_CircleF(float x, float y, float r, DXCOLOR color, int fillFlag) {
-    return PL_Draw_OvalF(x, y, r, r, color, fillFlag);
+int Dx_Draw_CircleF(float x, float y, float r, DXCOLOR color, int fillFlag) {
+    return Dx_Draw_OvalF(x, y, r, r, color, fillFlag);
 }
 
-int PL_Draw_TriangleF(
+int Dx_Draw_TriangleF(
     float x1, float y1, float x2, float y2, float x3, float y3,
     DXCOLOR color, int fillFlag
 ) {
-    Uint32 vColor = s_modulateColor(color);
+    Uint32 vColor = s_ModulateColor(color);
     
     if (fillFlag) {
-        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 3, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_TRIANGLES, -1, 3, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y2; v[1].color = vColor;
         v[2].x = x3; v[2].y = y3; v[2].color = vColor;
     } else {
-        START(v, VertexPosition2Color, GL_LINES, -1, 6, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_LINES, -1, 6, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[5] = v[0];
@@ -727,23 +455,23 @@ int PL_Draw_TriangleF(
     return 0;
 }
 
-int PL_Draw_Triangle(
+int Dx_Draw_Triangle(
     int x1, int y1, int x2, int y2, int x3, int y3,
     DXCOLOR color, int fillFlag
 ) {
-    return PL_Draw_TriangleF((float)x1, (float)y1, (float)x2, (float)y2,
+    return Dx_Draw_TriangleF((float)x1, (float)y1, (float)x2, (float)y2,
                              (float)x3, (float)y3, color, fillFlag);
 }
 
-int PL_Draw_QuadrangleF(
+int Dx_Draw_QuadrangleF(
     float x1, float y1, float x2, float y2,
     float x3, float y3, float x4, float y4,
     DXCOLOR color, int fillFlag
 ) {
-    Uint32 vColor = s_modulateColor(color);
+    Uint32 vColor = s_ModulateColor(color);
     
     if (fillFlag) {
-        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_TRIANGLES, -1, 6, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y2; v[1].color = vColor;
@@ -752,7 +480,7 @@ int PL_Draw_QuadrangleF(
         v[4] = v[1];
         v[5].x = x4; v[5].y = y4; v[5].color = vColor;
     } else {
-        START(v, VertexPosition2Color, GL_LINES, -1, 8, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_LINES, -1, 8, DXTRUE);
     
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[7] = v[0];
@@ -767,22 +495,22 @@ int PL_Draw_QuadrangleF(
     return 0;
 }
 
-int PL_Draw_Quadrangle(
+int Dx_Draw_Quadrangle(
     int x1, int y1, int x2, int y2,
     int x3, int y3, int x4, int y4,
     DXCOLOR color, int fillFlag
 ) {
-    return PL_Draw_QuadrangleF((float)x1, (float)y1, (float)x2, (float)y2,
+    return Dx_Draw_QuadrangleF((float)x1, (float)y1, (float)x2, (float)y2,
                                (float)x3, (float)y3, (float)x4, (float)y4,
                                color, fillFlag);
 }
 
-int PL_Draw_BoxF(float x1, float y1, float x2, float y2, DXCOLOR color, int FillFlag) {
-    Uint32 vColor = s_modulateColor(color);
+int Dx_Draw_BoxF(float x1, float y1, float x2, float y2, DXCOLOR color, int FillFlag) {
+    Uint32 vColor = s_ModulateColor(color);
     
     if (FillFlag) {
         /* TRIANGLES instead of TRIANGLE_STRIP so that we can batch. */
-        START(v, VertexPosition2Color, GL_TRIANGLES, -1, 6, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_TRIANGLES, -1, 6, DXTRUE);
         
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y1; v[1].color = vColor;
@@ -792,7 +520,7 @@ int PL_Draw_BoxF(float x1, float y1, float x2, float y2, DXCOLOR color, int Fill
         v[5].x = x2; v[5].y = y2; v[5].color = vColor;
     } else {
         /* LINES instead of LINE_LOOP so that we can batch. */
-        START(v, VertexPosition2Color, GL_LINES, -1, 8, DXTRUE);
+        START(v, VertexPosition2Color, PL_PRIM_LINES, -1, 8, DXTRUE);
         
         v[0].x = x1; v[0].y = y1; v[0].color = vColor;
         v[1].x = x2; v[1].y = y1; v[1].color = vColor;
@@ -807,17 +535,17 @@ int PL_Draw_BoxF(float x1, float y1, float x2, float y2, DXCOLOR color, int Fill
     return 0;
 }
 
-int PL_Draw_Box(int x1, int y1, int x2, int y2, DXCOLOR color, int FillFlag) {
-    return PL_Draw_BoxF((float)x1, (float)y1, (float)x2, (float)y2, color, FillFlag);
+int Dx_Draw_Box(int x1, int y1, int x2, int y2, DXCOLOR color, int FillFlag) {
+    return Dx_Draw_BoxF((float)x1, (float)y1, (float)x2, (float)y2, color, FillFlag);
 }
 
-int PL_Draw_GraphF(float x1, float y1, int graphID, int blendFlag) {
+int Dx_Draw_GraphF(float x1, float y1, int graphID, int blendFlag) {
     SDL_Rect texRect;
     int textureRefID;
     float xMult, yMult;
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
-        Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
+        Uint32 vColor = s_GetColor();
+        START(v, VertexPosition2Tex2Color, PL_PRIM_TRIANGLES, textureRefID, 6, blendFlag);
         float x2, y2;
         float tx1 = (float)texRect.x * xMult;
         float ty1 = (float)texRect.y * yMult;
@@ -839,17 +567,17 @@ int PL_Draw_GraphF(float x1, float y1, int graphID, int blendFlag) {
     return 0;
 }
 
-int PL_Draw_Graph(int x, int y, int graphID, int blendFlag) {
-    return PL_Draw_GraphF((float)x, (float)y, graphID, blendFlag);
+int Dx_Draw_Graph(int x, int y, int graphID, int blendFlag) {
+    return Dx_Draw_GraphF((float)x, (float)y, graphID, blendFlag);
 }
 
-int PL_Draw_ExtendGraphF(float x1, float y1, float x2, float y2, int graphID, int blendFlag) {
+int Dx_Draw_ExtendGraphF(float x1, float y1, float x2, float y2, int graphID, int blendFlag) {
     SDL_Rect texRect;
     int textureRefID;
     float xMult, yMult;
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
-        Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
+        Uint32 vColor = s_GetColor();
+        START(v, VertexPosition2Tex2Color, PL_PRIM_TRIANGLES, textureRefID, 6, blendFlag);
         float tx1 = (float)texRect.x * xMult;
         float ty1 = (float)texRect.y * yMult;
         float tx2 = tx1 + ((float)texRect.w * xMult);
@@ -865,11 +593,11 @@ int PL_Draw_ExtendGraphF(float x1, float y1, float x2, float y2, int graphID, in
     
     return 0;
 }
-int PL_Draw_ExtendGraph(int x1, int y1, int x2, int y2, int graphID, int blendFlag) {
-    return PL_Draw_ExtendGraphF((float)x1, (float)y1, (float)x2, (float)y2, graphID, blendFlag);
+int Dx_Draw_ExtendGraph(int x1, int y1, int x2, int y2, int graphID, int blendFlag) {
+    return Dx_Draw_ExtendGraphF((float)x1, (float)y1, (float)x2, (float)y2, graphID, blendFlag);
 }
 
-int PL_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
+int Dx_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
                       int graphID, int blendFlag, int turnFlag) {
     /* DxLib has very, very strange behavior for DrawRectGraph.
      * 
@@ -888,8 +616,8 @@ int PL_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
     SDL_Rect texRect;
     int textureRefID;
     float xMult, yMult;
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
-        Uint32 vColor = s_getColor();
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
+        Uint32 vColor = s_GetColor();
         float dx1, dy1, dx2, dy2;
         float tx1, ty1, tx2, ty2;
         
@@ -948,7 +676,7 @@ int PL_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
         
         /* - draw! */
         {
-            START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
+            START(v, VertexPosition2Tex2Color, PL_PRIM_TRIANGLES, textureRefID, 6, blendFlag);
             
             v[0].x = dx1; v[0].y = dy1; v[0].tcx = tx1; v[0].tcy = ty1; v[0].color = vColor;
             v[1].x = dx2; v[1].y = dy1; v[1].tcx = tx2; v[1].tcy = ty1; v[1].color = vColor;
@@ -961,22 +689,22 @@ int PL_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
     
     return 0;
 }
-int PL_Draw_RectGraph(int dx, int dy, int sx, int sy, int sw, int sh,
+int Dx_Draw_RectGraph(int dx, int dy, int sx, int sy, int sw, int sh,
                       int graphID, int blendFlag, int turnFlag) {
-    return PL_Draw_RectGraphF((float)dx, (float)dy, sx, sy, sw, sh, graphID, blendFlag, turnFlag);
+    return Dx_Draw_RectGraphF((float)dx, (float)dy, sx, sy, sw, sh, graphID, blendFlag, turnFlag);
 }
 
 /* Temporary DxPortLib extension because RectGraph is sloooooow) */
-int PL_EXT_Draw_RectGraphFastF(
+int Dx_EXT_Draw_RectGraphFastF(
                             float dx1, float dy1, float dw, float dh,
                             int sx, int sy, int sw, int sh,
                             int graphID, int blendFlag) {
     SDL_Rect texRect;
     int textureRefID;
     float xMult, yMult;
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
-        Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
+        Uint32 vColor = s_GetColor();
+        START(v, VertexPosition2Tex2Color, PL_PRIM_TRIANGLES, textureRefID, 6, blendFlag);
         float dx2, dy2;
         float tx1 = (float)(texRect.x + sx) * xMult;
         float ty1 = (float)(texRect.y + sy) * yMult;
@@ -998,15 +726,15 @@ int PL_EXT_Draw_RectGraphFastF(
     return 0;
 }
 
-int PL_Draw_RectExtendGraphF(float dx1, float dy1, float dx2, float dy2,
+int Dx_Draw_RectExtendGraphF(float dx1, float dy1, float dx2, float dy2,
                              int sx, int sy, int sw, int sh,
                              int graphID, int blendFlag, int turnFlag) {
     SDL_Rect texRect;
     int textureRefID;
     float xMult, yMult;
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
-        Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
+        Uint32 vColor = s_GetColor();
+        START(v, VertexPosition2Tex2Color, PL_PRIM_TRIANGLES, textureRefID, 6, blendFlag);
         float tx1 = (float)(texRect.x + sx) * xMult;
         float ty1 = (float)(texRect.y + sy) * yMult;
         float tx2 = tx1 + ((float)sw * xMult);
@@ -1023,10 +751,10 @@ int PL_Draw_RectExtendGraphF(float dx1, float dy1, float dx2, float dy2,
     return 0;
 }
 
-int PL_Draw_RectExtendGraph(int dx1, int dy1, int dx2, int dy2,
+int Dx_Draw_RectExtendGraph(int dx1, int dy1, int dx2, int dy2,
                             int sx, int sy, int sw, int sh,
                             int graphID, int blendFlag, int turnFlag) {
-    return PL_Draw_RectExtendGraphF(
+    return Dx_Draw_RectExtendGraphF(
                 (float)dx1, (float)dy1, (float)dx2, (float)dy2,
                 sx, sy, sw, sh,
                 graphID, blendFlag, turnFlag
@@ -1051,8 +779,8 @@ static int s_Draw_RotaGraphMain(
      * - Calculate the two x extents and the two y extents.
      * - Draw!
      */
-    Uint32 vColor = s_getColor();
-    START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
+    Uint32 vColor = s_GetColor();
+    START(v, VertexPosition2Tex2Color, PL_PRIM_TRIANGLES, textureRefID, 6, blendFlag);
     float tw = (float)texRect->w;
     float th = (float)texRect->h;
     float tx1 = (float)texRect->x * xMult;
@@ -1102,14 +830,14 @@ static int s_Draw_RotaGraphMain(
     return 0;
 }
 
-int PL_Draw_RotaGraphF(float x, float y, 
+int Dx_Draw_RotaGraphF(float x, float y, 
                        double scaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
     int textureRefID;
     SDL_Rect texRect;
     float xMult, yMult;
     
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
         return -1;
     }
     
@@ -1118,21 +846,21 @@ int PL_Draw_RotaGraphF(float x, float y,
                                 (float)scaleFactor, (float)scaleFactor, (float)angle,
                                 graphID, blendFlag, turn);
 }
-int PL_Draw_RotaGraph(int x, int y, 
+int Dx_Draw_RotaGraph(int x, int y, 
                       double scaleFactor, double angle,
                       int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraphF((float)x, (float)y, scaleFactor, angle,
+    return Dx_Draw_RotaGraphF((float)x, (float)y, scaleFactor, angle,
                               graphID, blendFlag, turn);
 }
 
-int PL_Draw_RotaGraph2F(float x, float y, float cx, float cy,
+int Dx_Draw_RotaGraph2F(float x, float y, float cx, float cy,
                        double scaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
     int textureRefID;
     SDL_Rect texRect;
     float xMult, yMult;
     
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
         return -1;
     }
     
@@ -1142,24 +870,24 @@ int PL_Draw_RotaGraph2F(float x, float y, float cx, float cy,
                                 graphID, blendFlag, turn);
 }
 
-int PL_Draw_RotaGraph2(int x, int y, int cx, int cy,
+int Dx_Draw_RotaGraph2(int x, int y, int cx, int cy,
                        double scaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraph2F(
+    return Dx_Draw_RotaGraph2F(
                 (float)x, (float)y, (float)cx, (float)cy,
                 scaleFactor, angle,
                 graphID, blendFlag, turn
            );
 }
 
-int PL_Draw_RotaGraph3F(float x, float y, float cx, float cy,
+int Dx_Draw_RotaGraph3F(float x, float y, float cx, float cy,
                        double xScaleFactor, double yScaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
     int textureRefID;
     SDL_Rect texRect;
     float xMult, yMult;
     
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
         return -1;
     }
     
@@ -1169,17 +897,17 @@ int PL_Draw_RotaGraph3F(float x, float y, float cx, float cy,
                                 graphID, blendFlag, turn);
 }
 
-int PL_Draw_RotaGraph3(int x, int y, int cx, int cy,
+int Dx_Draw_RotaGraph3(int x, int y, int cx, int cy,
                        double xScaleFactor, double yScaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
-    return PL_Draw_RotaGraph3F(
+    return Dx_Draw_RotaGraph3F(
                 (float)x, (float)y, (float)cx, (float)cy,
                 xScaleFactor, yScaleFactor, (float)angle,
                 graphID, blendFlag, turn
            );
 }
 
-int PL_Draw_RectRotaGraphF(float x, float y,
+int Dx_Draw_RectRotaGraphF(float x, float y,
                            int sx, int sy, int sw, int sh,
                            double scaleFactor, double angle,
                            int graphID, int blendFlag, int turn) {
@@ -1187,7 +915,7 @@ int PL_Draw_RectRotaGraphF(float x, float y,
     SDL_Rect texRect;
     float xMult, yMult;
     
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
         return -1;
     }
     
@@ -1202,16 +930,16 @@ int PL_Draw_RectRotaGraphF(float x, float y,
                                 graphID, blendFlag, turn);
 }
 
-int PL_Draw_RectRotaGraph(int x, int y, 
+int Dx_Draw_RectRotaGraph(int x, int y, 
                           int sx, int sy, int sw, int sh,
                           double scaleFactor, double angle,
                           int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraphF((float)x, (float)y, sx, sy, sw, sh,
+    return Dx_Draw_RectRotaGraphF((float)x, (float)y, sx, sy, sw, sh,
                                   scaleFactor, (float)angle,
                                   graphID, blendFlag, turn);
 }
 
-int PL_Draw_RectRotaGraph2F(float x, float y,
+int Dx_Draw_RectRotaGraph2F(float x, float y,
                             int sx, int sy, int sw, int sh,
                             float cx, float cy,
                             double scaleFactor, double angle,
@@ -1220,7 +948,7 @@ int PL_Draw_RectRotaGraph2F(float x, float y,
     SDL_Rect texRect;
     float xMult, yMult;
     
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
         return -1;
     }
     
@@ -1235,11 +963,11 @@ int PL_Draw_RectRotaGraph2F(float x, float y,
                                 graphID, blendFlag, turn);
 }
 
-int PL_Draw_RectRotaGraph2(int x, int y, int cx, int cy,
+int Dx_Draw_RectRotaGraph2(int x, int y, int cx, int cy,
                            int sx, int sy, int sw, int sh,
                            double scaleFactor, double angle,
                            int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraph2F(
+    return Dx_Draw_RectRotaGraph2F(
                 (float)x, (float)y, sx, sy, sw, sh,
                 (float)cx, (float)cy,
                 scaleFactor, angle,
@@ -1247,7 +975,7 @@ int PL_Draw_RectRotaGraph2(int x, int y, int cx, int cy,
            );
 }
 
-int PL_Draw_RectRotaGraph3F(float x, float y,
+int Dx_Draw_RectRotaGraph3F(float x, float y,
                             int sx, int sy, int sw, int sh,
                             float cx, float cy,
                             double xScaleFactor, double yScaleFactor, double angle,
@@ -1256,7 +984,7 @@ int PL_Draw_RectRotaGraph3F(float x, float y,
     SDL_Rect texRect;
     float xMult, yMult;
     
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
         return -1;
     }
     
@@ -1271,12 +999,12 @@ int PL_Draw_RectRotaGraph3F(float x, float y,
                                 graphID, blendFlag, turn);
 }
 
-int PL_Draw_RectRotaGraph3(int x, int y,
+int Dx_Draw_RectRotaGraph3(int x, int y,
                            int sx, int sy, int sw, int sh,
                            int cx, int cy,
                            double xScaleFactor, double yScaleFactor, double angle,
                            int graphID, int blendFlag, int turn) {
-    return PL_Draw_RectRotaGraph3F(
+    return Dx_Draw_RectRotaGraph3F(
                 (float)x, (float)y, sx, sy, sw, sh,
                 (float)cx, (float)cy,
                 xScaleFactor, yScaleFactor, angle,
@@ -1284,7 +1012,7 @@ int PL_Draw_RectRotaGraph3(int x, int y,
            );
 }
 
-int PL_Draw_ModiGraphF(
+int Dx_Draw_ModiGraphF(
     float x1, float y1, float x2, float y2,
     float x3, float y3, float x4, float y4,
     int graphID, int blendFlag
@@ -1292,9 +1020,9 @@ int PL_Draw_ModiGraphF(
     SDL_Rect texRect;
     int textureRefID;
     float xMult, yMult;
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
-        Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
+        Uint32 vColor = s_GetColor();
+        START(v, VertexPosition2Tex2Color, PL_PRIM_TRIANGLES, textureRefID, 6, blendFlag);
         float tx1 = (float)texRect.x * xMult;
         float ty1 = (float)texRect.y * yMult;
         float tx2 = tx1 + ((float)texRect.w * xMult);
@@ -1311,23 +1039,23 @@ int PL_Draw_ModiGraphF(
     return 0;
 }
 
-int PL_Draw_ModiGraph(
+int Dx_Draw_ModiGraph(
     int x1, int y1, int x2, int y2,
     int x3, int y3, int x4, int y4,
     int graphID, int blendFlag
 ) {
-    return PL_Draw_ModiGraphF((float)x1, (float)y1, (float)x2, (float)y2,
+    return Dx_Draw_ModiGraphF((float)x1, (float)y1, (float)x2, (float)y2,
                               (float)x3, (float)y3, (float)x4, (float)y4,
                               graphID, blendFlag);
 }
 
-int PL_Draw_TurnGraphF(float x1, float y1, int graphID, int blendFlag) {
+int Dx_Draw_TurnGraphF(float x1, float y1, int graphID, int blendFlag) {
     SDL_Rect texRect;
     int textureRefID;
     float xMult, yMult;
-    if (PL_Texture_RenderGetGraphTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
-        Uint32 vColor = s_getColor();
-        START(v, VertexPosition2Tex2Color, GL_TRIANGLES, textureRefID, 6, blendFlag);
+    if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
+        Uint32 vColor = s_GetColor();
+        START(v, VertexPosition2Tex2Color, PL_PRIM_TRIANGLES, textureRefID, 6, blendFlag);
         float x2, y2;
         float tx1 = (float)texRect.x * xMult;
         float ty1 = (float)texRect.y * yMult;
@@ -1349,8 +1077,8 @@ int PL_Draw_TurnGraphF(float x1, float y1, int graphID, int blendFlag) {
     return 0;
 }
 
-int PL_Draw_TurnGraph(int x, int y, int graphID, int blendFlag) {
-    return PL_Draw_TurnGraphF((float)x, (float)y, graphID, blendFlag);
+int Dx_Draw_TurnGraph(int x, int y, int graphID, int blendFlag) {
+    return Dx_Draw_TurnGraphF((float)x, (float)y, graphID, blendFlag);
 }
 
 static int s_scissorEnabled = DXFALSE;
@@ -1358,24 +1086,24 @@ static int s_scissorX = 0;
 static int s_scissorY = 0;
 static int s_scissorW = 0;
 static int s_scissorH = 0;
+static int s_drawScreenWidth = 640;
+static int s_drawScreenHeight = 480;
 
 static void s_RefreshScissor() {
-    PL_Draw_UpdateDrawScreen();
+    Dx_Draw_UpdateDrawScreen();
     if (s_scissorEnabled == DXFALSE) {
-        PL_GL.glDisable(GL_SCISSOR_TEST);
+        PL_Render_DisableScissor();
     } else {
-        PL_GL.glEnable(GL_SCISSOR_TEST);
-        PL_GL.glScissor(s_scissorX, s_scissorY, s_scissorW, s_scissorH);
+        PL_Render_SetScissor(s_scissorX, s_scissorY, s_scissorW, s_scissorH);
     }
 }
 
-int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2) {
-    PL_Draw_FlushCache();
+int Dx_Draw_SetDrawArea(int x1, int y1, int x2, int y2) {
+    Dx_Draw_FlushCache();
     
-    if (x1 == 0 && y1 == 0 && x2 == PL_drawScreenWidth && y2 == PL_drawScreenHeight) {
+    if (x1 == 0 && y1 == 0 && x2 == s_drawScreenWidth && y2 == s_drawScreenHeight) {
         s_scissorEnabled = DXFALSE;
     } else {
-        
         s_scissorEnabled = DXTRUE;
         s_scissorX = x1;
         s_scissorY = y1;
@@ -1388,25 +1116,24 @@ int PL_Draw_SetDrawArea(int x1, int y1, int x2, int y2) {
     return 0;
 }
 
-int PL_Draw_SetBackgroundColor(int red, int green, int blue) {
+int Dx_Draw_SetBackgroundColor(int red, int green, int blue) {
     s_bgColorR = red;
     s_bgColorG = green;
     s_bgColorB = blue;
     return 0;
 }
 
-int PL_Draw_ClearDrawScreen(const RECT *rect) {
-    PL_Draw_FlushCache();
-    PL_Draw_UpdateDrawScreen();
+int Dx_Draw_ClearDrawScreen(const RECT *rect) {
+    Dx_Draw_FlushCache();
+    Dx_Draw_UpdateDrawScreen();
     
-    PL_GL.glClearColor(s_bgColorR / 255.0f, s_bgColorG / 255.0f, s_bgColorB / 255.0f, 1);
+    PL_Render_ClearColor(s_bgColorR / 255.0f, s_bgColorG / 255.0f, s_bgColorB / 255.0f, 1.0f);
     if (rect == NULL) {
-        PL_GL.glDisable(GL_SCISSOR_TEST);
-        PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+        PL_Render_DisableScissor();
+        PL_Render_Clear();
     } else {
-        PL_GL.glEnable(GL_SCISSOR_TEST);
-        PL_GL.glScissor(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
-        PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+        PL_Render_SetScissor(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
+        PL_Render_Clear();
     }
     
     s_RefreshScissor();
@@ -1414,23 +1141,23 @@ int PL_Draw_ClearDrawScreen(const RECT *rect) {
     return 0;
 }
 
-int PL_Draw_SetDrawMode(int drawMode) {
+int Dx_Draw_SetDrawMode(int drawMode) {
     if (drawMode != s_drawMode) {
-        PL_Draw_FlushCache();
+        Dx_Draw_FlushCache();
         
         s_drawMode = drawMode;
     }
     
     return 0;
 }
-int PL_Draw_GetDrawMode() {
+int Dx_Draw_GetDrawMode() {
     return s_drawMode;
 }
 
-int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
+int Dx_Draw_SetDrawBlendMode(int blendMode, int alpha) {
     /* Changing blend mode forces a cache flush. */
     if (blendMode != s_blendMode) {
-        PL_Draw_FlushCache();
+        Dx_Draw_FlushCache();
         
         s_blendMode = blendMode;
     }
@@ -1445,21 +1172,21 @@ int PL_Draw_SetDrawBlendMode(int blendMode, int alpha) {
     return 0;
 }
 
-int PL_Draw_GetDrawBlendMode(int *blendMode, int *alpha) {
+int Dx_Draw_GetDrawBlendMode(int *blendMode, int *alpha) {
     *blendMode = s_blendMode;
     *alpha = (int)(s_drawColorA >> 24);
     
     return 0;
 }
 
-int PL_Draw_SetBright(int redBright, int greenBright, int blueBright) {
+int Dx_Draw_SetBright(int redBright, int greenBright, int blueBright) {
     s_drawColorR = redBright & 0xff;
     s_drawColorG = greenBright & 0xff;
     s_drawColorB = blueBright & 0xff;
     return 0;
 }
 
-int PL_Draw_GetBright(int *redBright, int *greenBright, int *blueBright) {
+int Dx_Draw_GetBright(int *redBright, int *greenBright, int *blueBright) {
     *redBright = (int)s_drawColorR;
     *greenBright = (int)s_drawColorG;
     *blueBright = (int)s_drawColorB;
@@ -1467,12 +1194,12 @@ int PL_Draw_GetBright(int *redBright, int *greenBright, int *blueBright) {
     return 0;
 }
 
-int PL_Draw_SetBasicBlendFlag(int blendFlag) {
-    /* Reseved for software renderer, so it won't be used at all. */
+int Dx_Draw_SetBasicBlendFlag(int blendFlag) {
+    /* Reseved for software renderer, so this stub won't be used at all. */
     return 0;
 }
 
-int PL_Draw_ForceUpdate() {
+int Dx_Draw_ForceUpdate() {
     s_lastBlendMode = -1;
     
     s_RefreshScissor();
@@ -1480,4 +1207,60 @@ int PL_Draw_ForceUpdate() {
     return 0;
 }
 
-#endif /* #ifdef DXPORTLIB_DRAW_OPENGL */
+static int s_currentScreenID = -1;
+static int s_drawScreenID = -1;
+static int s_drawGraphID = -1;
+
+int Dx_Draw_UpdateDrawScreen() {
+    if (s_drawScreenID != s_currentScreenID) {
+        SDL_Rect screenRect;
+        PLMatrix projection, view;
+        
+        s_currentScreenID = s_drawScreenID;
+        PL_Texture_BindFramebuffer(s_drawScreenID);
+        
+        PL_Texture_RenderGetTextureInfo(s_currentScreenID, &screenRect, NULL, NULL);
+        s_drawScreenWidth = screenRect.w;
+        s_drawScreenHeight = screenRect.h;
+        
+        PL_Matrix_CreateOrthoOffCenterLH(&projection, 0, screenRect.w, 0, screenRect.h, -32768, 32767);
+        PL_Matrix_CreateIdentity(&view);
+        
+        PL_Render_SetMatrices(&projection, &view);
+    }
+    return 0;
+}
+
+int Dx_Draw_SetDrawScreen(int graphID) {
+    int textureID = Dx_Graph_GetTextureID(graphID, NULL);
+    
+    if (textureID >= 0) {
+        s_drawScreenID = textureID;
+        s_drawGraphID = graphID;
+    } else {
+        s_drawScreenID = PL_Window_GetFramebuffer();
+        s_drawGraphID = -1;
+    }
+    
+    return 0;
+}
+
+int Dx_Draw_GetDrawScreen() {
+    if (s_drawGraphID < 0) {
+        return DX_SCREEN_BACK;
+    }
+    return s_drawGraphID;
+}
+
+int Dx_Draw_ResetDrawScreen() {
+    int prevGraphID = s_drawGraphID;
+    
+    s_currentScreenID = -1;
+    s_drawScreenID = -1;
+    s_drawGraphID = -1;
+    
+    Dx_Draw_SetDrawScreen(prevGraphID);
+    return 0;
+}
+
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */

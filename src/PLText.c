@@ -1,7 +1,7 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
-  
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
+
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "PLInternal.h"
 
 static int s_useCharSet = DX_CHARSET_EXT_UTF8;
 
@@ -151,7 +151,7 @@ int PL_Text_IsIncompleteUTF8Char(const char *buffer, int length) {
 
 unsigned int PL_Text_ReadChar(const char **textRef, int charset) {
     switch(charset) {
-#ifndef DXPORTLIB_NON_SJIS
+#ifndef DXPORTLIB_NO_SJIS
         case DX_CHARSET_SHFTJIS:
             return PL_Text_ReadSJISChar(textRef);
 #endif /* #ifndef DXPORTLIB_NON_SJIS */
@@ -164,7 +164,7 @@ unsigned int PL_Text_ReadChar(const char **textRef, int charset) {
 
 int PL_Text_WriteChar(char *text, unsigned int ch, int maxLen, int charset) {
     switch(charset) {
-#ifndef DXPORTLIB_NON_SJIS
+#ifndef DXPORTLIB_NO_SJIS
         case DX_CHARSET_SHFTJIS:
             return PL_Text_WriteSJISChar(text, ch, maxLen);
 #endif /* #ifndef DXPORTLIB_NON_SJIS */
@@ -234,7 +234,7 @@ int PL_Text_StringToDxString(const char *inString, DXCHAR *outBuffer, int maxLen
     maxLen -= 1;
     
     while (count < maxLen && (ch = PL_Text_ReadChar(&inString, charset)) != 0) {
-        count += PL_Text_WriteDxChar(outBuffer, ch, maxLen - count);
+        count += PL_Text_WriteDxChar(outBuffer + count, ch, maxLen - count);
     }
     
     outBuffer[count] = '\0';
@@ -272,7 +272,7 @@ void PL_Text_DxStrncat(DXCHAR *str, const DXCHAR *catStr, int maxLen) {
     
     str += len;
     
-    while (str < end && (ch = *catStr) != 0) {
+    while (str < end && (ch = (*catStr++)) != 0) {
         *str++ = ch;
     }
     
@@ -283,7 +283,7 @@ void PL_Text_DxStrncpy(DXCHAR *str, const DXCHAR *cpyStr, int maxLen) {
     DXCHAR *end = str + maxLen - 1;
     DXCHAR ch;
     
-    while (str < end && (ch = *cpyStr) != 0) {
+    while (str < end && (ch = (*cpyStr++)) != 0) {
         *str++ = ch;
     }
     
@@ -330,7 +330,27 @@ int PL_Text_DxStrcmp(const DXCHAR *strA, const DXCHAR *strB) {
     
     return v;
 }
-
+int PL_Text_DxStrcasecmp(const DXCHAR *strA, const DXCHAR *strB) {
+    unsigned int a, b;
+    int v;
+    
+    do {
+        a = PL_Text_ReadDxChar(&strA);
+        b = PL_Text_ReadDxChar(&strB);
+        v = b - a;
+        if (v != 0) {
+            if (a >= 'A' && a <= 'Z') {
+                a += 'a' - 'A';
+            }
+            if (b >= 'A' && b <= 'Z') {
+                b += 'a' - 'A';
+            }
+            v = b - a;
+        }
+    } while (v == 0 && a != 0 && b != 0);
+    
+    return v;
+}
 int PL_Text_DxStrncmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
     int v = 0;
     const DXCHAR *end = strA + maxLen;
@@ -342,10 +362,73 @@ int PL_Text_DxStrncmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
     
     return v;
 }
+int PL_Text_DxStrncasecmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
+    const DXCHAR *endA = strA + maxLen;
+    unsigned int a, b;
+    int v;
+    
+    do {
+        a = PL_Text_ReadDxChar(&strA);
+        b = PL_Text_ReadDxChar(&strB);
+        v = b - a;
+        if (v != 0) {
+            if (a >= 'A' && a <= 'Z') {
+                a += 'a' - 'A';
+            }
+            if (b >= 'A' && b <= 'Z') {
+                b += 'a' - 'A';
+            }
+            v = b - a;
+        }
+    } while (v == 0 && a != 0 && b != 0 && strA < endA);
+    
+    return v;
+}
+const DXCHAR *PL_Text_DxStrstr(const DXCHAR *strA, const DXCHAR *strB) {
+    int n = PL_Text_DxStrlen(strB);
+    while (*strA) {
+        if (!PL_Text_DxStrncmp(strA, strB, n)) {
+            return strA;
+        }
+        PL_Text_ReadDxChar(&strA);
+    }
+    return NULL;
+}
+const DXCHAR *PL_Text_DxStrcasestr(const DXCHAR *strA, const DXCHAR *strB) {
+    int n = PL_Text_DxStrlen(strB);
+    while (*strA) {
+        if (!PL_Text_DxStrncasecmp(strA, strB, n)) {
+            return strA;
+        }
+        PL_Text_ReadDxChar(&strA);
+    }
+    return NULL;
+}
+int PL_Text_DxStrTestExt(const DXCHAR *str, const DXCHAR *ext) {
+    int slen = PL_Text_DxStrlen(str);
+    int elen = PL_Text_DxStrlen(ext);
+    const DXCHAR *target = str + slen - elen;
+    
+    if (slen < elen) {
+        return DXFALSE;
+    }
+    
+    while (str < target) {
+        PL_Text_ReadDxChar(&str);
+    }
+    if (str != target) {
+        return DXFALSE;
+    }
+    
+    if (PL_Text_DxStrcasecmp(str, ext) == 0) {
+        return DXTRUE;
+    }
+    return DXFALSE;
+}
 
 int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
     switch(charset) {
-#ifndef DXPORTLIB_NON_SJIS
+#ifndef DXPORTLIB_NO_SJIS
         case DX_CHARSET_SHFTJIS:
             return PL_Text_IsIncompleteSJISChar(string, length);
 #endif
@@ -358,7 +441,7 @@ int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
 
 int PL_Text_SetUseCharSet(int charset) {
     switch(charset) {
-#ifndef DXPORTLIB_NON_SJIS
+#ifndef DXPORTLIB_NO_SJIS
         case DX_CHARSET_SHFTJIS: break;
 #endif /* #ifndef DXPORTLIB_NON_SJIS */
         case DX_CHARSET_EXT_UTF8: break;

@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "PLSDL2Internal.h"
+
+#ifdef DXPORTLIB_PLATFORM_SDL2
 
 #include "SDL.h"
 
@@ -106,7 +108,7 @@ static void PL_Window_Refresh() {
         PL_Window_HandleResize(wWidth, wHeight);
     }
     
-    PL_Draw_Refresh(s_window, &s_targetRect);
+    PL_SDL2GL_Refresh(s_window, &s_targetRect);
 }
 
 int PL_Window_Init(void) {
@@ -133,7 +135,7 @@ int PL_Window_Init(void) {
     
     SDL_DisableScreenSaver();
     
-    PL_Draw_Init(s_window, PL_windowWidth, PL_windowHeight, s_windowVSync);
+    PL_SDL2GL_Init(s_window, PL_windowWidth, PL_windowHeight, s_windowVSync);
     
     s_windowRealWidth = 0;
     s_windowRealHeight = 0;
@@ -153,7 +155,7 @@ int PL_Window_End(void) {
     
     s_initialized = DXFALSE;
     
-    PL_Draw_End();
+    PL_SDL2GL_End();
     
     SDL_EnableScreenSaver();
     
@@ -165,7 +167,7 @@ int PL_Window_End(void) {
 
 int PL_Window_SwapBuffers() {
     if (s_initialized == DXTRUE) {
-        PL_Draw_SwapBuffers(s_window, &s_targetRect);
+        PL_SDL2GL_SwapBuffers(s_window, &s_targetRect);
     }
     return 0;
 }
@@ -204,7 +206,7 @@ int PL_Window_SetDimensions(int width, int height, int colorDepth, int refreshRa
              * window size. (unless it's smaller?) */
             SDL_SetWindowSize(s_window, width, height);
             
-            PL_Draw_ResizeWindow(width, height);
+            PL_SDL2GL_ResizeWindow(width, height);
         }
     }
     
@@ -402,10 +404,9 @@ int PL_Window_GetMouseInput() {
 }
 
 int PLEXT_Window_SetIconImageFile(const DXCHAR *filename) {
+    SDL_RWops *file = PLSDL2_FileToRWops(PL_File_OpenRead(filename));
     SDL_Surface *surface;
-    SDL_RWops *file;
     
-    file = PL_File_OpenStream(filename);
     if (file == NULL) {
         return -1;
     }
@@ -499,3 +500,5 @@ int PLEXT_Window_MessageBoxYesNo(
     
     return resultButton;
 }
+
+#endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */

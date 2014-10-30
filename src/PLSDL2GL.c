@@ -1,7 +1,7 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
-  
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
+
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -19,11 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "DxBuildConfig.h"
 
+#ifdef DXPORTLIB_PLATFORM_SDL2
 #ifdef DXPORTLIB_DRAW_OPENGL
 
-#include "OpenGL_DxInternal.h"
+#include "PLInternal.h"
+#include "PLGLInternal.h"
+#include "PLSDL2Internal.h"
 
 static SDL_GLContext *s_context = NULL;
 
@@ -51,9 +54,11 @@ static void s_LoadGL() {
     
     PL_GL.glMatrixMode = SDL_GL_GetProcAddress("glMatrixMode");
     PL_GL.glLoadIdentity = SDL_GL_GetProcAddress("glLoadIdentity");
-    PL_GL.glPushMatrix = SDL_GL_GetProcAddress("glPushMatrix");
-    PL_GL.glPopMatrix = SDL_GL_GetProcAddress("glPopMatrix");
-    PL_GL.glOrtho = SDL_GL_GetProcAddress("glOrtho");
+    /* PL_GL.glPushMatrix = SDL_GL_GetProcAddress("glPushMatrix"); */
+    /* PL_GL.glPopMatrix = SDL_GL_GetProcAddress("glPopMatrix"); */
+    PL_GL.glLoadMatrixf = SDL_GL_GetProcAddress("glLoadMatrixf");
+    /*PL_GL.glOrtho = SDL_GL_GetProcAddress("glOrtho"); */
+    /* PL_GL.glTranslatef = SDL_GL_GetProcAddress("glTranslatef"); */
     
     PL_GL.glGenTextures = SDL_GL_GetProcAddress("glGenTextures");
     PL_GL.glDeleteTextures = SDL_GL_GetProcAddress("glDeleteTextures");
@@ -79,15 +84,27 @@ static void s_LoadGL() {
     PL_GL.glBlendFunc = SDL_GL_GetProcAddress("glBlendFunc");
     PL_GL.glBlendEquationSeparate = SDL_GL_GetProcAddress("glBlendEquationSeparate");
     PL_GL.glBlendEquation = SDL_GL_GetProcAddress("glBlendEquation");
+    PL_GL.glAlphaFunc = SDL_GL_GetProcAddress("glAlphaFunc");
     
     PL_GL.glViewport = SDL_GL_GetProcAddress("glViewport");
     PL_GL.glScissor = SDL_GL_GetProcAddress("glScissor");
     
     PL_GL.glDrawArrays = SDL_GL_GetProcAddress("glDrawArrays");
+    PL_GL.glDrawElements = SDL_GL_GetProcAddress("glDrawElements");
 
     PL_GL.glVertexPointer = SDL_GL_GetProcAddress("glVertexPointer");
     PL_GL.glColorPointer = SDL_GL_GetProcAddress("glColorPointer");
     PL_GL.glTexCoordPointer = SDL_GL_GetProcAddress("glTexCoordPointer");
+    
+    if (SDL_GL_ExtensionSupported("GL_ARB_vertex_buffer_object")) {
+        PL_GL.glGenBuffersARB = SDL_GL_GetProcAddress("glGenBuffersARB");
+        PL_GL.glDeleteBuffersARB = SDL_GL_GetProcAddress("glDeleteBuffersARB");
+        PL_GL.glBufferDataARB = SDL_GL_GetProcAddress("glBufferDataARB");
+        PL_GL.glBufferSubDataARB = SDL_GL_GetProcAddress("glBufferSubDataARB");
+        PL_GL.glMapBufferARB = SDL_GL_GetProcAddress("glMapBufferARB");
+        PL_GL.glUnmapBufferARB = SDL_GL_GetProcAddress("glUnmapBufferARB");
+        PL_GL.glBindBufferARB = SDL_GL_GetProcAddress("glBindBufferARB");
+    }
 
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         PL_GL.hasFramebufferSupport = DXTRUE;
@@ -122,49 +139,11 @@ static void s_LoadGL() {
 
 /* ------------------------------------------------------- Window context */
 
-static int s_currentScreenID = -1;
-static int s_drawScreenID = -1;
-static int s_drawGraphID = -1;
-
-int PL_Draw_UpdateDrawScreen() {
-    if (s_drawScreenID != s_currentScreenID) {
-        s_currentScreenID = s_drawScreenID;
-        PL_Texture_BindFramebuffer(s_drawScreenID);
-        
-        PL_GL.glDisable(GL_DEPTH_TEST);
-        PL_GL.glDisable(GL_CULL_FACE);
-        
-        PL_GL.glColor4f(1, 1, 1, 1);
-        
-        PL_Draw_ForceUpdate();
-    }
-    return 0;
+int PL_Window_GetFramebuffer() {
+    return s_screenFrameBufferA;
 }
 
-int PL_Draw_SetDrawScreen(int graphID) {
-    int textureID = PL_Graph_GetTextureID(graphID, NULL);
-    
-    PL_Draw_FlushCache();
-    
-    if (textureID >= 0) {
-        s_drawScreenID = textureID;
-        s_drawGraphID = graphID;
-    } else {
-        s_drawScreenID = s_screenFrameBufferA;
-        s_drawGraphID = -1;
-    }
-    
-    return 0;
-}
-
-int PL_Draw_GetDrawScreen() {
-    if (s_drawGraphID < 0) {
-        return DX_SCREEN_BACK;
-    }
-    return s_drawGraphID;
-}
-
-void PL_Draw_ResizeWindow(int width, int height) {
+void PL_SDL2GL_ResizeWindow(int width, int height) {
     if (!PL_GL.isInitialized) {
         return;
     }
@@ -189,13 +168,12 @@ void PL_Draw_ResizeWindow(int width, int height) {
     s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height, DXFALSE);
     PL_Texture_AddRef(s_screenFrameBufferB);
     
-    s_currentScreenID = -1;
-    s_drawScreenID = s_screenFrameBufferB;
-    PL_Draw_ClearDrawScreen(NULL);
+    PL_GL.glClearColor(0, 0, 0, 1);
+    PL_Texture_BindFramebuffer(s_screenFrameBufferB);
+    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     
-    s_drawScreenID = s_screenFrameBufferA;
-    PL_Draw_ClearDrawScreen(NULL);
-    PL_Draw_FlushCache();
+    PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
 }
 
 /* FIXME genericize this code a bit... */
@@ -214,6 +192,8 @@ static void s_drawRect(const SDL_Rect *rect) {
     SDL_Rect texRect;
     float xMult, yMult;
     
+    PL_GL.glActiveTexture(GL_TEXTURE0);
+    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     PL_Texture_Bind(s_screenFrameBufferB, DX_DRAWMODE_BILINEAR);
     
     PL_Texture_RenderGetTextureInfo(s_screenFrameBufferB, &texRect, &xMult, &yMult);
@@ -243,8 +223,9 @@ static void s_drawRect(const SDL_Rect *rect) {
     PL_Texture_Unbind(s_screenFrameBufferB);
 }
 
-void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
+void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     int wWidth, wHeight;
+    PLMatrix matrix;
     
     if (!PL_GL.isInitialized) {
         return;
@@ -256,7 +237,7 @@ void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
         return;
     }
     
-    PL_Draw_FlushCache();
+    /* PL_Draw_FlushCache(); */
     
     /* Set up the main screen for drawing. */
     PL_Texture_BindFramebuffer(-1);
@@ -268,13 +249,12 @@ void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     
     PL_GL.glDisable(GL_SCISSOR_TEST);
     
+    PL_Matrix_CreateOrthoOffCenterRH(&matrix, 0, wWidth, wHeight, 0, 0.0, 1.0f);
+    
     PL_GL.glViewport(0, 0, wWidth, wHeight);
     
     PL_GL.glMatrixMode(GL_PROJECTION);
-    PL_GL.glLoadIdentity();
-    PL_GL.glOrtho((GLdouble)0, (GLdouble)wWidth,
-                  (GLdouble)wHeight, 0,
-                  0.0, 1.0);
+    PL_GL.glLoadMatrixf((float *)&matrix);
     
     PL_GL.glMatrixMode(GL_MODELVIEW);
     PL_GL.glLoadIdentity();
@@ -282,36 +262,33 @@ void PL_Draw_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     PL_GL.glClearColor(0, 0, 0, 1);
     PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     
-    s_currentScreenID = -1;
-    s_drawScreenID = -1;
-    s_drawGraphID = -1;
-    
     s_drawRect(targetRect);
     
     /* Swap! */
     SDL_GL_SwapWindow(window);
     
     /* Rebind the new buffer. */
-    s_drawScreenID = s_screenFrameBufferA;
-    /* s_BindActiveFramebuffer(); */
+    PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+    
+    PL_Render_SetMatrixDirtyFlag();
 }
 
-void PL_Draw_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect) {
+void PL_SDL2GL_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect) {
     int tempBuffer;
     if (!PL_GL.isInitialized) {
         return;
     }
     
-    PL_Draw_FlushCache();
+    //PL_Draw_FlushCache();
     
     tempBuffer = s_screenFrameBufferB;
     s_screenFrameBufferB = s_screenFrameBufferA;
     s_screenFrameBufferA = tempBuffer;
     
-    PL_Draw_Refresh(window, targetRect);
+    PL_SDL2GL_Refresh(window, targetRect);
 }
 
-void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
+void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     if (PL_GL.isInitialized) {
         return;
     }
@@ -323,7 +300,7 @@ void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     }
     
     if (SDL_GL_MakeCurrent(window, s_context) < 0) {
-        PL_Draw_End();
+        PL_SDL2GL_End();
         return;
     }
     
@@ -331,15 +308,18 @@ void PL_Draw_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     
     s_LoadGL();
     
-    PL_Draw_InitCache();
+    PL_Render_Init();
     
-    PL_Draw_ResizeWindow(width, height);
+    PL_SDL2GL_ResizeWindow(width, height);
+    PL_GL.glClearColor(0, 0, 0, 1);
+    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     
-    PL_Draw_ForceUpdate();
+    //PL_Draw_ForceUpdate();
 }
 
-void PL_Draw_End() {
-    PL_Draw_DestroyCache();
+void PL_SDL2GL_End() {
+    //PL_Draw_DestroyCache();
+    PL_Render_End();
     
     if (s_context != NULL) {
         PL_Texture_Release(s_screenFrameBufferA);
@@ -357,3 +337,4 @@ void PL_Draw_End() {
 }
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */
+#endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */

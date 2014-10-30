@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,19 +19,27 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#ifndef DXPORTLIB_SDL2_DXINTERNAL_H_HEADER
+#define DXPORTLIB_SDL2_DXINTERNAL_H_HEADER
 
-#include "SDL.h"
+#include "DxBuildConfig.h"
 
-void *PL_DxAlloc(size_t allocationSize, const char *file, int line) {
-    return (void *)SDL_malloc(allocationSize);
-}
-void *PL_DxCalloc(size_t allocationSize, const char *file, int line) {
-    return (void *)SDL_calloc(allocationSize, 1);
-}
-void *PL_DxRealloc(void *memory, size_t allocationSize, const char *file, int line) {
-    return (void *)SDL_realloc(memory, allocationSize);
-}
-void PL_DxFree(void *memory) {
-    SDL_free(memory);
-}
+#ifdef DXPORTLIB_PLATFORM_SDL2
+
+#include "PLInternal.h"
+
+extern SDL_RWops *PLSDL2_FileToRWops(int fileHandle);
+extern int PLSDL2_RWopsToFile(SDL_RWops *rwops);
+extern SDL_RWops *PLSDL2_FileOpenReadDirect(const DXCHAR *filename);
+
+/* ------------------------------------------------------------- Screen.c */
+
+extern void PL_SDL2GL_ResizeWindow(int width, int height);
+extern void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect);
+extern void PL_SDL2GL_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect);
+extern void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag);
+extern void PL_SDL2GL_End();
+
+#endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */
+
+#endif /* #ifndef DXPORTLIB_SDL2_DXINTERNAL_H_HEADER */

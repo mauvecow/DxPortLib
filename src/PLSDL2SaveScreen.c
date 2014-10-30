@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "PLInternal.h"
+
+#ifdef DXPORTLIB_PLATFORM_SDL2
+
+#include "PLGLInternal.h"
 
 #include "SDL_image.h"
 
@@ -53,3 +57,5 @@ int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
     
     return IMG_SavePNG(surface, namebuf);
 }
+
+#endif

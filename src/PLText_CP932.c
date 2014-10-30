@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "PLInternal.h"
 
-#ifndef DXPORTLIB_NON_SJIS
+#ifndef DXPORTLIB_NO_SJIS
 
 /* There is no truly universal codepage conversion, so the codepage
  * conversion table is included whole.
@@ -2171,10 +2171,17 @@ static const unsigned int s_TableUnicodeToSJIS_Lookup[1024] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23040, 23104, 23168, 23232, 
 };
 
+unsigned int PL_Text_ToSJIS(int ch) {
+    if (ch < 0 || ch > 0xffff) {
+        return 32;
+    }
+    return s_TableUnicodeToSJIS_Main[s_TableUnicodeToSJIS_Lookup[ch >> 6] + (ch & 63)];
+}
+
 unsigned int PL_Text_ReadSJISChar(const char **pStr) {
     unsigned char *str = (unsigned char *)*pStr;
     unsigned int ch = *str;
-    if (ch == 0) {
+    if (ch == 0 || ch > 0xffff) {
         return 0;
     }
     
@@ -2227,4 +2234,4 @@ int PL_Text_IsIncompleteSJISChar(const char *buffer, int length) {
     return DXFALSE;
 }
 
-#endif /* #ifndef DXPORTLIB_NON_SJIS */
+#endif /* #ifndef DXPORTLIB_NO_SJIS */

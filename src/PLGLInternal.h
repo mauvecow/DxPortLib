@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,10 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#ifndef DXLIB_OPENGL_DXINTERNAL_H_HEADER
-#define DXLIB_OPENGL_DXINTERNAL_H_HEADER
+#ifndef DXPORTLIB_OPENGL_DXINTERNAL_H_HEADER
+#define DXPORTLIB_OPENGL_DXINTERNAL_H_HEADER
 
-#include "DxInternal.h"
+#include "PLInternal.h"
 
 #ifdef DXPORTLIB_DRAW_OPENGL
 
@@ -32,13 +32,6 @@
 #ifdef __MACOSX__
 #include <OpenGL/OpenGL.h>
 #endif
-
-/* some helpful defines */
-#ifndef offsetof
-#  define offsetof(x, y) ((int)&(((x *)0)->y))
-#endif
-
-#define elementsof(x) (sizeof(x) / sizeof(x[0]))
 
 /* In the event this is not defined... */
 #ifndef M_PI
@@ -65,11 +58,15 @@ typedef struct GLInfo_t {
     
     void (APIENTRY *glMatrixMode)( GLenum mode );
     void (APIENTRY *glLoadIdentity)( void );
-    void (APIENTRY *glPushMatrix)( void );
-    void (APIENTRY *glPopMatrix)( void );
-    void (APIENTRY *glOrtho)( GLdouble left, GLdouble right,
-                              GLdouble bottom, GLdouble top,
-                              GLdouble near_val, GLdouble far_val );
+    /* We do not use the matrix stack. */
+    /* void (APIENTRY *glPushMatrix)( void ); */
+    /* void (APIENTRY *glPopMatrix)( void ); */
+    void (APIENTRY *glLoadMatrixf)( const GLfloat *m );
+    /* We use PL's internal matrix support. */
+    /* void (APIENTRY *glOrtho)( GLdouble left, GLdouble right,
+                             GLdouble bottom, GLdouble top,
+                             GLdouble near_val, GLdouble far_val ); */
+    /* void (APIENTRY *glTranslatef)( GLfloat x, GLfloat y, GLfloat z ); */
     
     /* Texture functions */
     void (APIENTRY *glGenTextures)( GLsizei n, GLuint *textures );
@@ -109,11 +106,14 @@ typedef struct GLInfo_t {
     void (APIENTRY *glBlendFunc) ( GLenum src, GLenum srcAlpha );
     void (APIENTRY *glBlendEquationSeparate) ( GLenum modeRGB, GLenum modeAlpha );
     void (APIENTRY *glBlendEquation) ( GLenum mode );
+    void (APIENTRY *glAlphaFunc)( GLenum func, GLclampf ref );
     
     void (APIENTRY *glViewport)( GLint x, GLint y, GLsizei width, GLsizei height );
     void (APIENTRY *glScissor)( GLint x, GLint y, GLsizei width, GLsizei height );
     
     void (APIENTRY *glDrawArrays)( GLenum mode, GLint first, GLsizei count );
+    void (APIENTRY *glDrawElements)( GLenum mode, GLsizei count,
+                                     GLenum type, const GLvoid *indices );
     
     void (APIENTRY *glVertexPointer)( GLint size, GLenum type,  
                                       GLsizei stride, const GLvoid *ptr );  
@@ -121,8 +121,18 @@ typedef struct GLInfo_t {
                                      GLsizei stride, const GLvoid *ptr );
     void (APIENTRY *glTexCoordPointer)( GLint size, GLenum type,
                                         GLsizei stride, const GLvoid *ptr );
+    
+    /* Vertex buffer functions */
+    void (APIENTRY *glBindBufferARB)( GLenum target, GLuint buffer );
+    void (APIENTRY *glDeleteBuffersARB)( GLsizei n, const GLuint *buffers );
+    void (APIENTRY *glGenBuffersARB)( GLsizei n, GLuint *buffers );
+    void (APIENTRY *glBufferDataARB)( GLenum target, GLsizeiptrARB size,
+                                      const GLvoid *data, GLenum usage );
+    void (APIENTRY *glBufferSubDataARB)( GLenum target, GLintptrARB offset,
+                                         GLsizeiptrARB size, const GLvoid *data );
+    GLvoid *(APIENTRY *glMapBufferARB)( GLenum target, GLenum access );
+    GLboolean (APIENTRY *glUnmapBufferARB)( GLenum target );
 
- 
     /* Framebuffer functions */
     int hasFramebufferSupport;
     
@@ -138,22 +148,20 @@ extern GLInfo PL_GL;
 extern int PL_drawScreenWidth;
 extern int PL_drawScreenHeight;
 
-extern int PL_Draw_UpdateDrawScreen();
-extern int PL_Draw_FlushCache();
-extern int PL_Draw_InitCache();
-extern int PL_Draw_DestroyCache();
-
-extern int PL_Draw_ForceUpdate();
+extern int PL_Render_SetMatrixDirtyFlag();
+extern int PL_Render_UpdateMatrices();
 
 extern int PL_Texture_Bind(int textureRefID, int drawMode);
 extern int PL_Texture_Unbind(int textureRefID);
-extern int PL_Texture_BindFramebuffer(int textureRefID);
-extern int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
-extern int PL_Texture_RenderGetGraphTextureInfo(int graphID, int *textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
-extern int PL_Texture_HasAlphaChannel(int textureRefID);
 extern int PL_Texture_ClearAllData();
+
+
+extern int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface);
+
+extern GLuint PL_VertexBuffer_GetGLID(int vertexBufferID);
+extern GLuint PL_IndexBuffer_GetGLID(int vertexBufferID);
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */
 
-#endif /* #ifndef _DXLIB_OPENGL_DXINTERNAL_H */
+#endif /* #ifndef DXPORTLIB_OPENGL_DXINTERNAL_H */
 

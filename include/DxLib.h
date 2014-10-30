@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,8 @@
 // EXT_ is used for DxPortLib extensions.
 
 #include "DxBuildConfig.h"
+
+#ifdef DXPORTLIB_DXLIB_INTERFACE
 
 #include "DxDefines.h"
 
@@ -807,9 +809,6 @@ extern DXCALL void DxFree(void *memory);
 
 };
 
-// ------------------------------------------------------------------
-// Set DxLib as a default namespace, like the original library.
-
-using namespace DxLib;
+#endif // #ifdef DXPORTLIB_DXLIB_INTERFACE
 
 #endif

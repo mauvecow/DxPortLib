@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,16 +30,28 @@
  * section from the build entirely.
  */
 
-/* DxPortLib extension - Disables SHIFT-JIS codepage. (-74kB binary size)
+/* DxPortLib - Enables and disables interfaces to the library.
+ */
+#define DXPORTLIB_DXLIB_INTERFACE
+#define DXPORTLIB_LUNA_INTERFACE
+
+/* DxPortLib - Choose one platform target.
+ */
+#define DXPORTLIB_PLATFORM_SDL2
+
+/* DxPortLib - Disables SHIFT-JIS codepage. (-74kB binary size)
  * If you do not use SJIS it is recommended to disable this.
  */
-/* #define DXPORTLIB_NON_SJIS */
+/* #define DXPORTLIB_NO_SJIS */
 
 /* DxPortLib extension - Sets the drawing backend.
- * --- SELECT ONLY ONE --- */
-/* #define DXPORTLIB_DRAW_SDL2_RENDER */
+ * Currently only OpenGL is supported.
+ */
 #define DXPORTLIB_DRAW_OPENGL
 
+/* ------------------------------------------------------------------------
+ * DxLib-specific features.
+ */
 /* Disables the archive format. */
 /* #define DX_NON_DXA */
 
@@ -54,6 +66,17 @@
 
 /* Disables the font backend. */
 /* #define DX_NON_FONT */
+
+/* ------------------------------------------------------------------------
+ * Luna-specific features.
+ * No effect if DXPORTLIB_LUNA_INTERFACE is disabled.
+ */
+
+/* Instead of storing the math table in the binary, dynamically generates
+ * it on startup. This is identical to LunaDx8's functionality, but is not
+ * portable.
+ * Reduces binary size by ~300k. */
+/* #define DXPORTLIB_LUNA_DYNAMIC_MATH_TABLE */
 
 /* ------------------------------------------------------------------------
  * These are features not supported by DxPortLib at this time.

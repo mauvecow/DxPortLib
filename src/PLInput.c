@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "PLInternal.h"
 
 #include "SDL.h"
 
@@ -39,6 +39,8 @@
 
 #define DX_INPUT_RANGE (1000)
 #define DX_MAX_PADS (16)
+
+#define KEY_BUFFER_MAX (32)
 
 typedef struct Keybind {
     unsigned char key1;
@@ -67,6 +69,10 @@ static int s_mouseWheelY = 0;
 
 static unsigned char s_keyTable[256];
 static unsigned int s_downKeyCount = 0;
+
+static int s_keyBufferTable[KEY_BUFFER_MAX];
+static int s_keyBufferNext = 0;
+static int s_keyBufferCount = 0;
 
 static KeybindTable s_keybinds[DX_MAX_PADS];
 
@@ -164,6 +170,9 @@ static void s_InitializeInput() {
     if (s_inputInitialized == DXTRUE) {
         return;
     }
+    
+    s_keyBufferCount = 0;
+    s_keyBufferNext = 0;
     
     s_mouseWheelX = 0;
     s_mouseWheelY = 0;
@@ -325,6 +334,17 @@ static int s_MapSDLKeyToDXKey(const SDL_Keysym *keysym) {
     }
 }
 
+void PL_Input_ResetKeyBuffer() {
+    s_keyBufferCount = 0;
+    s_keyBufferNext = 0;
+}
+int PL_Input_GetFromKeyBuffer() {
+    if (s_keyBufferCount >= s_keyBufferNext) {
+        return 0;
+    }
+    return s_keyBufferTable[s_keyBufferCount++];
+}
+
 void PL_Input_HandleKeyDown(const SDL_Keysym *keysym) {
     int dxKey = s_MapSDLKeyToDXKey(keysym);
     
@@ -335,6 +355,10 @@ void PL_Input_HandleKeyDown(const SDL_Keysym *keysym) {
     if (s_keyTable[dxKey] == 0) {
         s_keyTable[dxKey] = 1;
         s_downKeyCount += 1;
+    }
+    
+    if (s_keyBufferNext < KEY_BUFFER_MAX) {
+        s_keyBufferTable[s_keyBufferNext++] = dxKey;
     }
 }
 

@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,12 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
+#include "DxBuildConfig.h"
+
+#ifndef DX_NON_SOUND
+
 /* for log10. */
 #include <math.h>
 
-#include "DxInternal.h"
-
-#ifndef DX_NON_SOUND
+#include "PLInternal.h"
+#include "PLSDL2Internal.h"
 
 #ifndef DX_NON_OGGVORBIS
 #include <vorbis/vorbisfile.h>
@@ -57,6 +60,11 @@ typedef struct AudioStream {
     
 #ifndef DX_NON_OGGVORBIS
     OggVorbis_File ovfile;
+
+    int hasLoopPoint;
+    ogg_int64_t loopPoint;
+    int hasLoopTarget;
+    ogg_int64_t loopTarget;
 #endif /* #ifndef DX_NON_OGGVORBIS */
     
     int active;
@@ -163,7 +171,7 @@ static void s_StartSound(Sound *sound, int playMode, int fromStartFlag) {
 /* ------------------------------------------------------ AUDIO STREAMING */
 
 #ifndef DX_NON_OGGVORBIS
-static void s_AudioStreamGet(Sound *sound);
+static int s_AudioStreamGet(Sound *sound);
 
 /* Handles ogg streams via vorbisfile. */
 static size_t s_oggRead(void *ptr, size_t size, size_t num, void *datasource) {
@@ -186,6 +194,10 @@ static int s_AudioStreamOpen(Sound *sound, SDL_RWops *rwops) {
     stream->streamFile = rwops;
     stream->section = -1;
     stream->active = 1;
+    stream->hasLoopTarget = DXFALSE;
+    stream->loopTarget = 0;
+    stream->hasLoopPoint = DXFALSE;
+    stream->loopPoint = 0;
     
     SDL_memset(&oggCallbacks, 0, sizeof(oggCallbacks));
     /* This will give conversion warnings on most platforms.
@@ -231,20 +243,40 @@ static void s_AudioStreamClose(Sound *sound) {
     SDL_RWclose(stream->streamFile);
 }
 
-static void s_AudioStreamGet(Sound *sound) {
+static int s_AudioStreamGet(Sound *sound) {
     AudioStream *stream = &sound->stream;
     AudioBuffer *buffer = &sound->buffer;
     char inbuf[4096];
-    int amount;
+    int amount = 0, amount2;
     int section;
     SDL_AudioCVT *convert;
     
-    amount = ov_read(&stream->ovfile, inbuf, sizeof(inbuf), 0, 2, 1, &section);
-    if (amount <= 0) {
+    if (stream->hasLoopPoint != DXFALSE) {
+        vorbis_info *info = ov_info(&stream->ovfile, -1);
+        ogg_int64_t bufpos = ov_pcm_tell(&stream->ovfile);
+        ogg_int64_t n = (stream->loopPoint - bufpos) * (2 * info->channels);
+        if (n > 0 && n < sizeof(inbuf)) {
+            amount = ov_read(&stream->ovfile, inbuf, (int)n, 0, 2, 1, &section);
+            ov_pcm_seek(&stream->ovfile, stream->loopTarget);
+            
+            if (amount < 0) {
+                amount = 0;
+            }
+        }
+    }
+    
+    amount2 = ov_read(&stream->ovfile, inbuf + amount, sizeof(inbuf) - amount, 0, 2, 1, &section);
+    if (amount2 <= 0) {
+        if (stream->hasLoopTarget != DXFALSE) {
+            if (ov_pcm_seek(&stream->ovfile, stream->loopTarget) == 0) {
+                return 0;
+            }
+        }
         s_StopSound(sound);
         
-        return;
+        return -1;
     }
+    amount += amount2;
     
     convert = &stream->convert;
     
@@ -290,6 +322,8 @@ static void s_AudioStreamGet(Sound *sound) {
         buffer->length = (unsigned int)convert->len_cvt;
         buffer->currentPos = 0;
     }
+    
+    return 0;
 }
 
 static unsigned int s_AudioStreamPlay(Sound *sound, Uint8 *snd, unsigned int len) {
@@ -299,7 +333,9 @@ static unsigned int s_AudioStreamPlay(Sound *sound, Uint8 *snd, unsigned int len
         unsigned int amount;
         
         if (buffer->currentPos >= buffer->length) {
-            s_AudioStreamGet(sound);
+            if (s_AudioStreamGet(sound) < 0) {
+                break;
+            }
         }
         
         amount = buffer->length - buffer->currentPos;
@@ -595,10 +631,11 @@ static void s_AudioOpen() {
         return;
     }
     
+    SDL_memset(&audioSpec, 0, sizeof(audioSpec));
     audioSpec.freq = 44100;
     audioSpec.format = AUDIO_S16SYS;
     audioSpec.channels = 2;
-    audioSpec.samples = 512; /* latency... */
+    audioSpec.samples = 1024; /* latency... */
     audioSpec.callback = s_Mixer;
     audioSpec.userdata = NULL;
     
@@ -651,38 +688,39 @@ static int s_LoadSound(const DXCHAR *filename) {
         return -1;
     }
     
-    rwops = PL_File_OpenStream(filename);
-    
-    if (rwops == NULL || SDL_RWread(rwops, buf, 4, 1) < 0) {
+    rwops = PLSDL2_FileToRWops(PL_File_OpenRead(filename));
+    if (rwops == NULL) {
         return -1;
     }
     
-    SDL_RWseek(rwops, 0, RW_SEEK_SET);
-    
-    do {
-        soundID = s_AllocateSound();
-        if (soundID < 0) {
-            break;
-        }
+    if (SDL_RWread(rwops, buf, 4, 1) >= 0) {
+        SDL_RWseek(rwops, 0, RW_SEEK_SET);
         
-        sound = (Sound *)PL_Handle_GetData(soundID, DXHANDLE_SOUND);
-        
-        if (SDL_memcmp(buf, "RIFF", 4) == 0) {
-            /* buffer */
-            if (s_AudioBufferOpen(sound, rwops) < 0) {
+        do {
+            soundID = s_AllocateSound();
+            if (soundID < 0) {
                 break;
             }
-        } else if (SDL_memcmp(buf, "OggS", 4) == 0) {
-            /* stream */
-            if (s_AudioStreamOpen(sound, rwops) < 0) {
+            
+            sound = (Sound *)PL_Handle_GetData(soundID, DXHANDLE_SOUND);
+            
+            if (SDL_memcmp(buf, "RIFF", 4) == 0) {
+                /* buffer */
+                if (s_AudioBufferOpen(sound, rwops) < 0) {
+                    break;
+                }
+            } else if (SDL_memcmp(buf, "OggS", 4) == 0) {
+                /* stream */
+                if (s_AudioStreamOpen(sound, rwops) < 0) {
+                    break;
+                }
+            } else {
                 break;
             }
-        } else {
-            break;
-        }
-        
-        return soundID;
-    } while (0);
+            
+            return soundID;
+        } while (0);
+    }
     
     SDL_RWclose(rwops);
     if (soundID >= 0) {
@@ -732,11 +770,11 @@ int PL_LoadSoundMem(const DXCHAR *filename) {
     return s_LoadSound(filename);
 }
 
-int PL_LoadSoundMem2(const DXCHAR *filename, const DXCHAR *filename2) {
-    int soundIDA = s_LoadSound(filename);
+int PL_LoadSoundMem2(const DXCHAR *filenameA, const DXCHAR *filenameB) {
+    int soundIDA = s_LoadSound(filenameA);
     
     if (soundIDA >= 0) {
-        int soundIDB = s_LoadSound(filename2);
+        int soundIDB = s_LoadSound(filenameB);
         if (soundIDB >= 0) {
             Sound *sound = (Sound *)PL_Handle_GetData(soundIDA, DXHANDLE_SOUND);
             sound->nextSoundIDInSequence = soundIDB;
@@ -826,6 +864,119 @@ int PL_CheckSoundMem(int soundID) {
         retval = sound->playing;
     }
    
+    SDL_UnlockAudio();
+    
+    return retval;
+}
+
+int PL_Audio_SetLoopSamples(int soundID,
+                            unsigned long long loopTarget,
+                            unsigned long long loopPoint) {
+    Sound *sound;
+    int retval = -1;
+    
+    SDL_LockAudio();
+    
+    sound = (Sound *)PL_Handle_GetData(soundID, DXHANDLE_SOUND);
+    if (sound != NULL) {
+        sound->stream.hasLoopTarget = DXTRUE;
+        sound->stream.loopTarget = loopTarget;
+        if (loopPoint > 0.0) {
+            sound->stream.hasLoopPoint = DXTRUE;
+            sound->stream.loopPoint = loopPoint;
+        } else {
+            sound->stream.hasLoopPoint = DXFALSE;
+        }
+        retval = 0;
+    }
+   
+    SDL_UnlockAudio();
+    
+    return retval;
+}
+int PL_Audio_SetLoopTimes(int soundID,
+                          double loopTarget,
+                          double loopPoint) {
+    Sound *sound;
+    int retval = -1;
+    
+    SDL_LockAudio();
+    
+    sound = (Sound *)PL_Handle_GetData(soundID, DXHANDLE_SOUND);
+    if (sound != NULL) {
+#ifndef DX_NON_OGGVORBIS
+        vorbis_info *info = ov_info(&sound->stream.ovfile, -1);
+        
+        sound->stream.hasLoopTarget = DXTRUE;
+        sound->stream.loopTarget = (ogg_int64_t)(loopTarget * info->rate);
+        if (loopPoint > 0.0) {
+            sound->stream.hasLoopPoint = DXTRUE;
+            sound->stream.loopPoint = (ogg_int64_t)(loopPoint * info->rate);
+            if (sound->stream.loopPoint > ov_pcm_total(&sound->stream.ovfile, -1)) {
+                sound->stream.loopPoint = ov_pcm_total(&sound->stream.ovfile, -1);
+            }
+        } else {
+            sound->stream.hasLoopPoint = DXFALSE;
+        }
+#endif
+        retval = 0;
+    }
+   
+    SDL_UnlockAudio();
+    
+    return retval;
+}
+
+int PL_Audio_RemoveLoopPoints(int soundID) {
+    Sound *sound;
+    int retval = -1;
+    
+    SDL_LockAudio();
+    
+    sound = (Sound *)PL_Handle_GetData(soundID, DXHANDLE_SOUND);
+    if (sound != NULL) {
+        sound->stream.hasLoopPoint = DXFALSE;
+        sound->stream.hasLoopTarget = DXFALSE;
+        retval = 0;
+    }
+   
+    SDL_UnlockAudio();
+    
+    return retval;
+}
+
+int PL_SetVolumeSoundMemDirect(int volume, int soundID) {
+    Sound *sound;
+    int retval = -1;
+    
+    SDL_LockAudio();
+    
+    sound = (Sound *)PL_Handle_GetData(soundID, DXHANDLE_SOUND);
+    if (sound != NULL) {
+        int adjustedVol;
+        retval = 0;
+        
+        if (volume < 0) {
+            volume = 0;
+        } else if (volume > 255) {
+            volume = 255;
+        }
+        
+        adjustedVol = (int)(volume * SDL_MIX_MAXVOLUME / 255);
+        
+        if (adjustedVol < 0) {
+            adjustedVol = 0;
+        } else if (adjustedVol > SDL_MIX_MAXVOLUME) {
+            adjustedVol = SDL_MIX_MAXVOLUME;
+        }
+        
+        sound->volume = adjustedVol;
+        
+        if (sound->nextSoundIDInSequence) {
+            PL_SetVolumeSoundMem(volume, sound->nextSoundIDInSequence);
+        }
+    }
+    
     SDL_UnlockAudio();
     
     return retval;

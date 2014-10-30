@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "PLInternal.h"
 
 /* DxLib keeps a listing of assigned handles, which are
  * shared and reassigned as needed.
@@ -144,6 +144,9 @@ int PL_Handle_AcquireID(int handleType) {
     
     if (handleType <= DXHANDLE_NONE || handleType >= DXHANDLE_END) {
         return -1;
+    }
+    if (s_initialized == DXFALSE) {
+        PL_Handle_Init();
     }
     
     freeID = s_handleLists[DXHANDLE_NONE];

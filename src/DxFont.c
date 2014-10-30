@@ -1,7 +1,7 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
-  
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
+
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -19,11 +19,16 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
+#include "DxBuildConfig.h"
+
+#ifdef DXPORTLIB_DXLIB_INTERFACE
+#ifndef DX_NON_FONT
+
+#include "PLInternal.h"
 #include "DxInternal.h"
 
+#include "PLSDL2Internal.h"
 #include "SDL_ttf.h"
-
-#ifndef DX_NON_FONT
 
 /* DxLib itself uses Windows font functions for most of its work.
  * 
@@ -235,14 +240,15 @@ static int s_LoadFontFile(
     const DXCHAR *filename, FontMapping *mapping,
     int size
 ) {
-    return s_LoadFontRW(PL_File_OpenStream(filename), mapping, size);
+    int fileHandle = PL_File_OpenRead(filename);
+    return s_LoadFontRW(PLSDL2_FileToRWops(fileHandle), mapping, size);
 }
 
 static int s_LoadFontFileDirect(
     const DXCHAR *filename, FontMapping *mapping,
     int size
 ) {
-    return s_LoadFontRW(PL_File_OpenDirectStream(filename), mapping, size);
+    return s_LoadFontRW(PLSDL2_FileOpenReadDirect(filename), mapping, size);
 }
 
 
@@ -267,7 +273,7 @@ int PLEXT_Font_MapFontFileToName(
     
     mapping->filename = DXSTRDUP(filename);
     mapping->fontname = DXSTRDUP(fontname);
-    mapping->directFileAccessOnly = !PL_File_GetUseDXArchiveFlag();
+    mapping->directFileAccessOnly = DXFALSE; /* Probably breaks Eryi's FIXME */
     mapping->thickness = thickness;
     mapping->boldFlag = boldFlag;
     mapping->next = s_fontMappings;
@@ -370,7 +376,7 @@ static void s_GrowGlyphTexture(FontData *fontData) {
         }
         
         PL_Texture_Release(glyphTexture->textureID);
-        PL_Graph_Delete(glyphTexture->graphID);
+        Dx_Graph_Delete(glyphTexture->graphID);
     }
     
     glyphTexture->textureID = PL_Texture_CreateFromDimensions(
@@ -386,7 +392,7 @@ static void s_GrowGlyphTexture(FontData *fontData) {
     texRect.w = glyphTexture->width;
     texRect.h = glyphTexture->height;
     
-    glyphTexture->graphID = PL_Graph_FromTexture(
+    glyphTexture->graphID = Dx_Graph_FromTexture(
         glyphTexture->textureID, texRect
         );
     
@@ -614,7 +620,7 @@ static void s_AddGlyphToTexture(FontData *fontData, GlyphData *glyph) {
     }
     
     if (s_applyPMA) {
-        PL_Graph_ApplyPMAToSurface(surface);
+        PL_Surface_ApplyPMAToSDLSurface(surface);
     }
     
     retval = s_FitSurface(fontData, surface, &glyph->rect);
@@ -755,10 +761,10 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
         return 0;
     }
     
-    origDrawMode = PL_Draw_GetDrawMode();
-    PL_Draw_SetDrawMode(DX_DRAWMODE_BILINEAR);
+    origDrawMode = Dx_Draw_GetDrawMode();
+    Dx_Draw_SetDrawMode(DX_DRAWMODE_BILINEAR);
     
-    PL_Draw_GetBright(&redBright, &greenBright, &blueBright);
+    Dx_Draw_GetBright(&redBright, &greenBright, &blueBright);
     
     /* - Loop twice: First for 'edge' textures, then for 'front' textures. */
     for (loop = 0; loop < 2; ++loop) {
@@ -770,11 +776,11 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
             if ((fontData->fontType & DX_FONTTYPE_EDGE) == 0) {
                 continue;
             }
-            PL_Draw_SetBright(edgeColor & 0xff, (edgeColor >> 8) & 0xff, (edgeColor >> 16) & 0xff);
+            Dx_Draw_SetBright(edgeColor & 0xff, (edgeColor >> 8) & 0xff, (edgeColor >> 16) & 0xff);
             plus = 0;
         } else if (loop == 1) {
             /* solid pass */
-            PL_Draw_SetBright(color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff);
+            Dx_Draw_SetBright(color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff);
             plus = edgeSize;
         }
         
@@ -800,7 +806,7 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
                         gRect = &glyph->rect;
                     }
                     
-                    PL_EXT_Draw_RectGraphFastF(
+                    Dx_EXT_Draw_RectGraphFastF(
                         cx + (glyph->xOffset * scaleX), cy, gRect->w * scaleX, gRect->h * scaleY,
                         gRect->x, gRect->y, gRect->w, gRect->h,
                         graphID,
@@ -813,8 +819,8 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
         }
     }
     
-    PL_Draw_SetBright(redBright, greenBright, blueBright);
-    PL_Draw_SetDrawMode(origDrawMode);
+    Dx_Draw_SetBright(redBright, greenBright, blueBright);
+    Dx_Draw_SetDrawMode(origDrawMode);
     
     return 0;
 }
@@ -1178,7 +1184,7 @@ int PL_Font_DeleteFontToHandle(int handle) {
     }
     
     if (fontData->glyphTexture.graphID >= 0) {
-        PL_Graph_Delete(fontData->glyphTexture.graphID);
+        Dx_Graph_Delete(fontData->glyphTexture.graphID);
     }
     if (fontData->glyphTexture.textureID >= 0) {
         PL_Texture_Release(fontData->glyphTexture.textureID);
@@ -1257,3 +1263,5 @@ void PL_Font_End() {
 }
 
 #endif /* #ifndef DX_NON_FONT */
+
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */

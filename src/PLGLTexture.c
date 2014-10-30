@@ -1,7 +1,7 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
-  
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
+
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -19,11 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "DxBuildConfig.h"
 
 #ifdef DXPORTLIB_DRAW_OPENGL
 
-#include "OpenGL_DxInternal.h"
+#include "PLInternal.h"
+
+#include "PLGLInternal.h"
 
 /* --------------------------------------------------------- Framebuffers */
 
@@ -66,15 +68,8 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
         }
         
         PL_GL.glViewport(0, 0, info->width, info->height);
-    
-        PL_GL.glMatrixMode(GL_PROJECTION);
-        PL_GL.glLoadIdentity();
-        PL_GL.glOrtho((GLdouble)0, (GLdouble)info->width,
-                    (GLdouble)0, (GLdouble)info->height,
-                    0.0, 1.0);
         
-        PL_GL.glMatrixMode(GL_MODELVIEW);
-        PL_GL.glLoadIdentity();
+        PL_Render_SetMatrixDirtyFlag();
     }
     
     return 0;
@@ -189,6 +184,8 @@ typedef struct TextureRef {
     int framebufferID;
     
     int refCount;
+    
+    int wrappableFlag;
 } TextureRef;
 
 static int s_topow2(int v) {
@@ -293,7 +290,7 @@ int PL_Texture_HasAlphaChannel(int textureRefID) {
     return textureref->hasAlphaChannel;
 }
 
-int PL_Texture_CreateFromSurface(SDL_Surface *surface, int hasAlphaChannel) {
+int PL_Texture_CreateFromSDLSurface(SDL_Surface *surface, int hasAlphaChannel) {
     int textureRefID;
     
     if (SDL_GetColorKey(surface, 0) >= 0) {
@@ -319,18 +316,30 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     GLuint textureID = 0;
     GLenum textureTarget;
     int texWidth, texHeight;
+    int widthpow2, heightpow2;
+    int wrappableFlag;
     
-    /* - Get format/dimensions, make sure it's valid. */
-    if (PL_GL.hasTextureRectangleSupport) {
+    /* - Determine if the source is of 2^n dimensions */
+    widthpow2 = s_topow2(width);
+    heightpow2 = s_topow2(height);
+    if (widthpow2 == width && heightpow2 == height) {
+        wrappableFlag = DXTRUE;
+    } else {
+        wrappableFlag = DXFALSE;
+    }
+
+    /* - If not 2^n, use TEXTURE_RECTANGLE if available. */
+    if (wrappableFlag == DXFALSE && PL_GL.hasTextureRectangleSupport) {
         textureTarget = GL_TEXTURE_RECTANGLE_ARB;
         texWidth = width;
         texHeight = height;
     } else {
         textureTarget = GL_TEXTURE_2D;
-        texWidth = s_topow2(width);
-        texHeight = s_topow2(height);
+        texWidth = widthpow2;
+        texHeight = heightpow2;
     }
     
+    /* - Verify if in bounds, set format */
     if (texWidth > PL_GL.maxTextureWidth || texHeight > PL_GL.maxTextureHeight) {
         return -1;
     }
@@ -387,6 +396,7 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     textureref->texHeight = texHeight;
     textureref->drawMode = DX_DRAWMODE_NEAREST;
     textureref->hasAlphaChannel = hasAlphaChannel;
+    textureref->wrappableFlag = wrappableFlag;
     
     if (textureTarget == GL_TEXTURE_RECTANGLE_ARB) {
         textureref->widthMult = 1.0f;
@@ -420,6 +430,32 @@ int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel) {
     textureref->framebufferID = framebufferID;
     
     return textureRefID;
+}
+
+int PL_Texture_SetWrap(int textureRefID, int wrapState) {
+    TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
+    GLuint textureTarget;
+    GLenum wrapMode;
+    if (textureref == NULL || textureref->textureID == 0) {
+        return -1;
+    }
+    
+    textureTarget = textureref->glTarget;
+    
+    wrapMode = GL_CLAMP_TO_EDGE;
+    if (wrapState == DXTRUE && textureref->wrappableFlag == DXTRUE) {
+        wrapMode = GL_REPEAT;
+    }
+    
+    PL_GL.glEnable(textureTarget);
+    PL_GL.glBindTexture(textureTarget, textureref->textureID);
+    
+    PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, wrapMode);
+    PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, wrapMode);
+    
+    PL_GL.glDisable(textureTarget);
+    
+    return 0;
 }
 
 int s_glSetFilter(int textureRefID, GLint minFilter, GLint magFilter) {
@@ -518,25 +554,19 @@ int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMu
     if (textureref == NULL) {
         return -1;
     }
-    rect->x = 0;
-    rect->y = 0;
-    rect->w = textureref->width;
-    rect->h = textureref->height;
-    *xMult = textureref->widthMult;
-    *yMult = textureref->heightMult;
     
-    return 0;
-}
-int PL_Texture_RenderGetGraphTextureInfo(int graphID, int *dTextureRefID, SDL_Rect *rect, float *xMult, float *yMult) {
-    int textureRefID = PL_Graph_GetTextureID(graphID, rect);
-    TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
-    
-    if (textureref == NULL) {
-        return -1;
+    if (rect != NULL) {
+        rect->x = 0;
+        rect->y = 0;
+        rect->w = textureref->width;
+        rect->h = textureref->height;
     }
-    *dTextureRefID = textureRefID;
-    *xMult = textureref->widthMult;
-    *yMult = textureref->heightMult;
+    if (xMult != NULL) {
+        *xMult = textureref->widthMult;
+    }
+    if (yMult != NULL) {
+        *yMult = textureref->heightMult;
+    }
     
     return 0;
 }

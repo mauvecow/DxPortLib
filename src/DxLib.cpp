@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,9 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
+#include "DxBuildConfig.h"
+
+#ifdef DXPORTLIB_DXLIB_INTERFACE
+
 #include "DxLib.h"
 #include "DxLib_c.h"
 
+#include "PLInternal.h"
 #include "DxInternal.h"
 
 #include "SDL.h"
@@ -124,7 +129,7 @@ int FileRead_scanf(int fileHandle, const DXCHAR *format, ...) {
     int retval;
     
     va_start(args, format);
-    retval = PL_FileRead_vscanf(fileHandle, format, args);
+    retval = Dx_FileRead_vscanf(fileHandle, format, args);
     va_end(args);
     
     return retval;
@@ -911,3 +916,5 @@ void DxFree(void *memory) {
 }
 
 };
+
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */

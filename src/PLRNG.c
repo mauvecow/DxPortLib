@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxInternal.h"
+#include "PLInternal.h"
 
 /* DxLib uses the Mersenne Twister, of course.
  * 
@@ -57,7 +57,7 @@ static void s_GenerateNextSet() {
     s_rngIndex = 0;
 }
 
-static void s_Seed(unsigned long seed) {
+static void s_SeedDx(unsigned long seed) {
     unsigned long *mt = s_mt;
     unsigned long i;
     
@@ -67,6 +67,18 @@ static void s_Seed(unsigned long seed) {
         seed = 69069 * seed + 1;
         mt[i] |= (seed & 0xffff0000) >> 16;
         seed = 69069 * seed + 1;
+    }
+    
+    s_rngIndex = 624;
+    s_initialized = DXTRUE;
+}
+static void s_SeedLuna(unsigned long seed) {
+    unsigned long *mt = s_mt;
+    unsigned long i;
+    
+    mt[0] = seed;
+    for (i = 0; i < 624; ++i) {
+        mt[i] = (1812433253UL * (mt[i-1] ^ (mt[i-1] >> 30)) + i);
     }
     
     s_rngIndex = 624;
@@ -90,9 +102,16 @@ static unsigned long s_GetNextLong() {
     return v;
 }
 
+unsigned int PL_Random_Get32() {
+    if (s_initialized == DXFALSE) {
+        s_SeedDx(4357); /* Default random seed value. */
+    }
+    return (unsigned int)s_GetNextLong();
+}
+
 int PL_Random_Get(int maxValue) {
     if (s_initialized == DXFALSE) {
-        s_Seed(4357); /* Default random seed value. */
+        s_SeedDx(4357); /* Default random seed value. */
     }
     
     maxValue += 1;
@@ -100,8 +119,13 @@ int PL_Random_Get(int maxValue) {
     return (int)(((long long)s_GetNextLong() * maxValue) >> 32);
 }
 
-int PL_Random_Seed(int randomSeed) {
-    s_Seed((unsigned long)randomSeed);
+int PL_Random_SeedDx(int randomSeed) {
+    s_SeedDx((unsigned long)randomSeed);
+    
+    return 0;
+}
+int PL_Random_SeedLuna(int randomSeed) {
+    s_SeedLuna((unsigned long)randomSeed);
     
     return 0;
 }

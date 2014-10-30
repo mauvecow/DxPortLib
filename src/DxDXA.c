@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2014 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,11 +19,16 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
+#include "DxBuildConfig.h"
+
+#ifdef DXPORTLIB_DXLIB_INTERFACE
+
+#ifndef DX_NON_DXA
+
+#include "PLInternal.h"
 #include "DxInternal.h"
 
 #include "SDL.h"
-
-#ifndef DX_NON_DXA
 
 #define DXA_ATTRIBUTE_DIRECTORY         0x00000010
 
@@ -975,3 +980,5 @@ SDL_RWops *DXA_OpenStream(DXArchive *archive, const DXCHAR *filename) {
 }
 
 #endif /* #ifndef DX_NOT_DXA */
+
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */

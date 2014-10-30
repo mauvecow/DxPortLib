@@ -96,7 +96,6 @@ int main(int argc, char **argv) {
         }
         
         for (int i = 1; i < DX_BLENDMODE_NUM; ++i) {
-            /* 540 / 6 = 90 */
             int color = GetColor(0x00, 0x80, 0x80);
             int x = ((i - 1) % 6);
             int y = ((i - 1) / 6);
