@@ -115,8 +115,8 @@ int PL_Render_UpdateMatrices() {
         PLMatrix matrix;
 
         PL_Matrix_CreateOrthoOffCenterLH(&matrix,
-                      s_viewportX, s_viewportX + s_viewportW,
-                      s_viewportY, s_viewportY + s_viewportH,
+                      (float)s_viewportX, (float)(s_viewportX + s_viewportW),
+                      (float)s_viewportY, (float)(s_viewportY + s_viewportH),
                       s_nearZ, s_farZ);
         
         PL_GL.glMatrixMode(GL_PROJECTION);
@@ -238,7 +238,7 @@ int PL_Render_SetScissorRect(const RECT *rect) {
 
 #define MAX_TEXTURE 4
 static int s_boundTextures[MAX_TEXTURE] = { -1 };
-static int s_boundTextureCount = 0;
+static unsigned int s_boundTextureCount = 0;
 
 int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureDrawMode) {
     if (stage >= MAX_TEXTURE) {
@@ -259,7 +259,7 @@ int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureD
 }
 
 int PL_Render_ClearTextures() {
-    int i;
+    unsigned int i;
     for (i = 0; i < s_boundTextureCount; ++i) {
         PL_GL.glActiveTexture(GL_TEXTURE0 + i);
         PL_Texture_Unbind(s_boundTextures[i]);

@@ -1223,7 +1223,8 @@ int Dx_Draw_UpdateDrawScreen() {
         s_drawScreenWidth = screenRect.w;
         s_drawScreenHeight = screenRect.h;
         
-        PL_Matrix_CreateOrthoOffCenterLH(&projection, 0, screenRect.w, 0, screenRect.h, -32768, 32767);
+        PL_Matrix_CreateOrthoOffCenterLH(&projection, 0,
+            (float)screenRect.w, 0, (float)screenRect.h, -32768, 32767);
         PL_Matrix_CreateIdentity(&view);
         
         PL_Render_SetMatrices(&projection, &view);

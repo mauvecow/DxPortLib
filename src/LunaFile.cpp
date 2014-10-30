@@ -162,7 +162,7 @@ static LunaArchive *LunaArchive_Open(Uint32 priority,
     if (pRootPath != NULL) {
         DXCHAR path[4096];
         DXSTRNCPY(path, pRootPath, 4096);
-        DXSTRNCAT(path, "/", 4096);
+        DXSTRNCAT(path, _T("/"), 4096);
         
         archive->rootPath = DXSTRDUP(path);
     }

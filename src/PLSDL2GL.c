@@ -249,7 +249,8 @@ void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     
     PL_GL.glDisable(GL_SCISSOR_TEST);
     
-    PL_Matrix_CreateOrthoOffCenterRH(&matrix, 0, wWidth, wHeight, 0, 0.0, 1.0f);
+    PL_Matrix_CreateOrthoOffCenterRH(&matrix,
+        0, (float)wWidth, (float)wHeight, 0, 0.0, 1.0f);
     
     PL_GL.glViewport(0, 0, wWidth, wHeight);
     

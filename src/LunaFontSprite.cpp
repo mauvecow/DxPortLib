@@ -148,9 +148,11 @@ LFONTSPRITE LunaFontSprite::CreateFromFile(const DXCHAR *pFileName,
             memcpy(buf, lfdData + sizeof(LFDHeader) + (sizeof(Uint16) * CODE_TABLE_SIZE) + (32 * i), 32);
             buf[32] = '\0';
             if (pExt != NULL) {
-                strcat(buf, pExt);
+                DXCHAR newBuf[64];
+                PL_Text_StringToDxString(buf, newBuf, 64, -1);
+                PL_Text_DxStrncat(newBuf, pExt, 64);
                 
-                int surface = PL_Surface_Load(buf);
+                int surface = PL_Surface_Load(newBuf);
                 fontspr->sheetGraphs[i] = PL_Surface_ToTexture(surface);
                 PL_Surface_Delete(surface);
             } else {

@@ -47,11 +47,14 @@ void Luna3D::Refresh(void) {
 void Luna3D::SetViewport(const RECT *rect) {
     RECT r;
     if (rect == NULL) {
+        Sint32 w, h;
+        Luna::GetScreenData(&w, &h, NULL);
+
         rect = &r;
         r.top = 0;
         r.left = 0;
-        
-        Luna::GetScreenData(&r.right, &r.bottom, NULL);
+        r.right = w;
+        r.bottom = h;
     }
     
     PL_Render_SetViewport(

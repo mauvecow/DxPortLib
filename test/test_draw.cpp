@@ -84,7 +84,7 @@ static void DrawBounceThings() {
             float halfH = (float)thing->h * 0.5f;
             DrawOval(
                 (int)(thing->x + halfW), (int)(thing->y + halfH),
-                halfW, halfH,
+                (int)halfW, (int)halfH,
                 thing->color, thing->isFilled
             );
         } else {

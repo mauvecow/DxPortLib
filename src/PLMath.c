@@ -224,8 +224,9 @@ PLMatrix *PL_Matrix_CreatePerspectiveFovLH(PLMatrix *o, float fovY, float aspect
 
 PLMatrix *PL_Matrix_CreatePerspectiveFovRH(PLMatrix *o, float fovY, float aspectRatio, float zNear, float zFar) {
     float cotan = 1.0f / (float)tan(fovY / 2.0f);
-    o->m11 = cotan / aspectRatio;
     float zDelta = zFar - zNear;
+
+    o->m11 = cotan / aspectRatio;
     o->m12 = 0;
     o->m13 = 0;
     o->m14 = 0;

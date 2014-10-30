@@ -114,7 +114,7 @@ void CMatrix::RotationAxis(Sint32 angle, const CVector3D *axis) {
     
     float fSin = LunaMath::Sin(angle);
     float fCos = LunaMath::Cos(angle);
-    float nCos = 1.0 - fCos;
+    float nCos = 1.0f - fCos;
     
     m[0][0] = ((c.x*c.x) * nCos) + fCos;
     m[1][0] = ((c.y*c.x) * nCos) - (c.z * fSin);
@@ -166,7 +166,7 @@ void CMatrix::RotateVector(const CVector3D *a, const CVector3D *b, const CVector
     
     float fCos = a->DotProduct(b) / (a->Length() * b->Length());
     float fSin = sqrtf(1 - (fCos * fCos));
-    float nCos = 1.0 - fCos;
+    float nCos = 1.0f - fCos;
     
     m[0][0] = ((c.x*c.x) * nCos) + fCos;
     m[1][0] = ((c.y*c.x) * nCos) - (c.z * fSin);

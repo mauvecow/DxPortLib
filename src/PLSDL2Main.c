@@ -82,8 +82,18 @@ int PL_Platform_GetSaveFolder(DXCHAR *buffer, int bufferLength,
     if (bufferLength == 0) {
         return -1;
     }
-    
+
+#ifdef UNICODE
+    {
+        char orgBuf[4096];
+        char appBuf[4096];
+        PL_Text_DxStringToString(buffer, orgBuf, 4096, DX_CHARSET_EXT_UTF8);
+        PL_Text_DxStringToString(buffer, appBuf, 4096, DX_CHARSET_EXT_UTF8);
+        prefPath = SDL_GetPrefPath(orgBuf, appBuf);
+    }
+#else
     prefPath = SDL_GetPrefPath(org, app);
+#endif
     if (prefPath == NULL) {
         buffer[0] = '\0';
         return 0;

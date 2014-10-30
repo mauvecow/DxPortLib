@@ -77,41 +77,63 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Audio.c" />
-    <ClCompile Include="..\src\DXA.c" />
-    <ClCompile Include="..\src\DxLib.cpp" />
-    <ClCompile Include="..\src\DxLib_c.c" />
-    <ClCompile Include="..\src\File.c" />
-    <ClCompile Include="..\src\Font.c" />
-    <ClCompile Include="..\src\Graph.c" />
-    <ClCompile Include="..\src\Handle.c" />
-    <ClCompile Include="..\src\Input.c" />
-    <ClCompile Include="..\src\Memory.c" />
-    <ClCompile Include="..\src\OpenGL_Draw.c" />
-    <ClCompile Include="..\src\OpenGL_Main.c" />
-    <ClCompile Include="..\src\OpenGL_Texture.c" />
-    <ClCompile Include="..\src\RNG.c" />
-    <ClCompile Include="..\src\SaveScreen.c" />
-    <ClCompile Include="..\src\SDL2Render_Draw.c" />
-    <ClCompile Include="..\src\SDL2Render_Texture.c" />
-    <ClCompile Include="..\src\Text.c" />
-    <ClCompile Include="..\src\Text_CP932.c" />
-    <ClCompile Include="..\src\Window.c" />
+    <Library Include="external\lib\x86\libvorbisfile.lib" />
+    <Library Include="external\lib\x86\SDL2.lib" />
+    <Library Include="external\lib\x86\SDL2_image.lib" />
+    <Library Include="external\lib\x86\SDL2_ttf.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DxBuildConfig.h" />
     <ClInclude Include="..\include\DxDefines.h" />
     <ClInclude Include="..\include\DxLib.h" />
     <ClInclude Include="..\include\DxLib_c.h" />
+    <ClInclude Include="..\include\Luna.h" />
+    <ClInclude Include="..\include\LunaDx8.h" />
+    <ClInclude Include="..\include\LunaMain.h" />
     <ClInclude Include="..\src\DxInternal.h" />
-    <ClInclude Include="..\src\OpenGL_DxInternal.h" />
-    <ClInclude Include="..\src\SDL2Render_DxInternal.h" />
+    <ClInclude Include="..\src\LunaInternal.h" />
+    <ClInclude Include="..\src\PLGLInternal.h" />
+    <ClInclude Include="..\src\PLInternal.h" />
+    <ClInclude Include="..\src\PLSDL2Internal.h" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="external\lib\x86\libvorbisfile.lib" />
-    <Library Include="external\lib\x86\SDL2.lib" />
-    <Library Include="external\lib\x86\SDL2_image.lib" />
-    <Library Include="external\lib\x86\SDL2_ttf.lib" />
+    <ClCompile Include="..\src\DxDraw.c" />
+    <ClCompile Include="..\src\DxDXA.c" />
+    <ClCompile Include="..\src\DxFile.c" />
+    <ClCompile Include="..\src\DxFont.c" />
+    <ClCompile Include="..\src\DxGraph.c" />
+    <ClCompile Include="..\src\DxLib.cpp" />
+    <ClCompile Include="..\src\DxLib_c.c" />
+    <ClCompile Include="..\src\Luna.cpp" />
+    <ClCompile Include="..\src\Luna3D.cpp" />
+    <ClCompile Include="..\src\LunaCamera.cpp" />
+    <ClCompile Include="..\src\LunaFile.cpp" />
+    <ClCompile Include="..\src\LunaFontSprite.cpp" />
+    <ClCompile Include="..\src\LunaInput.cpp" />
+    <ClCompile Include="..\src\LunaMath.cpp" />
+    <ClCompile Include="..\src\LunaRand.cpp" />
+    <ClCompile Include="..\src\LunaSound.cpp" />
+    <ClCompile Include="..\src\LunaSprite.cpp" />
+    <ClCompile Include="..\src\LunaTexture.cpp" />
+    <ClCompile Include="..\src\LunaVecMath.cpp" />
+    <ClCompile Include="..\src\PLAudio.c" />
+    <ClCompile Include="..\src\PLFile.c" />
+    <ClCompile Include="..\src\PLGLBuffers.c" />
+    <ClCompile Include="..\src\PLGLRender.c" />
+    <ClCompile Include="..\src\PLGLTexture.c" />
+    <ClCompile Include="..\src\PLHandle.c" />
+    <ClCompile Include="..\src\PLInput.c" />
+    <ClCompile Include="..\src\PLMath.c" />
+    <ClCompile Include="..\src\PLRNG.c" />
+    <ClCompile Include="..\src\PLSDL2File.c" />
+    <ClCompile Include="..\src\PLSDL2GL.c" />
+    <ClCompile Include="..\src\PLSDL2Main.c" />
+    <ClCompile Include="..\src\PLSDL2Memory.c" />
+    <ClCompile Include="..\src\PLSDL2SaveScreen.c" />
+    <ClCompile Include="..\src\PLSDL2Window.c" />
+    <ClCompile Include="..\src\PLSurface.c" />
+    <ClCompile Include="..\src\PLText.c" />
+    <ClCompile Include="..\src\PLText_CP932.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

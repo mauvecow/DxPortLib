@@ -294,16 +294,20 @@ void Luna::EXTGetSaveFolder(DXCHAR *buffer, int bufferLength,
 int Luna::EXTConvertText(DXCHAR *buffer, int bufferLength,
                           const DXCHAR *string,
                           int destEncoding, int srcEncoding) {
+#ifdef UNICODE
+    return PL_Text_DxStrlen(buffer);
+#else
     unsigned int ch;
     int pos = 0;
     
-    while ((ch = PL_Text_ReadChar(&string, srcEncoding)) != 0) {
-        pos += PL_Text_WriteChar(buffer + pos, ch, bufferLength - pos, destEncoding);
+    while ((ch = PL_Text_ReadDxChar(&string, srcEncoding)) != 0) {
+        pos += PL_Text_WriteDxChar(buffer + pos, ch, bufferLength - pos, destEncoding);
     }
     
     buffer[pos] = '\0';
     
     return pos;
+#endif
 }
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */
