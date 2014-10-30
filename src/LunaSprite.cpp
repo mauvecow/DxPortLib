@@ -304,9 +304,16 @@ void LunaSprite::Rendering(LSPRITE lSpr) {
         
         PL_Render_SetUntransformedFlag(DXTRUE);
         
-        for (i = 0; i < sprite->maxGraph; ++i) {
-            int texID = sprite->textureIDs[i];
-            PL_Render_SetTextureStage(i, texID, g_lunaFilterMode);
+        if (sprite->maxGraph == 1) {
+            PL_Render_SetTexturePresetMode(
+                TEX_PRESET_MODULATE,
+                sprite->textureIDs[0], g_lunaFilterMode);
+        } else {
+            /* We need to handle actual texture stage stuff here. */
+            for (i = 0; i < sprite->maxGraph; ++i) {
+                int texID = sprite->textureIDs[i];
+                PL_Render_SetTextureStage(i, texID, g_lunaFilterMode);
+            }
         }
         
         PL_Render_DrawVertexIndexBuffer(

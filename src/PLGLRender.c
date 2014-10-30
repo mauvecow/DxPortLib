@@ -247,7 +247,7 @@ int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureD
     
     PL_GL.glActiveTexture(GL_TEXTURE0 + stage);
     PL_Texture_Bind(textureRefID, textureDrawMode);
-    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    //PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     
     s_boundTextures[stage] = textureRefID;
     
@@ -283,6 +283,8 @@ int PL_Render_SetTexturePresetMode(int preset,
                                    int textureRefID, int textureDrawMode) {
     unsigned int mainTexSlot = 0;
     int rgbScale = 1;
+    
+    PL_GL.glActiveTexture(GL_TEXTURE0);
     
     switch(preset) {
         case TEX_PRESET_COPY:
@@ -423,6 +425,7 @@ int PL_Render_SetTexturePresetMode(int preset,
     }
     
     PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, rgbScale);
+    
     return 0;
 }
 
