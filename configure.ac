@@ -2,7 +2,7 @@
 #
 # Feel free to send improvements!
 
-AC_INIT([DxPortLib], [0.2.0], [], [DxPortLib])
+AC_INIT([DxPortLib], [0.3.0], [], [DxPortLib])
 
 AC_CONFIG_AUX_DIR(autotools)
 AC_CONFIG_MACRO_DIR(autotools)
@@ -15,7 +15,7 @@ AM_PROG_CC_STDC
 AM_PROG_LIBTOOL
 
 MAJOR_VERSION=0     
-MINOR_VERSION=2
+MINOR_VERSION=3
 MICRO_VERSION=0
 INTERFACE_AGE=0
 BINARY_AGE=0

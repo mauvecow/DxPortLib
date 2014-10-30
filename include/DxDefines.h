@@ -95,7 +95,7 @@ namespace DxLib {
 #endif
 
 #define DXPORTLIB
-#define DXPORTLIB_VERSION "0.2.0"
+#define DXPORTLIB_VERSION "0.3.0"
 
 /* This library is compatible with DxLib v3.11. */
 #define DXLIB_VERSION 0x3110
