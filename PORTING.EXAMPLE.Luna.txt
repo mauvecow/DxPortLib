@@ -1,0 +1,57 @@
+This is basically an annotated C program which shows how much  work you
+need to do in order to port an application from Luna to DxPortLib,
+provided all functions are available.
+
+---------------------------------------------------------------------------
+
+/* - Any comments starting with "-" are relevant to DxPortLib. */
+#include "Luna.h"
+
+/* - DxPortLib doesn't support using Luna::Main, Luna::Init, or
+ *   Luna::MessageProc as-is.
+ *   In the LunaMain.cpp file, this set of defines will allow the
+ *   same code to work on either Luna or DxPortLib. */
+#ifdef DXPORTLIB_LUNA
+#  include "LunaMain.h"
+#else
+#  define LUNAMAIN Luna::Main
+#  define LUNAINIT Luna::Init
+#  define LUNAMESSAGEPROC Luna::MessageProc
+#endif
+
+/* - Instead of Luna::MessageProc, use LUNAMESSAGEPROC.
+ *   DxPortLib does not call this function at this time. */
+Bool LUNAMESSAGEPROC( Sint32 Msg, Sint32 wParam, Sint32 lParam ) {
+    return true;
+}
+
+/* - Instead of Luna::Init, use LUNAINIT */
+Bool LUNAINIT( void ) {
+    return true;
+}
+
+/* - Instead of Luna::Main, use LUNAMAIN */
+void LUNAMAIN( Sint32 ArgNum, char *pArgStr[] ) {
+    /* - Set the character set of the strings in the code here. */
+#ifdef DXPORTLIB_LUNA
+    Luna::SetUseCharSet(DX_CHARSET_EXT_UTF8);
+#endif
+
+    /* - Unlike Luna, DxPortLib supports ogg music directly. */
+#ifdef DXPORTLIB_LUNA
+    LSOUND music = LunaSound::CreateFromFile("music.ogg", true);
+#else
+    /* normal music code here */
+#endif
+    
+    /* Do normal program activity here */
+}
+
+void MySaveFunction() {
+    /* - To get the global save directory for the game, call this. */
+    /* ("%s/blah.sav", saveFolder), etc */
+    DXCHAR saveFolder[4096];
+    EXTGetSaveFolder(saveFolder, 4096, "myCompany", "myGameName");
+}
+
+---------------------------------------------------------------------------

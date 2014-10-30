@@ -531,6 +531,8 @@ const LCAMERA INVALID_CAMERA = -1;
  */
 typedef Bool (*LunaInitFunc)();
 typedef void (*LunaMainFunc)(Sint32 argc, char *argv[]);
+typedef Bool (*LunaMessageProcFunc)
+    ( Sint32 Msg, Sint32 wParam, Sint32 lParam );
 
 class Luna {
 private:
@@ -540,7 +542,8 @@ public:
      * yourself.
      */
     static LUNACALL int BootMain(Sint32 argc, char *argv[],
-        LunaInitFunc LunaInit, LunaMainFunc LunaMain
+        LunaInitFunc LunaInit, LunaMainFunc LunaMain,
+        LunaMessageProcFunc LunaMessageProc
     );
     
     static LUNACALL Bool Start();

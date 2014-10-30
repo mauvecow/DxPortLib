@@ -45,6 +45,7 @@
 
 extern Bool LunaInit();
 extern void LunaMain(Sint32 argc, char *argv[]);
+extern Bool LunaMessageProc( Sint32 Msg, Sint32 wParam, Sint32 lParam );
 
 #ifdef WIN32
 /* for _argc/_argv */
@@ -52,12 +53,12 @@ extern void LunaMain(Sint32 argc, char *argv[]);
 
 /* WinMain */
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR Cmd, INT Show) {
-    return Luna::BootMain(__argc, __argv, &LUNAINIT, &LUNAMAIN);
+    return Luna::BootMain(__argc, __argv, &LUNAINIT, &LUNAMAIN, &LUNAMESSAGEPROC);
 }
 #else
 /* main() */
 int main(int argc, char **argv) {
-    return Luna::BootMain(argc, argv, &LUNAINIT, &LUNAMAIN);
+    return Luna::BootMain(argc, argv, &LUNAINIT, &LUNAMAIN, &LUNAMESSAGEPROC);
 }
 #endif
 

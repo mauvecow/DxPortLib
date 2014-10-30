@@ -54,10 +54,15 @@ float g_lunaVirtualYmult = 1.0f;
 
 static LunaInitFunc s_LunaInit = NULL;
 static LunaMainFunc s_LunaMain = NULL;
+static LunaMessageProcFunc s_LunaMessageProc = NULL;
 
-int Luna::BootMain(Sint32 argc, char **argv, LunaInitFunc LunaInit, LunaMainFunc LunaMain) {
+int Luna::BootMain(Sint32 argc, char **argv,
+                   LunaInitFunc LunaInit, LunaMainFunc LunaMain,
+                   LunaMessageProcFunc LunaMessageProc
+                  ) {
     s_LunaInit = LunaInit;
     s_LunaMain = LunaMain;
+    s_LunaMessageProc = LunaMessageProc;
     
     PL_Platform_Boot();
     PL_Platform_Init();
