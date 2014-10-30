@@ -58,9 +58,9 @@ void Luna3D::SetViewport(const RECT *rect) {
     }
     
     PL_Render_SetViewport(
-        r.left, r.top,
-        r.right - r.left,
-        r.bottom - r.top);
+        rect->left, rect->top,
+        rect->right - rect->left,
+        rect->bottom - rect->top);
     PL_Render_SetZRange(0.0f, 1.0f);
     
     g_viewportRect = *rect;

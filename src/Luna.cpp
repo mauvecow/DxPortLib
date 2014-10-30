@@ -300,8 +300,8 @@ int Luna::EXTConvertText(DXCHAR *buffer, int bufferLength,
     unsigned int ch;
     int pos = 0;
     
-    while ((ch = PL_Text_ReadDxChar(&string, srcEncoding)) != 0) {
-        pos += PL_Text_WriteDxChar(buffer + pos, ch, bufferLength - pos, destEncoding);
+    while ((ch = PL_Text_ReadChar(&string, srcEncoding)) != 0) {
+        pos += PL_Text_WriteChar(buffer + pos, ch, bufferLength - pos, destEncoding);
     }
     
     buffer[pos] = '\0';
