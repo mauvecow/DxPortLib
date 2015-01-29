@@ -120,6 +120,8 @@ int PL_Window_Init(void) {
         SDL_WINDOW_OPENGL |
         SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
     
+    PL_SDL2GL_SetAttributes();
+    
     s_window = SDL_CreateWindow(
         windowTitle,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,

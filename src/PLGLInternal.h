@@ -27,10 +27,11 @@
 #ifdef DXPORTLIB_DRAW_OPENGL
 
 #include "SDL.h"
-#include "SDL_opengl.h"
 
-#ifdef __MACOSX__
-#include <OpenGL/OpenGL.h>
+#ifdef DXPORTLIB_DRAW_OPENGL_ES2
+#include "SDL_opengles2.h"
+#else
+#include "SDL_opengl.h"
 #endif
 
 /* In the event this is not defined... */
@@ -41,6 +42,7 @@
 typedef struct GLInfo_t {
     int isInitialized;
     
+    int hasNPTSupport;
     int hasTextureRectangleSupport;
     int maxTextureWidth;
     int maxTextureHeight;
@@ -48,32 +50,30 @@ typedef struct GLInfo_t {
     /* Main GL functions */
     void (APIENTRY *glEnable)( GLenum cap );
     void (APIENTRY *glDisable)( GLenum cap );
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     void (APIENTRY *glEnableClientState)( GLenum cap );
     void (APIENTRY *glDisableClientState)( GLenum cap );
+#endif
     
     GLenum (APIENTRY *glGetError)(void);
     void (APIENTRY *glPixelStorei)( GLenum pname, GLint param );
     void (APIENTRY *glFinish)(void);
     void (APIENTRY *glGetIntegerv)( GLenum pname, GLint *params );
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     void (APIENTRY *glMatrixMode)( GLenum mode );
     void (APIENTRY *glLoadIdentity)( void );
-    /* We do not use the matrix stack. */
-    /* void (APIENTRY *glPushMatrix)( void ); */
-    /* void (APIENTRY *glPopMatrix)( void ); */
     void (APIENTRY *glLoadMatrixf)( const GLfloat *m );
-    /* We use PL's internal matrix support. */
-    /* void (APIENTRY *glOrtho)( GLdouble left, GLdouble right,
-                             GLdouble bottom, GLdouble top,
-                             GLdouble near_val, GLdouble far_val ); */
-    /* void (APIENTRY *glTranslatef)( GLfloat x, GLfloat y, GLfloat z ); */
+#endif
     
     /* Texture functions */
     void (APIENTRY *glGenTextures)( GLsizei n, GLuint *textures );
     void (APIENTRY *glDeleteTextures)( GLsizei n, const GLuint *textures);
 
     void (APIENTRY *glActiveTexture)( GLenum texture );
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     void (APIENTRY *glClientActiveTexture)( GLenum texture );
+#endif
     void (APIENTRY *glBindTexture)( GLenum target, GLuint texture );
     void (APIENTRY *glTexParameteri)( GLenum target, GLenum pname, GLint param );
     void (APIENTRY *glTexImage2D)( GLenum target, GLint level,
@@ -95,18 +95,24 @@ typedef struct GLInfo_t {
     void (APIENTRY *glClearColor)( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha );
     void (APIENTRY *glClear)( GLbitfield mask );
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     void (APIENTRY *glColor4f)( GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha );
+#endif
     
     void (APIENTRY *glLineWidth)( GLfloat width );
 
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     void (APIENTRY *glTexEnvf)( GLenum target, GLenum pname, GLfloat param );
     void (APIENTRY *glTexEnvi)( GLenum target, GLenum pname, GLint param );
+#endif
     void (APIENTRY *glBlendFuncSeparate) ( GLenum srcRGB, GLenum dstRGB,
                                            GLenum srcAlpha, GLenum dstAlpha);
     void (APIENTRY *glBlendFunc) ( GLenum src, GLenum srcAlpha );
     void (APIENTRY *glBlendEquationSeparate) ( GLenum modeRGB, GLenum modeAlpha );
     void (APIENTRY *glBlendEquation) ( GLenum mode );
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     void (APIENTRY *glAlphaFunc)( GLenum func, GLclampf ref );
+#endif
     
     void (APIENTRY *glViewport)( GLint x, GLint y, GLsizei width, GLsizei height );
     void (APIENTRY *glScissor)( GLint x, GLint y, GLsizei width, GLsizei height );
@@ -115,14 +121,32 @@ typedef struct GLInfo_t {
     void (APIENTRY *glDrawElements)( GLenum mode, GLsizei count,
                                      GLenum type, const GLvoid *indices );
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     void (APIENTRY *glVertexPointer)( GLint size, GLenum type,  
                                       GLsizei stride, const GLvoid *ptr );  
     void (APIENTRY *glColorPointer)( GLint size, GLenum type,
                                      GLsizei stride, const GLvoid *ptr );
     void (APIENTRY *glTexCoordPointer)( GLint size, GLenum type,
                                         GLsizei stride, const GLvoid *ptr );
+#endif
     
     /* Vertex buffer functions */
+    int hasVBOSupport;
+    void (APIENTRY *glBindBuffer)( GLenum target, GLuint buffer );
+    void (APIENTRY *glDeleteBuffers)( GLsizei n, const GLuint *buffers );
+    void (APIENTRY *glGenBuffers)( GLsizei n, GLuint *buffers );
+    void (APIENTRY *glBufferData)( GLenum target, GLsizeiptr size,
+                                      const GLvoid *data, GLenum usage );
+    void (APIENTRY *glBufferSubData)( GLenum target, GLintptr offset,
+                                         GLsizeiptr size, const GLvoid *data );
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    GLvoid *(APIENTRY *glMapBuffer)( GLenum target, GLenum access );
+    GLboolean (APIENTRY *glUnmapBuffer)( GLenum target );
+#endif
+
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    int useVBOARB;
+    
     void (APIENTRY *glBindBufferARB)( GLenum target, GLuint buffer );
     void (APIENTRY *glDeleteBuffersARB)( GLsizei n, const GLuint *buffers );
     void (APIENTRY *glGenBuffersARB)( GLsizei n, GLuint *buffers );
@@ -132,15 +156,30 @@ typedef struct GLInfo_t {
                                          GLsizeiptrARB size, const GLvoid *data );
     GLvoid *(APIENTRY *glMapBufferARB)( GLenum target, GLenum access );
     GLboolean (APIENTRY *glUnmapBufferARB)( GLenum target );
-
+#endif
+    
     /* Framebuffer functions */
     int hasFramebufferSupport;
+    
+    void (APIENTRY *glFramebufferTexture2D) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+    void (APIENTRY *glBindFramebuffer) (GLenum target, GLuint framebuffer);
+    void (APIENTRY *glDeleteFramebuffers) (GLsizei n, const GLuint *framebuffers);
+    void (APIENTRY *glGenFramebuffers) (GLsizei n, GLuint *framebuffers);
+    GLenum (APIENTRY *glCheckFramebufferStatus) (GLenum target);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    int useFramebufferEXT;
     
     void (APIENTRY *glFramebufferTexture2DEXT) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
     void (APIENTRY *glBindFramebufferEXT) (GLenum target, GLuint framebuffer);
     void (APIENTRY *glDeleteFramebuffersEXT) (GLsizei n, const GLuint *framebuffers);
     void (APIENTRY *glGenFramebuffersEXT) (GLsizei n, GLuint *framebuffers);
     GLenum (APIENTRY *glCheckFramebufferStatusEXT) (GLenum target);
+#endif
+    
+    /* ES2 stuff */
+#ifdef DXPORTLIB_DRAW_OPENGL_ES2
+    int hasEXTUnpackSubimage;
+#endif
 } GLInfo;
 
 extern GLInfo PL_GL;

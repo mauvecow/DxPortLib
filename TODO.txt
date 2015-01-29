@@ -1,11 +1,44 @@
 IMPORTANT NOTE:
   This library is not intended to be a 100% implementation of the
-  DxLib interface!
+  DxLib or Luna interfaces!
 
   Throw out the cruft and only allow what makes sense for modern
   portability and hardware acceleration guidelines.
 
 ---------------------------------------------------------------------------
+
+PortLib general:
+
+Audio:
+- Very tied together with DxLib's wants, with how the AudioBuffers are
+  configured. Clean them up.
+
+Font:
+- No generalized font support, TTF or otherwise. Too tied to DxLib still.
+
+Math:
+- Is generally untested.
+- Does not have matrix inversion.
+
+Rendering:
+- Currently too tied to OpenGL. Would like to separate that out more.
+- Has no proper fallbacks when framebuffers are not available. Most games
+  do not use them, but we just explode when they aren't there.
+- Similarly, tied directly into SDL2 too much.
+
+System:
+- Would like to make SDL2 replaceable with native systems, for Windows. 
+
+Text:
+- Sort of clunky, needs better conversion handling.
+
+Threading:
+- Would like some basic multithreading support for background loading and
+  data queueing, but this is a fairly large undertaking.
+
+---------------------------------------------------------------------------
+
+DxLib support:
 
 System:
 - DxLib general:
@@ -28,7 +61,6 @@ File I/O:
   - No support for custom streaming functions.
 
 Graphics:
-- SDL2Render backend is now broken. Remove it? It is the most portable...
 - Functions unsupported:
   - Vertex buffers.
   - Shader filter nonsense.
@@ -55,12 +87,18 @@ Other:
 
 ---------------------------------------------------------------------------
 
+Luna support: (general overview)
+- Only implemented just enough for a certain project, mostly unsupported.
+- No LunaDx8 support.
+- Luna Audio is mostly home-rolled, so a pile of extensions to add things
+  which are not normally supported seems like a good plan.
+
+---------------------------------------------------------------------------
+
 Immediate list:
-- Switch Draw code to use an index array / have a larger vertex buffer.
 - 3d Math (vectors, matrices, etc).
 - Vertex buffers.
 - Movie playback somehow. (theora or bust)
-- Optimize blending/rendering state. (tied into shader code)
 - Asynchronous loading, yayyyyy.
 - Audio revamp.
-
+- Review MojoShader again for Dx9 shader compilation support.

@@ -406,8 +406,10 @@ extern int PL_VertexBuffer_Create(const VertexDefinition *def,
 extern int PL_VertexBuffer_SetData(int vboHandle,
                                    const char *vertices,
                                    int start, int count);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
 extern char *PL_VertexBuffer_Lock(int vboHandle);
 extern int PL_VertexBuffer_Unlock(int vboHandle, char *buffer);
+#endif
 extern int PL_VertexBuffer_Delete(int vboHandle);
 
 extern int PL_IndexBuffer_Create(const unsigned short *indexData,
@@ -415,8 +417,10 @@ extern int PL_IndexBuffer_Create(const unsigned short *indexData,
 extern int PL_IndexBuffer_SetData(int iboHandle,
                                   const unsigned short *indices,
                                   int start, int count);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
 extern unsigned short *PL_IndexBuffer_Lock(int iboHandle);
 extern int PL_IndexBuffer_Unlock(int iboHandle);
+#endif
 extern int PL_IndexBuffer_Delete(int iboHandle);
 
 /* ----------------------------------------------------------- Surface.c */

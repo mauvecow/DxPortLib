@@ -39,31 +39,37 @@ int PL_drawScreenHeight = -1;
 GLInfo PL_GL = { 0 };
 
 /* ------------------------------------------------------- Load Functions */
+static void s_debugPrint(const char *string) {
+    /* fprintf(stderr, "%s\n", string); */
+}
+
 static void s_LoadGL() {
     SDL_memset(&PL_GL, 0, sizeof(PL_GL));
     
     PL_GL.glEnable = SDL_GL_GetProcAddress("glEnable");
     PL_GL.glDisable = SDL_GL_GetProcAddress("glDisable");
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glEnableClientState = SDL_GL_GetProcAddress("glEnableClientState");
     PL_GL.glDisableClientState = SDL_GL_GetProcAddress("glDisableClientState");
+#endif
     
     PL_GL.glGetError = SDL_GL_GetProcAddress("glGetError");
     PL_GL.glPixelStorei = SDL_GL_GetProcAddress("glPixelStorei");
     PL_GL.glFinish = SDL_GL_GetProcAddress("glFinish");
     PL_GL.glGetIntegerv = SDL_GL_GetProcAddress("glGetIntegerv");
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glMatrixMode = SDL_GL_GetProcAddress("glMatrixMode");
     PL_GL.glLoadIdentity = SDL_GL_GetProcAddress("glLoadIdentity");
-    /* PL_GL.glPushMatrix = SDL_GL_GetProcAddress("glPushMatrix"); */
-    /* PL_GL.glPopMatrix = SDL_GL_GetProcAddress("glPopMatrix"); */
     PL_GL.glLoadMatrixf = SDL_GL_GetProcAddress("glLoadMatrixf");
-    /*PL_GL.glOrtho = SDL_GL_GetProcAddress("glOrtho"); */
-    /* PL_GL.glTranslatef = SDL_GL_GetProcAddress("glTranslatef"); */
+#endif
     
     PL_GL.glGenTextures = SDL_GL_GetProcAddress("glGenTextures");
     PL_GL.glDeleteTextures = SDL_GL_GetProcAddress("glDeleteTextures");
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glClientActiveTexture = SDL_GL_GetProcAddress("glClientActiveTexture");
+#endif
     PL_GL.glActiveTexture = SDL_GL_GetProcAddress("glActiveTexture");
     PL_GL.glBindTexture = SDL_GL_GetProcAddress("glBindTexture");
     PL_GL.glTexParameteri = SDL_GL_GetProcAddress("glTexParameteri");
@@ -74,17 +80,23 @@ static void s_LoadGL() {
     PL_GL.glClearColor = SDL_GL_GetProcAddress("glClearColor");
     PL_GL.glClear = SDL_GL_GetProcAddress("glClear");
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glColor4f = SDL_GL_GetProcAddress("glColor4f");
+#endif
     
     PL_GL.glLineWidth = SDL_GL_GetProcAddress("glLineWidth");
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glTexEnvf = SDL_GL_GetProcAddress("glTexEnvf");
     PL_GL.glTexEnvi = SDL_GL_GetProcAddress("glTexEnvi");
+#endif
     PL_GL.glBlendFuncSeparate = SDL_GL_GetProcAddress("glBlendFuncSeparate");
     PL_GL.glBlendFunc = SDL_GL_GetProcAddress("glBlendFunc");
     PL_GL.glBlendEquationSeparate = SDL_GL_GetProcAddress("glBlendEquationSeparate");
     PL_GL.glBlendEquation = SDL_GL_GetProcAddress("glBlendEquation");
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glAlphaFunc = SDL_GL_GetProcAddress("glAlphaFunc");
+#endif
     
     PL_GL.glViewport = SDL_GL_GetProcAddress("glViewport");
     PL_GL.glScissor = SDL_GL_GetProcAddress("glScissor");
@@ -92,11 +104,38 @@ static void s_LoadGL() {
     PL_GL.glDrawArrays = SDL_GL_GetProcAddress("glDrawArrays");
     PL_GL.glDrawElements = SDL_GL_GetProcAddress("glDrawElements");
 
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glVertexPointer = SDL_GL_GetProcAddress("glVertexPointer");
     PL_GL.glColorPointer = SDL_GL_GetProcAddress("glColorPointer");
     PL_GL.glTexCoordPointer = SDL_GL_GetProcAddress("glTexCoordPointer");
+#endif
     
-    if (SDL_GL_ExtensionSupported("GL_ARB_vertex_buffer_object")) {
+    PL_GL.glGenBuffers = SDL_GL_GetProcAddress("glGenBuffers");
+    PL_GL.glDeleteBuffers = SDL_GL_GetProcAddress("glDeleteBuffers");
+    PL_GL.glBufferData = SDL_GL_GetProcAddress("glBufferData");
+    PL_GL.glBufferSubData = SDL_GL_GetProcAddress("glBufferSubData");
+    
+    PL_GL.glBindBuffer = SDL_GL_GetProcAddress("glBindBuffer");
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    PL_GL.glMapBuffer = SDL_GL_GetProcAddress("glMapBuffer");
+    PL_GL.glUnmapBuffer = SDL_GL_GetProcAddress("glUnmapBuffer");
+#endif
+    
+    if (PL_GL.glGenBuffers != 0 && PL_GL.glDeleteBuffers != 0
+        && PL_GL.glBufferData != 0 && PL_GL.glBufferSubData != 0
+        && PL_GL.glBindBuffer != 0
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+        && PL_GL.glMapBuffer != 0 && PL_GL.glUnmapBuffer != 0
+#endif
+    ) {
+        PL_GL.hasVBOSupport = DXTRUE;
+        s_debugPrint("s_LoadGL: has VBO support");
+    }
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    else if (SDL_GL_ExtensionSupported("GL_ARB_vertex_buffer_object")) {
+        PL_GL.hasVBOSupport = DXTRUE;
+        PL_GL.useVBOARB = DXTRUE;
+        
         PL_GL.glGenBuffersARB = SDL_GL_GetProcAddress("glGenBuffersARB");
         PL_GL.glDeleteBuffersARB = SDL_GL_GetProcAddress("glDeleteBuffersARB");
         PL_GL.glBufferDataARB = SDL_GL_GetProcAddress("glBufferDataARB");
@@ -104,18 +143,38 @@ static void s_LoadGL() {
         PL_GL.glMapBufferARB = SDL_GL_GetProcAddress("glMapBufferARB");
         PL_GL.glUnmapBufferARB = SDL_GL_GetProcAddress("glUnmapBufferARB");
         PL_GL.glBindBufferARB = SDL_GL_GetProcAddress("glBindBufferARB");
+        s_debugPrint("s_LoadGL: using GL_ARB_vertex_buffer_object");
     }
+#endif
 
-    if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
+    PL_GL.glFramebufferTexture2D = SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
+    PL_GL.glBindFramebuffer = SDL_GL_GetProcAddress("glBindFramebufferEXT");
+    PL_GL.glDeleteFramebuffers = SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
+    PL_GL.glGenFramebuffers = SDL_GL_GetProcAddress("glGenFramebuffersEXT");
+    PL_GL.glCheckFramebufferStatus = SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
+    
+    if (PL_GL.glFramebufferTexture2D != 0 && PL_GL.glBindFramebuffer != 0
+        && PL_GL.glDeleteFramebuffers != 0 && PL_GL.glGenFramebuffers != 0
+        && PL_GL.glCheckFramebufferStatus != 0
+    ) {
         PL_GL.hasFramebufferSupport = DXTRUE;
+        s_debugPrint("s_LoadGL: has framebuffer support");
+    }
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    else if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
+        PL_GL.hasFramebufferSupport = DXTRUE;
+        PL_GL.useFramebufferEXT = DXTRUE;
         
         PL_GL.glFramebufferTexture2DEXT = SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
         PL_GL.glBindFramebufferEXT = SDL_GL_GetProcAddress("glBindFramebufferEXT");
         PL_GL.glDeleteFramebuffersEXT = SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
         PL_GL.glGenFramebuffersEXT = SDL_GL_GetProcAddress("glGenFramebuffersEXT");
         PL_GL.glCheckFramebufferStatusEXT = SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
+        s_debugPrint("s_LoadGL: using GL_EXT_framebuffer_object");
     }
+#endif
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle")
         || SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")
     ) {
@@ -123,16 +182,40 @@ static void s_LoadGL() {
         PL_GL.glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB, &size);
         
         PL_GL.hasTextureRectangleSupport = DXTRUE;
+        PL_GL.hasNPTSupport = DXTRUE;
         PL_GL.maxTextureWidth = size;
         PL_GL.maxTextureHeight = size;
+        s_debugPrint("s_LoadGL: using GL_ARB_texture_rectangle");
     } else {
         GLint size;
         PL_GL.glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
         
         PL_GL.hasTextureRectangleSupport = DXFALSE;
+        PL_GL.hasNPTSupport = DXFALSE;
         PL_GL.maxTextureWidth = size;
         PL_GL.maxTextureHeight = size;
+        s_debugPrint("s_LoadGL: NO NPT or GL_ARB_texture_rectangle");
     }
+#else
+    {
+        GLint size;
+        PL_GL.glGetIntegerv(GL_MAX_TEXTURE_SIZE, &size);
+        
+        PL_GL.hasTextureRectangleSupport = DXFALSE;
+        PL_GL.hasNPTSupport = DXTRUE;
+        PL_GL.maxTextureWidth = size;
+        PL_GL.maxTextureHeight = size;
+        s_debugPrint("s_LoadGL: has NPT support");
+    }
+#endif
+
+    /* ES2 stuff */
+#ifdef DXPORTLIB_DRAW_OPENGL_ES2
+    if (SDL_GL_ExtensionSupported("GL_EXT_unpack_subimage")) {
+        PL_GL.hasEXTUnpackSubimage = DXTRUE;
+        s_debugPrint("s_LoadGL: has GL_EXT_unpack_subimage");
+    }
+#endif
     
     PL_GL.isInitialized = DXTRUE;
 }
@@ -183,6 +266,7 @@ typedef struct RectVertex {
 } RectVertex;
 
 static void s_drawRect(const SDL_Rect *rect) {
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     float x1 = (float)rect->x;
     float y1 = (float)rect->y;
     float x2 = x1 + (float)rect->w;
@@ -221,6 +305,7 @@ static void s_drawRect(const SDL_Rect *rect) {
     PL_GL.glDisableClientState(GL_VERTEX_ARRAY);
     
     PL_Texture_Unbind(s_screenFrameBufferB);
+#endif
 }
 
 void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
@@ -244,6 +329,7 @@ void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     
     SDL_GetWindowSize(window, &wWidth, &wHeight);
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glDisable(GL_DEPTH_TEST);
     PL_GL.glDisable(GL_CULL_FACE);
     
@@ -264,6 +350,7 @@ void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     
     s_drawRect(targetRect);
+#endif
     
     /* Swap! */
     SDL_GL_SwapWindow(window);
@@ -287,6 +374,14 @@ void PL_SDL2GL_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect) {
     s_screenFrameBufferA = tempBuffer;
     
     PL_SDL2GL_Refresh(window, targetRect);
+}
+
+void PL_SDL2GL_SetAttributes() {
+#ifdef DXPORTLIB_DRAW_OPENGL_ES2
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif
 }
 
 void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
@@ -314,12 +409,9 @@ void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     PL_SDL2GL_ResizeWindow(width, height);
     PL_GL.glClearColor(0, 0, 0, 1);
     PL_GL.glClear(GL_COLOR_BUFFER_BIT);
-    
-    //PL_Draw_ForceUpdate();
 }
 
 void PL_SDL2GL_End() {
-    //PL_Draw_DestroyCache();
     PL_Render_End();
     
     if (s_context != NULL) {

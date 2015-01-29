@@ -39,15 +39,16 @@
  */
 #define DXPORTLIB_PLATFORM_SDL2
 
-/* DxPortLib - Disables SHIFT-JIS codepage. (-74kB binary size)
- * If you do not use SJIS it is recommended to disable this.
- */
+/* DxPortLib - Disables SHIFT-JIS codepage. (-74kB binary size) */
 /* #define DXPORTLIB_NO_SJIS */
 
 /* DxPortLib extension - Sets the drawing backend.
  * Currently only OpenGL is supported.
  */
 #define DXPORTLIB_DRAW_OPENGL
+
+/* For OpenGL, define this to use the OpenGL ES 2.0 support. */
+/* #define DXPORTLIB_DRAW_OPENGL_ES2 */
 
 /* ------------------------------------------------------------------------
  * DxLib-specific features.

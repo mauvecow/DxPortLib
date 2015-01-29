@@ -49,27 +49,56 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
     }
     
     info = (FramebufferInfo *)PL_Handle_GetData(handleID, DXHANDLE_FRAMEBUFFER);
-    if (info == NULL || textureID < 0) {
-        /* s_GLFrameBuffer_Bind(-1, -1) is synonymous with 'bind nothing' */
-        PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    } else {
-        PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, info->framebufferID);
-        
-        PL_GL.glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-                                        GL_COLOR_ATTACHMENT0_EXT,
-                                        textureTarget,
-                                        textureID,
-                                        0);
-        
-        if (PL_GL.glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
-            /* uhoh... */
+
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (PL_GL.useFramebufferEXT == DXTRUE) {
+        if (info == NULL || textureID < 0) {
+            /* s_GLFrameBuffer_Bind(-1, -1) is synonymous with 'bind nothing' */
             PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-            return -1;
+        } else {
+            PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, info->framebufferID);
+            
+            PL_GL.glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+                                            GL_COLOR_ATTACHMENT0_EXT,
+                                            textureTarget,
+                                            textureID,
+                                            0);
+            
+            if (PL_GL.glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+                /* uhoh... */
+                PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+                return -1;
+            }
+            
+            PL_GL.glViewport(0, 0, info->width, info->height);
+            
+            PL_Render_SetMatrixDirtyFlag();
         }
-        
-        PL_GL.glViewport(0, 0, info->width, info->height);
-        
-        PL_Render_SetMatrixDirtyFlag();
+    } else
+#endif
+    {
+        if (info == NULL || textureID < 0) {
+            /* s_GLFrameBuffer_Bind(-1, -1) is synonymous with 'bind nothing' */
+            PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        } else {
+            PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, info->framebufferID);
+            
+            PL_GL.glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                         GL_COLOR_ATTACHMENT0,
+                                         textureTarget,
+                                         textureID,
+                                         0);
+            
+            if (PL_GL.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+                /* uhoh... */
+                PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                return -1;
+            }
+            
+            PL_GL.glViewport(0, 0, info->width, info->height);
+            
+            PL_Render_SetMatrixDirtyFlag();
+        }
     }
     
     return 0;
@@ -103,7 +132,14 @@ static int s_GLFrameBuffer_Create(int width, int height) {
         }
         info = (FramebufferInfo *)PL_Handle_AllocateData(handleID, sizeof(FramebufferInfo));
         
-        PL_GL.glGenFramebuffersEXT(1, &info->framebufferID);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+        if (PL_GL.useFramebufferEXT == DXTRUE) {
+            PL_GL.glGenFramebuffersEXT(1, &info->framebufferID);
+        } else
+#endif
+        {
+            PL_GL.glGenFramebuffers(1, &info->framebufferID);
+        }
         info->width = width;
         info->height = height;
         info->refCount = 1;
@@ -126,7 +162,14 @@ static int s_GLFrameBuffer_Release(int handleID) {
     
     info->refCount -= 1;
     if (info->refCount <= 0) {
-        PL_GL.glDeleteFramebuffersEXT(1, &info->framebufferID);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+        if (PL_GL.useFramebufferEXT == DXTRUE) {
+            PL_GL.glDeleteFramebuffersEXT(1, &info->framebufferID);
+        } else
+#endif
+        {
+            PL_GL.glDeleteFramebuffers(1, &info->framebufferID);
+        }
         info->framebufferID = 0;
         
         PL_Handle_ReleaseID(handleID, DXTRUE);
@@ -146,10 +189,20 @@ int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface) {
     }
     
     PL_GL.glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH, (surface->pitch / surface->format->BytesPerPixel));
+#else
+    if (PL_GL.hasEXTUnpackSubimage == DXTRUE) {
+        PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, (surface->pitch / surface->format->BytesPerPixel));
+    }
+#endif
     PL_GL.glReadPixels(
         rect->x, rect->y, rect->w, rect->h,
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
         GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
+#else
+        GL_RGBA, GL_UNSIGNED_BYTE,
+#endif
         surface->pixels
     );
     
@@ -218,7 +271,13 @@ static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const SD
     PL_GL.glEnable(textureTarget);
     PL_GL.glBindTexture(textureTarget, textureRef->textureID);
     PL_GL.glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH, (surface->pitch / surface->format->BytesPerPixel));
+#else
+    if (PL_GL.hasEXTUnpackSubimage == DXTRUE) {
+        PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, (surface->pitch / surface->format->BytesPerPixel));
+    }
+#endif
     PL_GL.glTexSubImage2D(
         textureTarget, 0,
         rect->x, rect->y, rect->w, rect->h,
@@ -329,8 +388,15 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     }
 
     /* - If not 2^n, use TEXTURE_RECTANGLE if available. */
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (wrappableFlag == DXFALSE && PL_GL.hasTextureRectangleSupport) {
         textureTarget = GL_TEXTURE_RECTANGLE_ARB;
+        texWidth = width;
+        texHeight = height;
+    } else
+#endif
+    if (wrappableFlag == DXFALSE && PL_GL.hasNPTSupport) {
+        textureTarget = GL_TEXTURE_2D;
         texWidth = width;
         texHeight = height;
     } else {
@@ -344,9 +410,15 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
         return -1;
     }
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     textureInternalFormat = GL_RGBA8;
     textureFormat = GL_BGRA;
     textureType = GL_UNSIGNED_INT_8_8_8_8_REV;
+#else
+    textureInternalFormat = GL_RGBA;
+    textureFormat = GL_RGBA;
+    textureType = GL_UNSIGNED_BYTE;
+#endif
     
     /* - Create the texture itself. */
     PL_GL.glGenTextures(1, &textureID);
@@ -359,7 +431,7 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
-    if (textureTarget != GL_TEXTURE_RECTANGLE_ARB) {
+    if (wrappableFlag == DXFALSE) {
         PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
@@ -398,10 +470,13 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     textureref->hasAlphaChannel = hasAlphaChannel;
     textureref->wrappableFlag = wrappableFlag;
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (textureTarget == GL_TEXTURE_RECTANGLE_ARB) {
         textureref->widthMult = 1.0f;
         textureref->heightMult = 1.0f;
-    } else {
+    } else
+#endif
+    {
         textureref->widthMult = 1.0f / (float)texWidth;
         textureref->heightMult = 1.0f / (float)texHeight;
     }
