@@ -40,12 +40,13 @@ GLInfo PL_GL = { 0 };
 
 /* ------------------------------------------------------- Load Functions */
 static void s_debugPrint(const char *string) {
-    /* fprintf(stderr, "%s\n", string); */
+    fprintf(stderr, "%s\n", string);
 }
 
 static void s_LoadGL() {
     SDL_memset(&PL_GL, 0, sizeof(PL_GL));
     
+    PL_GL.glGetError = SDL_GL_GetProcAddress("glGetError");
     PL_GL.glEnable = SDL_GL_GetProcAddress("glEnable");
     PL_GL.glDisable = SDL_GL_GetProcAddress("glDisable");
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
@@ -209,6 +210,41 @@ static void s_LoadGL() {
     }
 #endif
 
+    PL_GL.glCreateShader = SDL_GL_GetProcAddress("glCreateShader");
+    PL_GL.glDeleteShader = SDL_GL_GetProcAddress("glDeleteShader");
+    PL_GL.glShaderSource = SDL_GL_GetProcAddress("glShaderSource");
+    PL_GL.glCompileShader = SDL_GL_GetProcAddress("glCompileShader");
+    PL_GL.glGetShaderiv = SDL_GL_GetProcAddress("glGetShaderiv");
+    PL_GL.glGetUniformLocation = SDL_GL_GetProcAddress("glGetUniformLocation");
+    PL_GL.glGetAttribLocation = SDL_GL_GetProcAddress("glGetAttribLocation");
+    
+    PL_GL.glCreateProgram = SDL_GL_GetProcAddress("glCreateProgram");
+    PL_GL.glDeleteProgram = SDL_GL_GetProcAddress("glDeleteProgram");
+    PL_GL.glUseProgram = SDL_GL_GetProcAddress("glUseProgram");
+    PL_GL.glAttachShader = SDL_GL_GetProcAddress("glAttachShader");
+    
+    PL_GL.glEnableVertexAttribArray = SDL_GL_GetProcAddress("glEnableVertexAttribArray");
+    PL_GL.glDisableVertexAttribArray = SDL_GL_GetProcAddress("glDisableVertexAttribArray");
+    PL_GL.glVertexAttribPointer = SDL_GL_GetProcAddress("glVertexAttribPointer");
+    PL_GL.glUniform1i = SDL_GL_GetProcAddress("glUniform1i");
+    PL_GL.glUniformMatrix4fv = SDL_GL_GetProcAddress("glUniformMatrix4fv");
+    
+    /* help this is wrong. For ES2 and OGL >2.0 I should assume correct, otherwise...
+     * Should I support the ARB version as well? */
+    if (PL_GL.glCreateShader != 0 && PL_GL.glDeleteShader != 0
+        && PL_GL.glShaderSource != 0 && PL_GL.glCompileShader != 0
+        && PL_GL.glGetShaderiv != 0 && PL_GL.glGetUniformLocation != 0
+        && PL_GL.glGetAttribLocation != 0 && PL_GL.glCreateProgram != 0
+        && PL_GL.glDeleteProgram != 0 && PL_GL.glUseProgram != 0
+        && PL_GL.glAttachShader != 0 && PL_GL.glEnableVertexAttribArray != 0
+        && PL_GL.glDisableVertexAttribArray != 0 && PL_GL.glVertexAttribPointer != 0
+        && PL_GL.glUniform1i != 0 && PL_GL.glUniformMatrix4fv != 0)
+    {
+        s_debugPrint("s_LoadGL: has shader support");
+        
+        PL_GL.hasShaderSupport = DXTRUE;
+    }
+    
     /* ES2 stuff */
 #ifdef DXPORTLIB_DRAW_OPENGL_ES2
     if (SDL_GL_ExtensionSupported("GL_EXT_unpack_subimage")) {

@@ -450,6 +450,9 @@ int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureD
         return -1;
     }
     
+    PL_GL.glActiveTexture(GL_TEXTURE0 + stage);
+    PL_Texture_Bind(textureRefID, textureDrawMode);
+    
     s_boundTextures[stage] = textureRefID;
     
     stage += 1;
@@ -462,6 +465,8 @@ int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureD
 int PL_Render_ClearTextures() {
     unsigned int i;
     for (i = 0; i < s_boundTextureCount; ++i) {
+        PL_GL.glActiveTexture(GL_TEXTURE0 + i);
+        PL_Texture_Unbind(s_boundTextures[i]);
         s_boundTextures[i] = -1;
     }
     s_boundTextureCount = 0;
@@ -816,6 +821,8 @@ int PL_Render_Init() {
     s_pixelTexture = PL_Texture_CreateFromSDLSurface(surface, DXFALSE);
     SDL_FreeSurface(surface);
     
+    PL_Shaders_Init();
+    
     return 0;
 }
 
@@ -824,6 +831,8 @@ int PL_Render_End() {
         PL_Texture_Release(s_pixelTexture);
         s_pixelTexture = -1;
     }
+    
+    PL_Shaders_Cleanup();
     
     return 0;
 }

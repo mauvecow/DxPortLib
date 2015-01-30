@@ -48,7 +48,7 @@
 #define DXPORTLIB_DRAW_OPENGL
 
 /* For OpenGL, define this to use the OpenGL ES 2.0 support. */
-/* #define DXPORTLIB_DRAW_OPENGL_ES2 */
+#define DXPORTLIB_DRAW_OPENGL_ES2
 
 /* ------------------------------------------------------------------------
  * DxLib-specific features.

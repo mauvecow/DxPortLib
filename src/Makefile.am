@@ -28,6 +28,7 @@ libDxPortLib_la_SOURCES =	\
 	PLGLInternal.h \
 	PLGLRender.c \
 	PLGLTexture.c \
+	PLGLShaders.c \
 	PLHandle.c \
 	PLInput.c \
 	PLInternal.h \

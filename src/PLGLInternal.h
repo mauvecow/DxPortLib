@@ -161,20 +161,49 @@ typedef struct GLInfo_t {
     /* Framebuffer functions */
     int hasFramebufferSupport;
     
-    void (APIENTRY *glFramebufferTexture2D) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-    void (APIENTRY *glBindFramebuffer) (GLenum target, GLuint framebuffer);
-    void (APIENTRY *glDeleteFramebuffers) (GLsizei n, const GLuint *framebuffers);
-    void (APIENTRY *glGenFramebuffers) (GLsizei n, GLuint *framebuffers);
-    GLenum (APIENTRY *glCheckFramebufferStatus) (GLenum target);
+    void (APIENTRY *glFramebufferTexture2D)(GLenum target, GLenum attachment,
+                                             GLenum textarget, GLuint texture, GLint level);
+    void (APIENTRY *glBindFramebuffer)(GLenum target, GLuint framebuffer);
+    void (APIENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint *framebuffers);
+    void (APIENTRY *glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
+    GLenum (APIENTRY *glCheckFramebufferStatus)(GLenum target);
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     int useFramebufferEXT;
     
-    void (APIENTRY *glFramebufferTexture2DEXT) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-    void (APIENTRY *glBindFramebufferEXT) (GLenum target, GLuint framebuffer);
-    void (APIENTRY *glDeleteFramebuffersEXT) (GLsizei n, const GLuint *framebuffers);
-    void (APIENTRY *glGenFramebuffersEXT) (GLsizei n, GLuint *framebuffers);
-    GLenum (APIENTRY *glCheckFramebufferStatusEXT) (GLenum target);
+    void (APIENTRY *glFramebufferTexture2DEXT)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+    void (APIENTRY *glBindFramebufferEXT)(GLenum target, GLuint framebuffer);
+    void (APIENTRY *glDeleteFramebuffersEXT)(GLsizei n, const GLuint *framebuffers);
+    void (APIENTRY *glGenFramebuffersEXT)(GLsizei n, GLuint *framebuffers);
+    GLenum (APIENTRY *glCheckFramebufferStatusEXT)(GLenum target);
 #endif
+    
+    /* Shader functions */
+    int hasShaderSupport;
+    
+    GLuint (APIENTRY *glCreateShader)(GLenum type);
+    GLuint (APIENTRY *glDeleteShader)(GLuint shader);
+    void (APIENTRY *glShaderSource)(GLuint shader, GLsizei count,
+                                    const GLchar * const *string,
+                                    const GLint *length);
+    void (APIENTRY *glCompileShader)(GLuint shader);
+    void (APIENTRY *glGetShaderiv)(GLuint shader, GLenum pname, GLint *params);
+    GLint (APIENTRY *glGetUniformLocation)(GLuint program, const GLchar *name);
+    GLint (APIENTRY *glGetAttribLocation)(GLuint program, const GLchar *name);
+    
+    GLuint (APIENTRY *glCreateProgram)(void);
+    void (APIENTRY *glDeleteProgram)(GLuint program);
+    void (APIENTRY *glUseProgram)(GLuint program);
+    void (APIENTRY *glAttachShader)(GLuint program, GLuint shader);
+    
+    void (APIENTRY *glEnableVertexAttribArray)(GLuint index);
+    void (APIENTRY *glDisableVertexAttribArray)(GLuint index);
+    void (APIENTRY *glVertexAttribPointer)(GLuint index, GLint size, GLenum type,
+                                           GLboolean normalized, GLsizei stride,
+                                           const void *pointer);
+    
+    void (APIENTRY *glUniform1i)(GLint location, GLint v0);
+    void (APIENTRY *glUniformMatrix4fv)(GLint location, GLsizei count,
+                                        GLboolean transpose, const GLfloat *value);
     
     /* ES2 stuff */
 #ifdef DXPORTLIB_DRAW_OPENGL_ES2
@@ -194,11 +223,14 @@ extern int PL_Texture_Bind(int textureRefID, int drawMode);
 extern int PL_Texture_Unbind(int textureRefID);
 extern int PL_Texture_ClearAllData();
 
-
 extern int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface);
 
 extern GLuint PL_VertexBuffer_GetGLID(int vertexBufferID);
 extern GLuint PL_IndexBuffer_GetGLID(int vertexBufferID);
+
+extern void PL_Shaders_Init();
+extern void PL_Shaders_Cleanup();
+
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */
 
