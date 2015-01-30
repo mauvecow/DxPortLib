@@ -29,34 +29,29 @@
 
 #include "SDL.h"
 
-typedef enum {
-    PLGL_SHADER_BASIC_NOTEX,
-    PLGL_SHADER_BASIC_TEX1,
-    PLGL_SHADER_END
-} PLGLShaderType;
-
-typedef struct _PLGLShaderDefinition {
-    const char *vertexShader;
-    const char *fragmentShader;
-    int textureCount;
-    int texcoordCount;
-    int hasColor;
-} PLGLShaderDefinition;
-
-typedef struct _PLGLShaderInfo {
-    PLGLShaderDefinition definition;
-    GLuint glVertexShaderID;
-    GLuint glFragmentShaderID;
-    GLuint glProgramID;
-    
-    GLuint glVertexAttribID;
-    GLuint glTextureUniformID[4];
-    GLuint glTexcoordAttribID[4];
-    GLuint glColorAttribID;
-} PLGLShaderInfo;
-
 static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
-    /* PLGL_SHADER_BASIC_NOTEX */
+    /* PLGL_SHADER_BASIC_NOCOLOR_TEX1 */
+    {
+        /* vertex shader */
+        "attribute vec4 position;\n"
+        "attribute vec2 texcoord;\n"
+        "uniform mat4 modelView;\n"
+        "uniform mat4 projection;\n"
+        "varying vec2 outTexcoord;\n"
+        "void main() {\n"
+        "    gl_Position = projection * (modelView * position);\n"
+        "    outTexcoord = texcoord;\n"
+        "}\n",
+        /* fragment shader */
+        "precision mediump float;\n"
+        "uniform sampler2D texture;\n"
+        "varying vec2 outTexcoord;\n"
+        "void main() {\n"
+        "    gl_FragColor = texture2D(texture, outTexcoord);\n"
+        "}\n",
+        1, 1, 0
+    },
+    /* PLGL_SHADER_BASIC_COLOR_NOTEX */
     {
         /* vertex shader */
         "attribute vec4 position;\n"
@@ -76,7 +71,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "}\n",
         0, 0, 1
     },
-    /* PLGL_SHADER_BASIC_TEX1 */
+    /* PLGL_SHADER_BASIC_COLOR_TEX1 */
     {
         /* vertex shader */
         "attribute vec4 position;\n"
@@ -146,6 +141,9 @@ int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
             if (PL_GL.glGetError() != GL_NO_ERROR) { break; }
         }
         
+        PL_GL.glLinkProgram(glProgramID);
+        if (PL_GL.glGetError() != GL_NO_ERROR) { printf("oops\n"); break; }
+        
         shaderHandle = PL_Handle_AcquireID(DXHANDLE_SHADER);
         info = (PLGLShaderInfo *)PL_Handle_AllocateData(shaderHandle, sizeof(PLGLShaderInfo));
         memset(info, 0, sizeof(PLGLShaderInfo));
@@ -153,6 +151,13 @@ int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
         memcpy(&info->definition, definition, sizeof(PLGLShaderDefinition));
         info->definition.vertexShader = NULL;
         info->definition.fragmentShader = NULL;
+        
+        info->glVertexShaderID = glVertexShaderID;
+        info->glFragmentShaderID = glFragmentShaderID;
+        info->glProgramID = glProgramID;
+        
+        info->glProjectionUniformID = PL_GL.glGetUniformLocation(glProgramID, "projection");
+        info->glModelViewUniformID = PL_GL.glGetUniformLocation(glProgramID, "modelView");
         
         info->glVertexAttribID = PL_GL.glGetAttribLocation(glProgramID, "position");
         if (info->definition.textureCount >= 1) {
@@ -225,8 +230,8 @@ static GLenum VertexElementSizeToGL(int value) {
 }
 
 void PL_Shaders_ApplyProgram(int shaderHandle,
-                             const char *vertexData, const VertexDefinition *definition,
-                             int *textureIDs, int textureCount)
+                             PLMatrix *projectionMatrix, PLMatrix *viewMatrix,
+                             const char *vertexData, const VertexDefinition *definition)
 {
     PLGLShaderInfo *info = (PLGLShaderInfo *)PL_Handle_GetData(shaderHandle, DXHANDLE_SHADER);
     int i;
@@ -237,12 +242,8 @@ void PL_Shaders_ApplyProgram(int shaderHandle,
     
     PL_GL.glUseProgram(info->glProgramID);
     
-    if (textureCount > info->definition.textureCount) {
-        textureCount = info->definition.textureCount;
-    }
-    for (i = 0; i < textureCount; ++i) {
-        PL_GL.glUniform1i(info->glTextureUniformID[i], i);
-    }
+    PL_GL.glUniformMatrix4fv(info->glProjectionUniformID, 1, GL_FALSE, (GLfloat *)projectionMatrix);
+    PL_GL.glUniformMatrix4fv(info->glModelViewUniformID, 1, GL_FALSE, (GLfloat *)viewMatrix);
     
     if (definition != NULL) {
         const VertexElement *e = definition->elements;
@@ -262,12 +263,14 @@ void PL_Shaders_ApplyProgram(int shaderHandle,
                 case VERTEX_TEXCOORD1:
                 case VERTEX_TEXCOORD2:
                 case VERTEX_TEXCOORD3: {
-                        GLint attribID = info->glTexcoordAttribID[e->vertexType - VERTEX_TEXCOORD0];
+                        int slot = e->vertexType - VERTEX_TEXCOORD0;
+                        GLint attribID = info->glTexcoordAttribID[slot];
                         if (attribID != 0) {
                             PL_GL.glEnableVertexAttribArray(attribID);
                             PL_GL.glVertexAttribPointer(attribID,
                                                         e->size, vertexType, GL_FALSE,
                                                         vertexDataSize, vertexData + e->offset);
+                            PL_GL.glUniform1i(info->glTextureUniformID[slot], slot);
                         }
                         break;
                     }

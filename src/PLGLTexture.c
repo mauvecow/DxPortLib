@@ -421,12 +421,16 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
 #endif
     
     /* - Create the texture itself. */
+    PL_GL.glGetError(); /* Clear the error buffer */
     PL_GL.glGenTextures(1, &textureID);
     if (PL_GL.glGetError() != GL_NO_ERROR) {
         return -1;
     }
     
+    PL_GL.glGetError();
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glEnable(textureTarget);
+#endif
     PL_GL.glBindTexture(textureTarget, textureID);
     PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -442,8 +446,11 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
             0, textureFormat, textureType, NULL
         );
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glDisable(textureTarget);
+#endif
     if (PL_GL.glGetError() != GL_NO_ERROR) {
+        PL_GL.glDeleteTextures(1, &textureID);
         return -1;
     }
 
@@ -522,13 +529,17 @@ int PL_Texture_SetWrap(int textureRefID, int wrapState) {
         wrapMode = GL_REPEAT;
     }
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glEnable(textureTarget);
+#endif
     PL_GL.glBindTexture(textureTarget, textureref->textureID);
     
     PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, wrapMode);
     PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, wrapMode);
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glDisable(textureTarget);
+#endif
     
     return 0;
 }
@@ -542,13 +553,17 @@ int s_glSetFilter(int textureRefID, GLint minFilter, GLint magFilter) {
     
     textureTarget = textureref->glTarget;
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glEnable(textureTarget);
+#endif
     PL_GL.glBindTexture(textureTarget, textureref->textureID);
     
     PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MIN_FILTER, minFilter);
     PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_MAG_FILTER, magFilter);
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glDisable(textureTarget);
+#endif
     
     return 0;
 }

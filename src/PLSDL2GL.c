@@ -40,7 +40,7 @@ GLInfo PL_GL = { 0 };
 
 /* ------------------------------------------------------- Load Functions */
 static void s_debugPrint(const char *string) {
-    fprintf(stderr, "%s\n", string);
+    /* fprintf(stderr, "%s\n", string); */
 }
 
 static void s_LoadGL() {
@@ -221,6 +221,7 @@ static void s_LoadGL() {
     PL_GL.glCreateProgram = SDL_GL_GetProcAddress("glCreateProgram");
     PL_GL.glDeleteProgram = SDL_GL_GetProcAddress("glDeleteProgram");
     PL_GL.glUseProgram = SDL_GL_GetProcAddress("glUseProgram");
+    PL_GL.glLinkProgram = SDL_GL_GetProcAddress("glLinkProgram");
     PL_GL.glAttachShader = SDL_GL_GetProcAddress("glAttachShader");
     
     PL_GL.glEnableVertexAttribArray = SDL_GL_GetProcAddress("glEnableVertexAttribArray");
@@ -230,7 +231,7 @@ static void s_LoadGL() {
     PL_GL.glUniformMatrix4fv = SDL_GL_GetProcAddress("glUniformMatrix4fv");
     
     /* help this is wrong. For ES2 and OGL >2.0 I should assume correct, otherwise...
-     * Should I support the ARB version as well? */
+     * Should I support the ARB version as well, just in case? */
     if (PL_GL.glCreateShader != 0 && PL_GL.glDeleteShader != 0
         && PL_GL.glShaderSource != 0 && PL_GL.glCompileShader != 0
         && PL_GL.glGetShaderiv != 0 && PL_GL.glGetUniformLocation != 0
@@ -300,9 +301,16 @@ typedef struct RectVertex {
     float x, y;
     float tcx, tcy;
 } RectVertex;
+static const VertexElement s_RectVertexElements[] = {
+    { VERTEX_POSITION, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, x) },
+    { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, tcx) },
+};
+VERTEX_DEFINITION(RectVertex);
+
+static PLMatrix s_projectionMatrix;
+static PLMatrix s_viewMatrix;
 
 static void s_drawRect(const SDL_Rect *rect) {
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     float x1 = (float)rect->x;
     float y1 = (float)rect->y;
     float x2 = x1 + (float)rect->w;
@@ -313,7 +321,6 @@ static void s_drawRect(const SDL_Rect *rect) {
     float xMult, yMult;
     
     PL_GL.glActiveTexture(GL_TEXTURE0);
-    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     PL_Texture_Bind(s_screenFrameBufferB, DX_DRAWMODE_BILINEAR);
     
     PL_Texture_RenderGetTextureInfo(s_screenFrameBufferB, &texRect, &xMult, &yMult);
@@ -328,6 +335,8 @@ static void s_drawRect(const SDL_Rect *rect) {
     v[2].x = x1; v[2].y = y2; v[2].tcx = tcx1; v[2].tcy = tcy2;
     v[3].x = x2; v[3].y = y2; v[3].tcx = tcx2; v[3].tcy = tcy2;
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     PL_GL.glColor4f(1, 1, 1, 1);
     
     PL_GL.glEnableClientState(GL_VERTEX_ARRAY);
@@ -341,12 +350,27 @@ static void s_drawRect(const SDL_Rect *rect) {
     PL_GL.glDisableClientState(GL_VERTEX_ARRAY);
     
     PL_Texture_Unbind(s_screenFrameBufferB);
+#else
+    PL_Shaders_ApplyProgram(
+        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_NOCOLOR_TEX1),
+        &s_projectionMatrix, &s_viewMatrix,
+        (const char *)v,
+        &s_RectVertexDefinition);
+    
+    PL_GL.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    
+    PL_Shaders_ClearProgram(
+        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_NOCOLOR_TEX1),
+        &s_RectVertexDefinition);
 #endif
+    PL_Texture_Unbind(s_screenFrameBufferB);
 }
 
 void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     int wWidth, wHeight;
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PLMatrix matrix;
+#endif
     
     if (!PL_GL.isInitialized) {
         return;
@@ -365,34 +389,37 @@ void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     
     SDL_GetWindowSize(window, &wWidth, &wHeight);
     
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glDisable(GL_DEPTH_TEST);
     PL_GL.glDisable(GL_CULL_FACE);
     
     PL_GL.glDisable(GL_SCISSOR_TEST);
     
-    PL_Matrix_CreateOrthoOffCenterRH(&matrix,
-        0, (float)wWidth, (float)wHeight, 0, 0.0, 1.0f);
-    
     PL_GL.glViewport(0, 0, wWidth, wHeight);
     
+    PL_Matrix_CreateOrthoOffCenterRH(&s_projectionMatrix,
+        0, (float)wWidth, (float)wHeight, 0, 0.0, 1.0f);
+    PL_Matrix_CreateIdentity(&s_viewMatrix);
+    
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glMatrixMode(GL_PROJECTION);
-    PL_GL.glLoadMatrixf((float *)&matrix);
+    PL_GL.glLoadMatrixf((float *)&s_projectionMatrix);
     
     PL_GL.glMatrixMode(GL_MODELVIEW);
-    PL_GL.glLoadIdentity();
+    PL_GL.glLoadMatrixf((float *)&s_viewMatrix);
+#endif
     
     PL_GL.glClearColor(0, 0, 0, 1);
     PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     
     s_drawRect(targetRect);
-#endif
     
     /* Swap! */
     SDL_GL_SwapWindow(window);
     
     /* Rebind the new buffer. */
     PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+    PL_GL.glClearColor(0, 0, 0, 1);
+    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     
     PL_Render_SetMatrixDirtyFlag();
 }

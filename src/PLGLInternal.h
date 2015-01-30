@@ -193,6 +193,7 @@ typedef struct GLInfo_t {
     GLuint (APIENTRY *glCreateProgram)(void);
     void (APIENTRY *glDeleteProgram)(GLuint program);
     void (APIENTRY *glUseProgram)(GLuint program);
+    void (APIENTRY *glLinkProgram)(GLuint program);
     void (APIENTRY *glAttachShader)(GLuint program, GLuint shader);
     
     void (APIENTRY *glEnableVertexAttribArray)(GLuint index);
@@ -213,6 +214,36 @@ typedef struct GLInfo_t {
 
 extern GLInfo PL_GL;
 
+typedef enum {
+    PLGL_SHADER_BASIC_NOCOLOR_TEX1 = 0,
+    PLGL_SHADER_BASIC_COLOR_NOTEX,
+    PLGL_SHADER_BASIC_COLOR_TEX1,
+    PLGL_SHADER_END
+} PLGLShaderType;
+
+typedef struct _PLGLShaderDefinition {
+    const char *vertexShader;
+    const char *fragmentShader;
+    int textureCount;
+    int texcoordCount;
+    int hasColor;
+} PLGLShaderDefinition;
+
+typedef struct _PLGLShaderInfo {
+    PLGLShaderDefinition definition;
+    GLuint glVertexShaderID;
+    GLuint glFragmentShaderID;
+    GLuint glProgramID;
+    
+    GLuint glVertexAttribID;
+    GLuint glTextureUniformID[4];
+    GLuint glTexcoordAttribID[4];
+    GLuint glColorAttribID;
+    
+    GLuint glModelViewUniformID;
+    GLuint glProjectionUniformID;
+} PLGLShaderInfo;
+
 extern int PL_drawScreenWidth;
 extern int PL_drawScreenHeight;
 
@@ -228,9 +259,17 @@ extern int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurfac
 extern GLuint PL_VertexBuffer_GetGLID(int vertexBufferID);
 extern GLuint PL_IndexBuffer_GetGLID(int vertexBufferID);
 
+extern int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition);
+extern void PL_Shaders_DeleteShader(int shaderHandle);
+extern void PL_Shaders_ApplyProgram(int shaderHandle,
+                                    PLMatrix *projectionMatrix, PLMatrix *viewMatrix,
+                                    const char *vertexData,
+                                    const VertexDefinition *definition);
+extern void PL_Shaders_ClearProgram(int shaderHandle,
+                                    const VertexDefinition *definition);
+extern int PL_Shaders_GetStockProgramForID(PLGLShaderType shaderType);
 extern void PL_Shaders_Init();
 extern void PL_Shaders_Cleanup();
-
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */
 

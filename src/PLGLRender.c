@@ -481,12 +481,17 @@ int PL_Render_ClearTexturePresetMode() {
 
 int PL_Render_SetTexturePresetMode(int preset,
                                    int textureRefID, int textureDrawMode) {
+    if (textureRefID <= 0) {
+        textureRefID = s_pixelTexture;
+    }
+    PL_Render_SetTextureStage(0, textureRefID, textureDrawMode);
     return 0;
 }
 
 #endif
 
 /* ---------------------------------------------------- VERTEX RENDERING */
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
 static GLenum VertexElementSizeToGL(int value) {
     switch(value) {
         case VERTEXSIZE_UNSIGNED_BYTE:
@@ -496,7 +501,6 @@ static GLenum VertexElementSizeToGL(int value) {
     }
 }
 
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
 static int PL_Render_ApplyVertexArrayData(const VertexDefinition *def,
                                           const char *vertexData) {
     int i;
@@ -560,61 +564,6 @@ static int PL_Render_ApplyVertexBufferData(const VertexDefinition *def) {
 static int PL_Render_ClearVertexBufferData(const VertexDefinition *def) {
     return PL_Render_ClearVertexArrayData(def);
 }
-#else
-/* OpenGL ES2 shader path */
-static int PL_Render_ApplyVertexArrayData(const VertexDefinition *def,
-                                          const char *vertexData) {
-    int i;
-    const VertexElement *e = def->elements;
-    int elementCount = def->elementCount;
-    int vertexDataSize = def->vertexByteSize;
-    
-    for (i = 0; i < elementCount; ++i, ++e) {
-        GLenum vertexType = VertexElementSizeToGL(e->vertexElementSize);
-        switch (e->vertexType) {
-            case VERTEX_POSITION:
-                break; 
-            case VERTEX_TEXCOORD0:
-            case VERTEX_TEXCOORD1:
-            case VERTEX_TEXCOORD2:
-            case VERTEX_TEXCOORD3:
-                break;
-            case VERTEX_COLOR:
-                break;
-        }
-    }
-    return 0;
-}
-
-static int PL_Render_ClearVertexArrayData(const VertexDefinition *def) {
-    int i;
-    const VertexElement *e = def->elements;
-    int elementCount = def->elementCount;
-    
-    for (i = 0; i < elementCount; ++i, ++e) {
-        switch (e->vertexType) {
-            case VERTEX_POSITION:
-                break; 
-            case VERTEX_TEXCOORD0:
-            case VERTEX_TEXCOORD1:
-            case VERTEX_TEXCOORD2:
-            case VERTEX_TEXCOORD3:
-                break; 
-            case VERTEX_COLOR:
-                break;
-        }
-    }
-    return 0;
-}
-
-static int PL_Render_ApplyVertexBufferData(const VertexDefinition *def) {
-    return PL_Render_ApplyVertexArrayData(def, 0);
-}
-
-static int PL_Render_ClearVertexBufferData(const VertexDefinition *def) {
-    return PL_Render_ClearVertexArrayData(def);
-}
-
 #endif
 
 /* ----------------------------------------------- RENDERING VERTEX DATA */
@@ -682,22 +631,6 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
     
     return 0;
 }
-#else
-int PL_Render_DrawVertexArray(const VertexDefinition *def,
-                              const char *vertexData,
-                              int primitiveType, int vertexStart, int vertexCount
-                             ) {
-    return 0;
-}
-
-int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
-                                   const char *vertexData,
-                                   const unsigned short *indexData,
-                                   int primitiveType, int indexStart, int indexCount
-                             ) {
-    return 0;
-}
-#endif
 
 int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
                                int vertexBufferHandle,
@@ -713,12 +646,9 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
     
     PL_Render_UpdateMatrices();
     
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.useVBOARB == DXTRUE) {
         PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexBufferID);
-    } else
-#endif
-    {
+    } else {
         PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
     }
     
@@ -728,12 +658,9 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
     
     PL_Render_ClearVertexBufferData(def);
     
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.useVBOARB == DXTRUE) {
         PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexBufferID);
-    } else
-#endif
-    {
+    } else {
         PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
     
@@ -755,13 +682,10 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
     
     PL_Render_UpdateMatrices();
     
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.useVBOARB == DXTRUE) {
         PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexBufferID);
         PL_GL.glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBufferID);
-    } else
-#endif
-    {
+    } else {
         PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
         PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
     }
@@ -774,19 +698,84 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
     
     PL_Render_ClearVertexBufferData(def);
     
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.useVBOARB == DXTRUE) {
         PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
         PL_GL.glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
-    } else
-#endif
-    {
+    } else {
         PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
         PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
     return 0;
 }
+
+#else
+int PL_Render_DrawVertexArray(const VertexDefinition *def,
+                              const char *vertexData,
+                              int primitiveType, int vertexStart, int vertexCount
+                             ) {
+    PL_Render_UpdateMatrices();
+    
+    if (PL_GL.hasVBOSupport == DXTRUE) {
+        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    
+    PL_Shaders_ApplyProgram(
+        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1),
+        &s_matrixProjection, &s_matrixView,
+        vertexData, def);
+    
+    PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
+    
+    PL_Shaders_ClearProgram(
+        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1),
+        def);
+    
+    return 0;
+}
+
+int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
+                                   const char *vertexData,
+                                   const unsigned short *indexData,
+                                   int primitiveType, int indexStart, int indexCount
+                             ) {
+    PL_Render_UpdateMatrices();
+    
+    if (PL_GL.hasVBOSupport == DXTRUE) {
+        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    
+    PL_Shaders_ApplyProgram(
+        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1),
+        &s_matrixProjection, &s_matrixView,
+        vertexData, def);
+    
+    PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
+                         indexCount, GL_UNSIGNED_SHORT, indexData + indexStart);
+    
+    PL_Shaders_ClearProgram(
+        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1),
+        def);
+    
+    return 0;
+}
+
+int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
+                               int vertexBufferHandle,
+                               int primitiveType, int vertexStart, int vertexCount
+                               ) {
+    return 0;
+}
+
+int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
+                                    int vertexBufferHandle, int indexBufferHandle,
+                                    int primitiveType, int indexStart, int indexCount
+                                    ) {
+    return 0;
+}
+#endif
 
 /* ------------------------------------------------- INIT/FINISH/GENERAL */
 
