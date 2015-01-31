@@ -319,6 +319,9 @@ static void s_drawRect(const SDL_Rect *rect) {
     float tcx1, tcy1, tcx2, tcy2;
     SDL_Rect texRect;
     float xMult, yMult;
+#ifdef DXPORTLIB_DRAW_OPENGL_ES2
+    int programID;
+#endif
     
     PL_GL.glActiveTexture(GL_TEXTURE0);
     PL_Texture_Bind(s_screenFrameBufferB, DX_DRAWMODE_BILINEAR);
@@ -351,8 +354,9 @@ static void s_drawRect(const SDL_Rect *rect) {
     
     PL_Texture_Unbind(s_screenFrameBufferB);
 #else
+    programID = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_NOCOLOR_TEX1);
     PL_Shaders_ApplyProgram(
-        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_NOCOLOR_TEX1),
+        programID,
         &s_projectionMatrix, &s_viewMatrix,
         (const char *)v,
         &s_RectVertexDefinition);
@@ -360,7 +364,7 @@ static void s_drawRect(const SDL_Rect *rect) {
     PL_GL.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     
     PL_Shaders_ClearProgram(
-        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_NOCOLOR_TEX1),
+        programID,
         &s_RectVertexDefinition);
 #endif
     PL_Texture_Unbind(s_screenFrameBufferB);
@@ -418,9 +422,6 @@ void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     
     /* Rebind the new buffer. */
     PL_Texture_BindFramebuffer(s_screenFrameBufferA);
-    PL_GL.glClearColor(0, 0, 0, 1);
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
-    
     PL_Render_SetMatrixDirtyFlag();
 }
 

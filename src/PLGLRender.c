@@ -784,7 +784,7 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
     
     PL_Shaders_ApplyProgram(
         s_ES2ActiveShader,
-        &s_matrixProjection, &s_matrixView,
+        &s_currentMatrixProjection, &s_currentMatrixView,
         vertexData, def);
     
     PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
@@ -810,7 +810,7 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
     
     PL_Shaders_ApplyProgram(
         s_ES2ActiveShader,
-        &s_matrixProjection, &s_matrixView,
+        &s_currentMatrixProjection, &s_currentMatrixView,
         vertexData, def);
     
     PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
@@ -827,6 +827,31 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
                                int vertexBufferHandle,
                                int primitiveType, int vertexStart, int vertexCount
                                ) {
+    GLuint vertexBufferID;
+    
+    if (PL_GL.hasVBOSupport == DXFALSE) {
+        return 0;
+    }
+    
+    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
+    
+    PL_Render_UpdateMatrices();
+    
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    
+    PL_Shaders_ApplyProgram(
+        s_ES2ActiveShader,
+        &s_currentMatrixProjection, &s_currentMatrixView,
+        0, def);
+    
+    PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
+    
+    PL_Shaders_ClearProgram(
+        s_ES2ActiveShader,
+        def);
+    
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
     return 0;
 }
 
@@ -834,6 +859,36 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
                                     int vertexBufferHandle, int indexBufferHandle,
                                     int primitiveType, int indexStart, int indexCount
                                     ) {
+    GLuint vertexBufferID, indexBufferID;
+    
+    if (PL_GL.hasVBOSupport == DXFALSE) {
+        return 0;
+    }
+    
+    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
+    indexBufferID = PL_IndexBuffer_GetGLID(indexBufferHandle);
+    
+    PL_Render_UpdateMatrices();
+    
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
+    
+    PL_Shaders_ApplyProgram(
+        s_ES2ActiveShader,
+        &s_currentMatrixProjection, &s_currentMatrixView,
+        0, def);
+    
+    PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
+                         indexCount, GL_UNSIGNED_SHORT,
+                         (void *)(indexStart * sizeof(unsigned short)));
+    
+    PL_Shaders_ClearProgram(
+        s_ES2ActiveShader,
+        def);
+    
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
     return 0;
 }
 #endif

@@ -300,21 +300,12 @@ void LunaSprite::UpdateBuffer(LSPRITE lSpr) {
 void LunaSprite::Rendering(LSPRITE lSpr) {
     LunaSpriteData *sprite = (LunaSpriteData *)PL_Handle_GetData((int)lSpr, DXHANDLE_LUNASPRITE);
     if (sprite != NULL && sprite->vertexPtr > 0) {
-        unsigned int i;
-        
         PL_Render_SetUntransformedFlag(DXTRUE);
-        
-        if (sprite->maxGraph == 1) {
-            PL_Render_SetTexturePresetMode(
-                TEX_PRESET_MODULATE,
-                sprite->textureIDs[0], g_lunaFilterMode);
-        } else {
-            /* We need to handle actual texture stage stuff here. */
-            for (i = 0; i < sprite->maxGraph; ++i) {
-                int texID = sprite->textureIDs[i];
-                PL_Render_SetTextureStage(i, texID, g_lunaFilterMode);
-            }
-        }
+
+        /* FIXME do not actually support multiple textures right now. */
+        PL_Render_SetTexturePresetMode(
+            TEX_PRESET_MODULATE,
+            sprite->textureIDs[0], g_lunaFilterMode);
         
         PL_Render_DrawVertexIndexBuffer(
             sprite->vertexInfo->def,
