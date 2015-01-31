@@ -650,11 +650,7 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
     PL_Render_UpdateMatrices();
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
-        if (PL_GL.useVBOARB == DXTRUE) {
-            PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-        } else {
-            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-        }
+        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
     
     PL_Render_ApplyVertexArrayData(def, vertexData);
@@ -674,13 +670,8 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
     PL_Render_UpdateMatrices();
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
-        if (PL_GL.useVBOARB == DXTRUE) {
-            PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-            PL_GL.glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
-        } else {
-            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-            PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        }
+        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
     PL_Render_ApplyVertexArrayData(def, vertexData);
@@ -707,11 +698,7 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
     
     PL_Render_UpdateMatrices();
     
-    if (PL_GL.useVBOARB == DXTRUE) {
-        PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexBufferID);
-    } else {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    }
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
     
     PL_Render_ApplyVertexBufferData(def);
     
@@ -719,11 +706,7 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
     
     PL_Render_ClearVertexBufferData(def);
     
-    if (PL_GL.useVBOARB == DXTRUE) {
-        PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexBufferID);
-    } else {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
     
     return 0;
 }
@@ -743,13 +726,8 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
     
     PL_Render_UpdateMatrices();
     
-    if (PL_GL.useVBOARB == DXTRUE) {
-        PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertexBufferID);
-        PL_GL.glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBufferID);
-    } else {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-    }
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
     
     PL_Render_ApplyVertexBufferData(def);
     
@@ -759,13 +737,8 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
     
     PL_Render_ClearVertexBufferData(def);
     
-    if (PL_GL.useVBOARB == DXTRUE) {
-        PL_GL.glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-        PL_GL.glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
-    } else {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     
     return 0;
 }

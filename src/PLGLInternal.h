@@ -143,20 +143,6 @@ typedef struct GLInfo_t {
     GLvoid *(APIENTRY *glMapBuffer)( GLenum target, GLenum access );
     GLboolean (APIENTRY *glUnmapBuffer)( GLenum target );
 #endif
-
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    int useVBOARB;
-    
-    void (APIENTRY *glBindBufferARB)( GLenum target, GLuint buffer );
-    void (APIENTRY *glDeleteBuffersARB)( GLsizei n, const GLuint *buffers );
-    void (APIENTRY *glGenBuffersARB)( GLsizei n, GLuint *buffers );
-    void (APIENTRY *glBufferDataARB)( GLenum target, GLsizeiptrARB size,
-                                      const GLvoid *data, GLenum usage );
-    void (APIENTRY *glBufferSubDataARB)( GLenum target, GLintptrARB offset,
-                                         GLsizeiptrARB size, const GLvoid *data );
-    GLvoid *(APIENTRY *glMapBufferARB)( GLenum target, GLenum access );
-    GLboolean (APIENTRY *glUnmapBufferARB)( GLenum target );
-#endif
     
     /* Framebuffer functions */
     int hasFramebufferSupport;
@@ -167,15 +153,6 @@ typedef struct GLInfo_t {
     void (APIENTRY *glDeleteFramebuffers)(GLsizei n, const GLuint *framebuffers);
     void (APIENTRY *glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
     GLenum (APIENTRY *glCheckFramebufferStatus)(GLenum target);
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    int useFramebufferEXT;
-    
-    void (APIENTRY *glFramebufferTexture2DEXT)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-    void (APIENTRY *glBindFramebufferEXT)(GLenum target, GLuint framebuffer);
-    void (APIENTRY *glDeleteFramebuffersEXT)(GLsizei n, const GLuint *framebuffers);
-    void (APIENTRY *glGenFramebuffersEXT)(GLsizei n, GLuint *framebuffers);
-    GLenum (APIENTRY *glCheckFramebufferStatusEXT)(GLenum target);
-#endif
     
     /* Shader functions */
     int hasShaderSupport;

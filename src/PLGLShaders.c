@@ -319,7 +319,7 @@ int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
         }
         
         PL_GL.glLinkProgram(glProgramID);
-        if (PL_GL.glGetError() != GL_NO_ERROR) { printf("oops\n"); break; }
+        if (PL_GL.glGetError() != GL_NO_ERROR) { break; }
         
         shaderHandle = PL_Handle_AcquireID(DXHANDLE_SHADER);
         info = (PLGLShaderInfo *)PL_Handle_AllocateData(shaderHandle, sizeof(PLGLShaderInfo));
@@ -337,33 +337,15 @@ int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
         info->glModelViewUniformID = PL_GL.glGetUniformLocation(glProgramID, "modelView");
         
         info->glVertexAttribID = PL_GL.glGetAttribLocation(glProgramID, "position");
-        if (info->definition.textureCount >= 1) {
-            info->glTextureUniformID[0] = PL_GL.glGetUniformLocation(glProgramID, "texture");
-        }
-        if (info->definition.textureCount >= 2) {
-            info->glTextureUniformID[1] = PL_GL.glGetUniformLocation(glProgramID, "texture1");
-        }
-        if (info->definition.textureCount >= 3) {
-            info->glTextureUniformID[2] = PL_GL.glGetUniformLocation(glProgramID, "texture2");
-        }
-        if (info->definition.textureCount >= 4) {
-            info->glTextureUniformID[3] = PL_GL.glGetUniformLocation(glProgramID, "texture3");
-        }
-        if (info->definition.texcoordCount >= 1) {
-            info->glTexcoordAttribID[0] = PL_GL.glGetAttribLocation(glProgramID, "texcoord");
-        }
-        if (info->definition.texcoordCount >= 2) {
-            info->glTexcoordAttribID[1] = PL_GL.glGetAttribLocation(glProgramID, "texcoord2");
-        }
-        if (info->definition.texcoordCount >= 3) {
-            info->glTexcoordAttribID[2] = PL_GL.glGetAttribLocation(glProgramID, "texcoord3");
-        }
-        if (info->definition.texcoordCount >= 4) {
-            info->glTexcoordAttribID[3] = PL_GL.glGetAttribLocation(glProgramID, "texcoord4");
-        }
-        if (info->definition.hasColor) {
-            info->glColorAttribID = PL_GL.glGetAttribLocation(glProgramID, "color");
-        }
+        info->glTextureUniformID[0] = PL_GL.glGetUniformLocation(glProgramID, "texture");
+        info->glTextureUniformID[1] = PL_GL.glGetUniformLocation(glProgramID, "texture1");
+        info->glTextureUniformID[2] = PL_GL.glGetUniformLocation(glProgramID, "texture2");
+        info->glTextureUniformID[3] = PL_GL.glGetUniformLocation(glProgramID, "texture3");
+        info->glTexcoordAttribID[0] = PL_GL.glGetAttribLocation(glProgramID, "texcoord");
+        info->glTexcoordAttribID[1] = PL_GL.glGetAttribLocation(glProgramID, "texcoord2");
+        info->glTexcoordAttribID[2] = PL_GL.glGetAttribLocation(glProgramID, "texcoord3");
+        info->glTexcoordAttribID[3] = PL_GL.glGetAttribLocation(glProgramID, "texcoord4");
+        info->glColorAttribID = PL_GL.glGetAttribLocation(glProgramID, "color");
         
         return shaderHandle;
     } while(0);

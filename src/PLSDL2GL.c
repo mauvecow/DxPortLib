@@ -135,15 +135,14 @@ static void s_LoadGL() {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     else if (SDL_GL_ExtensionSupported("GL_ARB_vertex_buffer_object")) {
         PL_GL.hasVBOSupport = DXTRUE;
-        PL_GL.useVBOARB = DXTRUE;
         
-        PL_GL.glGenBuffersARB = SDL_GL_GetProcAddress("glGenBuffersARB");
-        PL_GL.glDeleteBuffersARB = SDL_GL_GetProcAddress("glDeleteBuffersARB");
-        PL_GL.glBufferDataARB = SDL_GL_GetProcAddress("glBufferDataARB");
-        PL_GL.glBufferSubDataARB = SDL_GL_GetProcAddress("glBufferSubDataARB");
-        PL_GL.glMapBufferARB = SDL_GL_GetProcAddress("glMapBufferARB");
-        PL_GL.glUnmapBufferARB = SDL_GL_GetProcAddress("glUnmapBufferARB");
-        PL_GL.glBindBufferARB = SDL_GL_GetProcAddress("glBindBufferARB");
+        PL_GL.glGenBuffers = SDL_GL_GetProcAddress("glGenBuffersARB");
+        PL_GL.glDeleteBuffers = SDL_GL_GetProcAddress("glDeleteBuffersARB");
+        PL_GL.glBufferData = SDL_GL_GetProcAddress("glBufferDataARB");
+        PL_GL.glBufferSubData = SDL_GL_GetProcAddress("glBufferSubDataARB");
+        PL_GL.glMapBuffer = SDL_GL_GetProcAddress("glMapBufferARB");
+        PL_GL.glUnmapBuffer = SDL_GL_GetProcAddress("glUnmapBufferARB");
+        PL_GL.glBindBuffer = SDL_GL_GetProcAddress("glBindBufferARB");
         s_debugPrint("s_LoadGL: using GL_ARB_vertex_buffer_object");
     }
 #endif
@@ -164,13 +163,12 @@ static void s_LoadGL() {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     else if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         PL_GL.hasFramebufferSupport = DXTRUE;
-        PL_GL.useFramebufferEXT = DXTRUE;
         
-        PL_GL.glFramebufferTexture2DEXT = SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
-        PL_GL.glBindFramebufferEXT = SDL_GL_GetProcAddress("glBindFramebufferEXT");
-        PL_GL.glDeleteFramebuffersEXT = SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
-        PL_GL.glGenFramebuffersEXT = SDL_GL_GetProcAddress("glGenFramebuffersEXT");
-        PL_GL.glCheckFramebufferStatusEXT = SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
+        PL_GL.glFramebufferTexture2D = SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
+        PL_GL.glBindFramebuffer = SDL_GL_GetProcAddress("glBindFramebufferEXT");
+        PL_GL.glDeleteFramebuffers = SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
+        PL_GL.glGenFramebuffers = SDL_GL_GetProcAddress("glGenFramebuffersEXT");
+        PL_GL.glCheckFramebufferStatus = SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
         s_debugPrint("s_LoadGL: using GL_EXT_framebuffer_object");
     }
 #endif
@@ -372,9 +370,6 @@ static void s_drawRect(const SDL_Rect *rect) {
 
 void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     int wWidth, wHeight;
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    PLMatrix matrix;
-#endif
     
     if (!PL_GL.isInitialized) {
         return;
@@ -385,8 +380,6 @@ void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
         SDL_GL_SwapWindow(window);
         return;
     }
-    
-    /* PL_Draw_FlushCache(); */
     
     /* Set up the main screen for drawing. */
     PL_Texture_BindFramebuffer(-1);
@@ -430,8 +423,6 @@ void PL_SDL2GL_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect) {
     if (!PL_GL.isInitialized) {
         return;
     }
-    
-    //PL_Draw_FlushCache();
     
     tempBuffer = s_screenFrameBufferB;
     s_screenFrameBufferB = s_screenFrameBufferA;

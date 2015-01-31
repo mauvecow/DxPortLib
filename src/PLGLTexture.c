@@ -49,57 +49,29 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
     }
     
     info = (FramebufferInfo *)PL_Handle_GetData(handleID, DXHANDLE_FRAMEBUFFER);
-
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    if (PL_GL.useFramebufferEXT == DXTRUE) {
-        if (info == NULL || textureID < 0) {
-            /* s_GLFrameBuffer_Bind(-1, -1) is synonymous with 'bind nothing' */
-            PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-        } else {
-            PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, info->framebufferID);
-            
-            PL_GL.glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-                                            GL_COLOR_ATTACHMENT0_EXT,
-                                            textureTarget,
-                                            textureID,
-                                            0);
-            
-            if (PL_GL.glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
-                /* uhoh... */
-                PL_GL.glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-                return -1;
-            }
-            
-            PL_GL.glViewport(0, 0, info->width, info->height);
-            
-            PL_Render_SetMatrixDirtyFlag();
-        }
-    } else
-#endif
-    {
-        if (info == NULL || textureID < 0) {
-            /* s_GLFrameBuffer_Bind(-1, -1) is synonymous with 'bind nothing' */
+    
+    if (info == NULL || textureID < 0) {
+        /* s_GLFrameBuffer_Bind(-1, -1) is synonymous with 'bind nothing' */
+        PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    } else {
+        PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, info->framebufferID);
+        
+        PL_GL.glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                     GL_COLOR_ATTACHMENT0,
+                                     textureTarget,
+                                     textureID,
+                                     0);
+        
+        if (PL_GL.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            /* uhoh... */
             PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        } else {
-            PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, info->framebufferID);
-            
-            PL_GL.glFramebufferTexture2D(GL_FRAMEBUFFER,
-                                         GL_COLOR_ATTACHMENT0,
-                                         textureTarget,
-                                         textureID,
-                                         0);
-            
-            if (PL_GL.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                /* uhoh... */
-                PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                return -1;
-            }
-            
-            PL_GL.glViewport(0, 0, info->width, info->height);
-            PL_GL.glClear(GL_COLOR_BUFFER_BIT);
-            
-            PL_Render_SetMatrixDirtyFlag();
+            return -1;
         }
+        
+        PL_GL.glViewport(0, 0, info->width, info->height);
+        PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+        
+        PL_Render_SetMatrixDirtyFlag();
     }
     
     return 0;
@@ -133,14 +105,7 @@ static int s_GLFrameBuffer_Create(int width, int height) {
         }
         info = (FramebufferInfo *)PL_Handle_AllocateData(handleID, sizeof(FramebufferInfo));
         
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-        if (PL_GL.useFramebufferEXT == DXTRUE) {
-            PL_GL.glGenFramebuffersEXT(1, &info->framebufferID);
-        } else
-#endif
-        {
-            PL_GL.glGenFramebuffers(1, &info->framebufferID);
-        }
+        PL_GL.glGenFramebuffers(1, &info->framebufferID);
         info->width = width;
         info->height = height;
         info->refCount = 1;
@@ -163,14 +128,7 @@ static int s_GLFrameBuffer_Release(int handleID) {
     
     info->refCount -= 1;
     if (info->refCount <= 0) {
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-        if (PL_GL.useFramebufferEXT == DXTRUE) {
-            PL_GL.glDeleteFramebuffersEXT(1, &info->framebufferID);
-        } else
-#endif
-        {
-            PL_GL.glDeleteFramebuffers(1, &info->framebufferID);
-        }
+        PL_GL.glDeleteFramebuffers(1, &info->framebufferID);
         info->framebufferID = 0;
         
         PL_Handle_ReleaseID(handleID, DXTRUE);
