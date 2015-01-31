@@ -250,6 +250,10 @@ static void s_LoadGL() {
         PL_GL.hasEXTUnpackSubimage = DXTRUE;
         s_debugPrint("s_LoadGL: has GL_EXT_unpack_subimage");
     }
+    if (SDL_GL_ExtensionSupported("GL_EXT_texture_format_BGRA8888")) {
+        PL_GL.hasEXTBGRA = DXTRUE;
+        s_debugPrint("s_LoadGL: has GL_EXT_texture_format_BGRA8888");
+    }
 #endif
     
     PL_GL.isInitialized = DXTRUE;

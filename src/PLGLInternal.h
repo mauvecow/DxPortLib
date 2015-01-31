@@ -186,6 +186,7 @@ typedef struct GLInfo_t {
     /* ES2 stuff */
 #ifdef DXPORTLIB_DRAW_OPENGL_ES2
     int hasEXTUnpackSubimage;
+    int hasEXTBGRA;
 #endif
 } GLInfo;
 

@@ -336,6 +336,7 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     int texWidth, texHeight;
     int widthpow2, heightpow2;
     int wrappableFlag;
+    Uint32 sdlFormat;
     
     /* - Determine if the source is of 2^n dimensions */
     widthpow2 = s_topow2(width);
@@ -370,12 +371,14 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     }
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    textureInternalFormat = GL_RGBA8;
-    textureFormat = GL_BGRA;
-    textureType = GL_UNSIGNED_INT_8_8_8_8_REV;
+    textureInternalFormat = GL_RGBA;
+    textureFormat = GL_RGBA;
+    textureType = GL_UNSIGNED_BYTE;
+    sdlFormat = SDL_PIXELFORMAT_ABGR8888;
 #else
     textureInternalFormat = GL_RGBA;
     textureFormat = GL_RGBA;
+    sdlFormat = SDL_PIXELFORMAT_ABGR8888;
     textureType = GL_UNSIGNED_BYTE;
 #endif
     
@@ -430,7 +433,7 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     textureref->glTarget = textureTarget;
     textureref->glFormat = textureFormat;
     textureref->glType = textureType;
-    textureref->sdlFormat = SDL_PIXELFORMAT_ARGB8888;
+    textureref->sdlFormat = sdlFormat;
     textureref->width = width;
     textureref->height = height;
     textureref->texWidth = texWidth;

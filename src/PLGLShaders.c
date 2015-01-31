@@ -104,7 +104,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    gl_FragColor = texture2D(texture, outTexcoord).bgra * outColor;\n"
+        "    gl_FragColor = texture2D(texture, outTexcoord) * outColor;\n"
         "}\n",
         1, 1, 1
     },
@@ -131,7 +131,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    vec4 c = texture2D(texture, outTexcoord).bgra;\n"
+        "    vec4 c = texture2D(texture, outTexcoord);\n"
         "    gl_FragColor = vec4((1.0 - c.rgb) * (1.0 - outColor.rgb), c.a * outColor.a);\n"
         "}\n",
         1, 1, 1
@@ -159,7 +159,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    vec4 c = texture2D(texture, outTexcoord).bgra * outColor;\n"
+        "    vec4 c = texture2D(texture, outTexcoord) * outColor;\n"
         "    gl_FragColor = vec4(c.rgb * c.a, c.a);\n"
         "}\n",
         1, 1, 1
@@ -187,7 +187,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    vec4 c = texture2D(texture, outTexcoord).bgra * outColor;\n"
+        "    vec4 c = texture2D(texture, outTexcoord) * outColor;\n"
         "    gl_FragColor = vec4(c.rgb * 4.0, c.a);\n"
         "}\n",
         1, 1, 1
@@ -215,7 +215,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 oc = vec4(outColor.rgb * outColor.a, outColor.a);\n"
-        "    gl_FragColor = texture2D(texture, outTexcoord).bgra * oc;\n"
+        "    gl_FragColor = texture2D(texture, outTexcoord) * oc;\n"
         "}\n",
         1, 1, 1
     },
@@ -241,7 +241,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    vec4 c = texture2D(texture, outTexcoord).bgra;\n"
+        "    vec4 c = texture2D(texture, outTexcoord);\n"
         "    gl_FragColor = vec4(outColor.rgb * (1.0 - c.rgb), c.a * outColor.a);\n"
         "}\n",
         1, 1, 1
@@ -269,7 +269,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 oc = vec4(outColor.rgb * outColor.a * 4.0, outColor.a);\n"
-        "    gl_FragColor = texture2D(texture, outTexcoord).bgra * oc;\n"
+        "    gl_FragColor = texture2D(texture, outTexcoord) * oc;\n"
         "}\n",
         1, 1, 1
     }
