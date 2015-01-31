@@ -29,10 +29,7 @@
 
 #include "SDL.h"
 
-static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
-    /* PLGL_SHADER_BASIC_NOCOLOR_TEX1 */
-    {
-        /* vertex shader */
+static const char s_stockVertexShaderNocolorTex1[] = {
         "attribute vec4 position;\n"
         "attribute vec2 texcoord;\n"
         "uniform mat4 modelView;\n"
@@ -41,7 +38,39 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "void main() {\n"
         "    gl_Position = projection * (modelView * position);\n"
         "    outTexcoord = texcoord;\n"
+        "}\n"
+};
+static const char s_stockVertexShaderColorNotex[] = {
+        "attribute vec4 position;\n"
+        "attribute vec4 color;\n"
+        "uniform mat4 modelView;\n"
+        "uniform mat4 projection;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    gl_Position = projection * (modelView * position);\n"
+        "    outColor = color;\n"
+        "}\n"
+};
+static const char s_stockVertexShaderColorTex1[] = {
+        "attribute vec4 position;\n"
+        "attribute vec2 texcoord;\n"
+        "attribute vec4 color;\n"
+        "uniform mat4 modelView;\n"
+        "uniform mat4 projection;\n"
+        "varying vec2 outTexcoord;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    gl_Position = projection * (modelView * position);\n"
+        "    outColor = color;\n"
+        "    outTexcoord = texcoord;\n"
         "}\n",
+};
+
+static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
+    /* PLGL_SHADER_BASIC_NOCOLOR_TEX1 */
+    {
+        /* vertex shader */
+        s_stockVertexShaderNocolorTex1,
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
@@ -54,15 +83,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
     /* PLGL_SHADER_BASIC_COLOR_NOTEX */
     {
         /* vertex shader */
-        "attribute vec4 position;\n"
-        "attribute vec4 color;\n"
-        "uniform mat4 modelView;\n"
-        "uniform mat4 projection;\n"
-        "varying vec4 outColor;\n"
-        "void main() {\n"
-        "    gl_Position = projection * (modelView * position);\n"
-        "    outColor = color;\n"
-        "}\n",
+        s_stockVertexShaderColorNotex,
         /* fragment shader */
         "precision mediump float;\n"
         "varying vec4 outColor;\n"
@@ -74,18 +95,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
     /* PLGL_SHADER_BASIC_COLOR_TEX1 */
     {
         /* vertex shader */
-        "attribute vec4 position;\n"
-        "attribute vec2 texcoord;\n"
-        "attribute vec4 color;\n"
-        "uniform mat4 modelView;\n"
-        "uniform mat4 projection;\n"
-        "varying vec2 outTexcoord;\n"
-        "varying vec4 outColor;\n"
-        "void main() {\n"
-        "    gl_Position = projection * (modelView * position);\n"
-        "    outColor = color;\n"
-        "    outTexcoord = texcoord;\n"
-        "}\n",
+        s_stockVertexShaderColorTex1,
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
@@ -93,6 +103,171 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    gl_FragColor = texture2D(texture, outTexcoord) * outColor;\n"
+        "}\n",
+        1, 1, 1
+    },
+    /* PLGL_SHADER_DX_INVERT_COLOR_NOTEX */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorNotex,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 c = outColor;\n"
+        "    gl_FragColor = vec4(1.0 - c.rgb, c.a);\n"
+        "}\n",
+        0, 0, 1
+    },
+    /* PLGL_SHADER_DX_INVERT_COLOR_TEX1 */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorTex1,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "uniform sampler2D texture;\n"
+        "varying vec2 outTexcoord;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 c = texture2D(texture, outTexcoord);\n"
+        "    gl_FragColor = vec4((1.0 - c.rgb) * (1.0 - outColor.rgb), c.a * outColor.a);\n"
+        "}\n",
+        1, 1, 1
+    },
+    /* PLGL_SHADER_DX_MULA_COLOR_NOTEX */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorNotex,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 c = outColor;\n"
+        "    gl_FragColor = vec4(c.rgb * c.a, c.a);\n"
+        "}\n",
+        0, 0, 1
+    },
+    /* PLGL_SHADER_DX_MULA_COLOR_TEX1 */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorTex1,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "uniform sampler2D texture;\n"
+        "varying vec2 outTexcoord;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 c = texture2D(texture, outTexcoord) * outColor;\n"
+        "    gl_FragColor = vec4(c.rgb * c.a, c.a);\n"
+        "}\n",
+        1, 1, 1
+    },
+    /* PLGL_SHADER_DX_X4_COLOR_NOTEX */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorNotex,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 c = outColor;\n"
+        "    gl_FragColor = vec4(c.rgb * 4.0, c.a);\n"
+        "}\n",
+        0, 0, 1
+    },
+    /* PLGL_SHADER_DX_X4_COLOR_TEX1 */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorTex1,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "uniform sampler2D texture;\n"
+        "varying vec2 outTexcoord;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 c = texture2D(texture, outTexcoord) * outColor;\n"
+        "    gl_FragColor = vec4(c.rgb * 4.0, c.a);\n"
+        "}\n",
+        1, 1, 1
+    },
+    /* PLGL_SHADER_DX_PMA_COLOR_NOTEX */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorNotex,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    gl_FragColor = vec4(outColor.rgb * outColor.a, outColor.a);\n"
+        "}\n",
+        0, 0, 1
+    },
+    /* PLGL_SHADER_DX_PMA_COLOR_TEX1 */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorTex1,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "uniform sampler2D texture;\n"
+        "varying vec2 outTexcoord;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 oc = vec4(outColor.rgb * outColor.a, outColor.a);\n"
+        "    gl_FragColor = texture2D(texture, outTexcoord) * oc;\n"
+        "}\n",
+        1, 1, 1
+    },
+    /* PLGL_SHADER_DX_PMA_INVERT_COLOR_NOTEX */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorNotex,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    gl_FragColor = vec4((1.0 - outColor.rgb) * outColor.a, outColor.a);;\n"
+        "}\n",
+        0, 0, 1
+    },
+    /* PLGL_SHADER_DX_PMA_INVERT_COLOR_TEX1 */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorTex1,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "uniform sampler2D texture;\n"
+        "varying vec2 outTexcoord;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 c = texture2D(texture, outTexcoord);\n"
+        "    gl_FragColor = vec4(outColor.rgb * (1.0 - c.rgb), c.a * outColor.a);\n"
+        "}\n",
+        1, 1, 1
+    },
+    /* PLGL_SHADER_DX_PMA_X4_COLOR_NOTEX */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorNotex,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    gl_FragColor = vec4(outColor.rgb * outColor.a * 4.0, outColor.a);\n"
+        "}\n",
+        0, 0, 1
+    },
+    /* PLGL_SHADER_DX_PMA_X4_COLOR_TEX1 */
+    {
+        /* vertex shader */
+        s_stockVertexShaderColorTex1,
+        /* fragment shader */
+        "precision mediump float;\n"
+        "uniform sampler2D texture;\n"
+        "varying vec2 outTexcoord;\n"
+        "varying vec4 outColor;\n"
+        "void main() {\n"
+        "    vec4 oc = vec4(outColor.rgb * outColor.a * 4.0, outColor.a);\n"
+        "    gl_FragColor = texture2D(texture, outTexcoord) * oc;\n"
         "}\n",
         1, 1, 1
     }
@@ -278,7 +453,7 @@ void PL_Shaders_ApplyProgram(int shaderHandle,
                     if (info->glColorAttribID != 0) {
                         PL_GL.glEnableVertexAttribArray(info->glColorAttribID);
                         PL_GL.glVertexAttribPointer(info->glColorAttribID,
-                                                    e->size, vertexType, GL_FALSE,
+                                                    e->size, vertexType, GL_TRUE,
                                                     vertexDataSize, vertexData + e->offset);
                     }
                     break;
@@ -328,7 +503,7 @@ void PL_Shaders_ClearProgram(int shaderHandle, const VertexDefinition *definitio
 
 static int s_stockShaderIDs[PLGL_SHADER_END] = { 0 };
 
-int PL_Shaders_GetStockProgramForID(PLGLShaderType shaderType) {
+int PL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType) {
     return s_stockShaderIDs[shaderType];
 }
 

@@ -218,12 +218,24 @@ typedef enum {
     PLGL_SHADER_BASIC_NOCOLOR_TEX1 = 0,
     PLGL_SHADER_BASIC_COLOR_NOTEX,
     PLGL_SHADER_BASIC_COLOR_TEX1,
+    PLGL_SHADER_DX_INVERT_COLOR_NOTEX,
+    PLGL_SHADER_DX_INVERT_COLOR_TEX1,
+    PLGL_SHADER_DX_MULA_COLOR_NOTEX,
+    PLGL_SHADER_DX_MULA_COLOR_TEX1,
+    PLGL_SHADER_DX_X4_COLOR_NOTEX,
+    PLGL_SHADER_DX_X4_COLOR_TEX1,
+    PLGL_SHADER_DX_PMA_COLOR_NOTEX,
+    PLGL_SHADER_DX_PMA_COLOR_TEX1,
+    PLGL_SHADER_DX_PMA_INVERT_COLOR_NOTEX,
+    PLGL_SHADER_DX_PMA_INVERT_COLOR_TEX1,
+    PLGL_SHADER_DX_PMA_X4_COLOR_NOTEX,
+    PLGL_SHADER_DX_PMA_X4_COLOR_TEX1,
     PLGL_SHADER_END
-} PLGLShaderType;
+} PLGLShaderPresetType;
 
 typedef struct _PLGLShaderDefinition {
-    const char *vertexShader;
-    const char *fragmentShader;
+    const char * vertexShader;
+    const char * fragmentShader;
     int textureCount;
     int texcoordCount;
     int hasColor;
@@ -267,7 +279,7 @@ extern void PL_Shaders_ApplyProgram(int shaderHandle,
                                     const VertexDefinition *definition);
 extern void PL_Shaders_ClearProgram(int shaderHandle,
                                     const VertexDefinition *definition);
-extern int PL_Shaders_GetStockProgramForID(PLGLShaderType shaderType);
+extern int PL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType);
 extern void PL_Shaders_Init();
 extern void PL_Shaders_Cleanup();
 

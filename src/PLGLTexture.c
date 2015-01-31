@@ -96,6 +96,7 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
             }
             
             PL_GL.glViewport(0, 0, info->width, info->height);
+            PL_GL.glClear(GL_COLOR_BUFFER_BIT);
             
             PL_Render_SetMatrixDirtyFlag();
         }
@@ -438,6 +439,9 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     if (wrappableFlag == DXFALSE) {
         PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    } else {
+        PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        PL_GL.glTexParameteri(textureTarget, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
     
     PL_GL.glTexImage2D(

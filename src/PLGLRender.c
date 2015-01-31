@@ -445,6 +445,8 @@ int PL_Render_SetTexturePresetMode(int preset,
 /* #ifdef DXPORTLIB_DRAW_OPENGL_ES2 */
 /* OpenGL ES2 Shader mode. */
 
+static int s_ES2ActiveShader = 0;
+
 int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureDrawMode) {
     if (stage >= MAX_TEXTURE) {
         return -1;
@@ -481,10 +483,69 @@ int PL_Render_ClearTexturePresetMode() {
 
 int PL_Render_SetTexturePresetMode(int preset,
                                    int textureRefID, int textureDrawMode) {
-    if (textureRefID <= 0) {
-        textureRefID = s_pixelTexture;
-    }
     PL_Render_SetTextureStage(0, textureRefID, textureDrawMode);
+    
+    s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1);
+    
+    switch(preset) {
+        case TEX_PRESET_COPY:
+            PL_GL.glDisable(GL_BLEND);
+            if (textureRefID <= 0) {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_NOTEX);
+            } else {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1);
+            }
+            return 0; /* return, not break! */
+        case TEX_PRESET_DX_MULA:
+            if (textureRefID <= 0) {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_MULA_COLOR_NOTEX);
+            } else {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_MULA_COLOR_TEX1);
+            }
+            break;
+        case TEX_PRESET_DX_INVERT:
+            if (textureRefID <= 0) {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_INVERT_COLOR_NOTEX);
+            } else {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_INVERT_COLOR_TEX1);
+            }
+            break;
+        case TEX_PRESET_DX_X4:
+            if (textureRefID <= 0) {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_X4_COLOR_NOTEX);
+            } else {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_X4_COLOR_TEX1);
+            }
+            break;
+        case TEX_PRESET_DX_PMA:
+            if (textureRefID <= 0) {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_COLOR_NOTEX);
+            } else {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_COLOR_TEX1);
+            }
+            break;
+        case TEX_PRESET_DX_PMA_INVERT:
+            if (textureRefID <= 0) {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_INVERT_COLOR_NOTEX);
+            } else {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_INVERT_COLOR_TEX1);
+            }
+            break;
+        case TEX_PRESET_DX_PMA_X4:
+            if (textureRefID <= 0) {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_X4_COLOR_NOTEX);
+            } else {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_X4_COLOR_TEX1);
+            }
+            break;
+        default: /* TEX_PRESET_MODULATE */
+            if (textureRefID <= 0) {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_NOTEX);
+            } else {
+                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1);
+            }
+            break;
+    }
     return 0;
 }
 
@@ -722,14 +783,14 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
     }
     
     PL_Shaders_ApplyProgram(
-        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1),
+        s_ES2ActiveShader,
         &s_matrixProjection, &s_matrixView,
         vertexData, def);
     
     PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
     
     PL_Shaders_ClearProgram(
-        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1),
+        s_ES2ActiveShader,
         def);
     
     return 0;
@@ -748,7 +809,7 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
     }
     
     PL_Shaders_ApplyProgram(
-        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1),
+        s_ES2ActiveShader,
         &s_matrixProjection, &s_matrixView,
         vertexData, def);
     
@@ -756,7 +817,7 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
                          indexCount, GL_UNSIGNED_SHORT, indexData + indexStart);
     
     PL_Shaders_ClearProgram(
-        PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1),
+        s_ES2ActiveShader,
         def);
     
     return 0;
