@@ -29,8 +29,6 @@
 
 #include "SDL.h"
 
-/* All shaders swizzle to do RGBA in hardware instead of BGRA. */
-
 static const char s_stockVertexShaderNocolorTex1[] = {
         "attribute vec4 position;\n"
         "attribute vec2 texcoord;\n"
@@ -424,7 +422,7 @@ void PL_Shaders_ApplyProgram(int shaderHandle,
                 case VERTEX_TEXCOORD3: {
                         int slot = e->vertexType - VERTEX_TEXCOORD0;
                         GLint attribID = info->glTexcoordAttribID[slot];
-                        if (attribID != 0) {
+                        if (attribID > 0) {
                             PL_GL.glVertexAttribPointer(attribID,
                                                         e->size, vertexType, GL_FALSE,
                                                         vertexDataSize, vertexData + e->offset);
@@ -434,7 +432,7 @@ void PL_Shaders_ApplyProgram(int shaderHandle,
                         break;
                     }
                 case VERTEX_COLOR:
-                    if (info->glColorAttribID != 0) {
+                    if (info->glColorAttribID > 0) {
                         PL_GL.glVertexAttribPointer(info->glColorAttribID,
                                                     e->size, vertexType, GL_TRUE,
                                                     vertexDataSize, vertexData + e->offset);
@@ -468,13 +466,13 @@ void PL_Shaders_ClearProgram(int shaderHandle, const VertexDefinition *definitio
                 case VERTEX_TEXCOORD2:
                 case VERTEX_TEXCOORD3: {
                         GLint attribID = info->glTexcoordAttribID[e->vertexType - VERTEX_TEXCOORD0];
-                        if (attribID != 0) {
+                        if (attribID > 0) {
                             PL_GL.glDisableVertexAttribArray(attribID);
                         }
                         break;
                     }
                 case VERTEX_COLOR:
-                    if (info->glColorAttribID != 0) {
+                    if (info->glColorAttribID > 0) {
                         PL_GL.glDisableVertexAttribArray(info->glColorAttribID);
                     }
                     break;

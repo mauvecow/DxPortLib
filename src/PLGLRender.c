@@ -116,7 +116,7 @@ int PL_Render_UpdateMatrices() {
     if (s_displayUntransformed == DXTRUE) {
         PL_Matrix_CreateOrthoOffCenterLH(&s_currentMatrixProjection,
                       (float)s_viewportX, (float)(s_viewportX + s_viewportW),
-                      (float)s_viewportY, (float)(s_viewportY + s_viewportH),
+                      (float)(s_viewportY + s_viewportH), (float)s_viewportY, 
                       s_nearZ, s_farZ);
         PL_Matrix_CreateTranslation(&s_currentMatrixView, 0.5f, 0.5f, 0.0f);
     } else {

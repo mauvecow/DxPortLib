@@ -1207,24 +1207,29 @@ int Dx_Draw_ForceUpdate() {
     return 0;
 }
 
-static int s_currentScreenID = -1;
+static int s_currentScreenID = -2;
 static int s_drawScreenID = -1;
 static int s_drawGraphID = -1;
 
 int Dx_Draw_UpdateDrawScreen() {
     if (s_drawScreenID != s_currentScreenID) {
-        SDL_Rect screenRect;
         PLMatrix projection, view;
         
         s_currentScreenID = s_drawScreenID;
         PL_Texture_BindFramebuffer(s_drawScreenID);
         
-        PL_Texture_RenderGetTextureInfo(s_currentScreenID, &screenRect, NULL, NULL);
-        s_drawScreenWidth = screenRect.w;
-        s_drawScreenHeight = screenRect.h;
+        if (s_currentScreenID >= 0) {
+            SDL_Rect screenRect;
+            PL_Texture_RenderGetTextureInfo(s_currentScreenID, &screenRect, NULL, NULL);
+            s_drawScreenWidth = screenRect.w;
+            s_drawScreenHeight = screenRect.h;
+        } else {
+            s_drawScreenWidth = PL_windowWidth;
+            s_drawScreenHeight = PL_windowHeight;
+        }
         
-        PL_Matrix_CreateOrthoOffCenterLH(&projection, 0,
-            (float)screenRect.w, 0, (float)screenRect.h, -32768, 32767);
+        PL_Matrix_CreateOrthoOffCenterLH(&projection,
+            0, (float)s_drawScreenWidth, (float)s_drawScreenHeight, 0, -32768, 32767);
         PL_Matrix_CreateIdentity(&view);
         
         PL_Render_SetMatrices(&projection, &view);
@@ -1256,7 +1261,7 @@ int Dx_Draw_GetDrawScreen() {
 int Dx_Draw_ResetDrawScreen() {
     int prevGraphID = s_drawGraphID;
     
-    s_currentScreenID = -1;
+    s_currentScreenID = -2;
     s_drawScreenID = -1;
     s_drawGraphID = -1;
     

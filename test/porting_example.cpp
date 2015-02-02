@@ -14,6 +14,17 @@
 /* - Any comments starting with "-" are relevant to DxPortLib. */
 #include "DxLib.h"
 
+#ifndef DXLIB_VERSION
+
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    printf("DxPortLib was compiled without DxLib support.\n");
+    return -1;
+}
+
+#else
+
 #ifdef _WIN32
 #  ifdef DXPORTLIB
 /* - OPTIONAL: If you want to use main() on Windows, include this
@@ -124,3 +135,6 @@ int main(int argc, char **argv) {
     
     return 0;
 }
+
+#endif /* #ifdef DXLIB_VERSION */
+

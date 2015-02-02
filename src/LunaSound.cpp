@@ -25,6 +25,8 @@
 
 #include "LunaInternal.h"
 
+#ifndef DX_NON_SOUND
+
 LSOUND LunaSound::CreateFromFile(const DXCHAR *filename, bool IsNoStop,
                                  bool IsAyame, bool IsHardware, Uint32 Layer) {
     /* We don't care about IsAyame or IsHardware. Or even Layer.
@@ -73,5 +75,40 @@ void LunaSound::EXTSetLoopSamples(LSOUND lSnd, Uint64 loopTarget, Uint64 loopPoi
 void LunaSound::EXTSetLoopTimes(LSOUND lSnd, double loopTarget, double loopTime) {
     PL_Audio_SetLoopTimes((int)lSnd, loopTarget, loopTime);
 }
+
+#else
+/* DX_NON_SOUND */
+
+LSOUND LunaSound::CreateFromFile(const DXCHAR *filename, bool IsNoStop,
+                                 bool IsAyame, bool IsHardware, Uint32 Layer) {
+    return -1;
+}
+Bool LunaSound::IsPlay(LSOUND lSnd, Uint32 Layer) {
+    return false;
+}
+void LunaSound::Play(LSOUND lSnd, Uint32 Layer) {
+}
+void LunaSound::Loop(LSOUND lSnd, Uint32 LoopCount, Uint32 LoopInSample, Uint32 Layer) {
+}
+void LunaSound::Stop(LSOUND lSnd, Uint32 Layer) {
+}
+void LunaSound::Pause(LSOUND lSnd, Uint32 Layer) {
+}
+void LunaSound::Release(LSOUND lSnd) {
+}
+void LunaSound::SetVolume(LSOUND lSnd, Float fParam, Uint32 Layer) {
+}
+void LunaSound::SetPan(LSOUND lSnd, Float fParam, Uint32 Layer) {
+}
+void LunaSound::SetMax(Uint32 Max) {
+}
+void LunaSound::SetAyamePath(const DXCHAR *pPath) {
+}
+void LunaSound::EXTSetLoopSamples(LSOUND lSnd, Uint64 loopTarget, Uint64 loopPoint) {
+}
+void LunaSound::EXTSetLoopTimes(LSOUND lSnd, double loopTarget, double loopTime) {
+}
+
+#endif /* DX_NON_SOUND */
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

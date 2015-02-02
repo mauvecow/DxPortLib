@@ -36,6 +36,12 @@ static int s_screenFrameBufferB = -1;
 int PL_drawScreenWidth = -1;
 int PL_drawScreenHeight = -1;
 
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+static int s_drawOffscreen = DXTRUE;
+#else
+static int s_drawOffscreen = DXFALSE;
+#endif
+
 GLInfo PL_GL = { 0 };
 
 /* ------------------------------------------------------- Load Functions */
@@ -172,6 +178,16 @@ static void s_LoadGL() {
         s_debugPrint("s_LoadGL: using GL_EXT_framebuffer_object");
     }
 #endif
+
+    if (PL_GL.hasFramebufferSupport == DXFALSE) {
+        s_drawOffscreen = DXFALSE;
+    } else {
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+        s_drawOffscreen = DXTRUE;
+#else
+        s_drawOffscreen = DXFALSE;
+#endif
+    }
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle")
@@ -277,14 +293,16 @@ void PL_SDL2GL_ResizeWindow(int width, int height) {
     PL_drawScreenWidth = width;
     PL_drawScreenHeight = height;
     
-    if (PL_GL.hasFramebufferSupport == DXFALSE) {
+    PL_Texture_Release(s_screenFrameBufferA);
+    PL_Texture_Release(s_screenFrameBufferB);
+    
+    if (s_drawOffscreen == DXFALSE) {
+        s_screenFrameBufferA = -1;
+        s_screenFrameBufferB = -1;
         return;
     }
     
     /* Reinitialize our target backbuffers */
-    PL_Texture_Release(s_screenFrameBufferA);
-    PL_Texture_Release(s_screenFrameBufferB);
-    
     s_screenFrameBufferA = PL_Texture_CreateFramebuffer(width, height, DXFALSE);
     PL_Texture_AddRef(s_screenFrameBufferA);
     s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height, DXFALSE);
@@ -341,6 +359,12 @@ static void s_drawRect(const SDL_Rect *rect) {
     v[3].x = x2; v[3].y = y2; v[3].tcx = tcx2; v[3].tcy = tcy2;
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    PL_GL.glMatrixMode(GL_PROJECTION);
+    PL_GL.glLoadMatrixf((float *)&s_projectionMatrix);
+    
+    PL_GL.glMatrixMode(GL_MODELVIEW);
+    PL_GL.glLoadMatrixf((float *)&s_viewMatrix);
+    
     PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     PL_GL.glColor4f(1, 1, 1, 1);
     
@@ -379,12 +403,6 @@ void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
         return;
     }
     
-    if (PL_GL.hasFramebufferSupport == DXFALSE) {
-        /* without framebuffers, we can't actually refresh. */
-        SDL_GL_SwapWindow(window);
-        return;
-    }
-    
     /* Set up the main screen for drawing. */
     PL_Texture_BindFramebuffer(-1);
     
@@ -397,28 +415,24 @@ void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect) {
     
     PL_GL.glViewport(0, 0, wWidth, wHeight);
     
-    PL_Matrix_CreateOrthoOffCenterRH(&s_projectionMatrix,
-        0, (float)wWidth, (float)wHeight, 0, 0.0, 1.0f);
-    PL_Matrix_CreateIdentity(&s_viewMatrix);
+    if (s_drawOffscreen == DXFALSE) {
+        SDL_GL_SwapWindow(window);
+    } else {
+        PL_Matrix_CreateOrthoOffCenterLH(&s_projectionMatrix,
+            0, (float)wWidth, 0, (float)wHeight, 0.0, 1.0f);
+        PL_Matrix_CreateIdentity(&s_viewMatrix);
     
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    PL_GL.glMatrixMode(GL_PROJECTION);
-    PL_GL.glLoadMatrixf((float *)&s_projectionMatrix);
-    
-    PL_GL.glMatrixMode(GL_MODELVIEW);
-    PL_GL.glLoadMatrixf((float *)&s_viewMatrix);
-#endif
-    
-    PL_GL.glClearColor(0, 0, 0, 1);
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
-    
-    s_drawRect(targetRect);
-    
-    /* Swap! */
-    SDL_GL_SwapWindow(window);
-    
-    /* Rebind the new buffer. */
-    PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+        PL_GL.glClearColor(0, 0, 0, 1);
+        PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+        
+        s_drawRect(targetRect);
+        
+        /* Swap! */
+        SDL_GL_SwapWindow(window);
+        
+        /* Rebind the new buffer. */
+        PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+    }
     PL_Render_SetMatrixDirtyFlag();
 }
 

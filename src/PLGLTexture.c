@@ -50,8 +50,8 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
     
     info = (FramebufferInfo *)PL_Handle_GetData(handleID, DXHANDLE_FRAMEBUFFER);
     
-    if (info == NULL || textureID < 0) {
-        /* s_GLFrameBuffer_Bind(-1, -1) is synonymous with 'bind nothing' */
+    if (info == NULL || textureID <= 0) {
+        /* s_GLFrameBuffer_Bind(-1, ...) is synonymous with 'bind nothing' */
         PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, 0);
     } else {
         PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, info->framebufferID);
@@ -151,9 +151,11 @@ int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface) {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH, (surface->pitch / surface->format->BytesPerPixel));
 #else
+#ifdef GL_UNPACK_ROW_LENGTH_EXT
     if (PL_GL.hasEXTUnpackSubimage == DXTRUE) {
         PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, (surface->pitch / surface->format->BytesPerPixel));
     }
+#endif
 #endif
     PL_GL.glReadPixels(
         rect->x, rect->y, rect->w, rect->h,
@@ -227,15 +229,19 @@ static int s_AllocateTextureRefID(GLuint textureID) {
 static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const SDL_Rect *rect) {
     GLuint textureTarget = textureRef->glTarget;
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glEnable(textureTarget);
+#endif
     PL_GL.glBindTexture(textureTarget, textureRef->textureID);
     PL_GL.glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH, (surface->pitch / surface->format->BytesPerPixel));
 #else
+#ifdef GL_UNPACK_ROW_LENGTH_EXT
     if (PL_GL.hasEXTUnpackSubimage == DXTRUE) {
         PL_GL.glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, (surface->pitch / surface->format->BytesPerPixel));
     }
+#endif
 #endif
     PL_GL.glTexSubImage2D(
         textureTarget, 0,
@@ -244,7 +250,9 @@ static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const SD
         surface->pixels
     );
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glDisable(textureTarget);
+#endif
 }
 
 int PL_Texture_Bind(int textureRefID, int drawMode) {
@@ -255,7 +263,9 @@ int PL_Texture_Bind(int textureRefID, int drawMode) {
     }
     
     textureTarget = textureref->glTarget;
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glEnable(textureTarget);
+#endif
     PL_GL.glBindTexture(textureTarget, textureref->textureID);
     
     if (drawMode != textureref->drawMode) {
@@ -282,7 +292,9 @@ int PL_Texture_Unbind(int textureRefID) {
         return -1;
     }
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glDisable(textureref->glTarget);
+#endif
     return 0;
 }
 

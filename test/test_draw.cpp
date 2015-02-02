@@ -13,6 +13,17 @@
 
 #include "DxLib.h"
 
+#ifndef DXLIB_VERSION
+
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    printf("DxPortLib was compiled without DxLib support.\n");
+    return -1;
+}
+
+#else
+
 #ifdef DXPORTLIB
 #  include "SDL_main.h"
 #endif
@@ -186,3 +197,5 @@ int main(int argc, char **argv) {
     
     return 0;
 }
+
+#endif /* #ifdef DXLIB_VERSION */

@@ -259,7 +259,7 @@ void LunaFontSprite::DrawString(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
                 x += spacing * 0.5f;
             } else {
                 unsigned int index = s_CharToIndex(fontspr, ch);
-                if (index >= 0 && index < charMax) {
+                if (index < charMax) {
                     const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
                     if (entry->sheetNo >= 0 && entry->sheetNo < sheetCount) {
                         CLunaRect dst, src;
@@ -312,7 +312,7 @@ void LunaFontSprite::DrawStringP(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
                 x += spacing * 0.5f;
             } else {
                 unsigned int index = s_CharToIndex(fontspr, ch);
-                if (index >= 0 && index < charMax) {
+                if (index < charMax) {
                     const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
                     if (entry->sheetNo >= 0 && entry->sheetNo < sheetCount) {
                         CLunaRect dst, src;
@@ -376,7 +376,7 @@ Bool LunaFontSprite::GetWidth(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
         int ch = PL_Text_ReadDxChar(&pStr);
         if (ch != 0) {
             unsigned int index = s_CharToIndex(fontspr, ch);
-            if (index >= 0 && index < fontspr->charMax) {
+            if (index < fontspr->charMax) {
                 const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
                 if (pLeft != NULL) {
                     *pLeft = entry->xOffset;
