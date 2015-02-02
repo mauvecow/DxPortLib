@@ -22,6 +22,10 @@
 #ifndef DXLIB_BUILDCONFIG_H_HEADER
 #define DXLIB_BUILDCONFIG_H_HEADER
 
+#if defined(__APPLE__)
+#  include "TargetConditionals.h"
+#endif
+
 /* ------------------------------------------------------------------------
  * These should be set at build time.
  * 
@@ -47,8 +51,12 @@
  */
 #define DXPORTLIB_DRAW_OPENGL
 
-/* For OpenGL, define this to use the OpenGL ES 2.0 support. */
-#define DXPORTLIB_DRAW_OPENGL_ES2
+/* For OpenGL, define this to use the OpenGL ES 2.0 support.
+ * This is enforced for Android, IOS, and Emscripten/WebGL targets.
+ */
+#if defined(ANDROID) || defined(__ANDROID__) || defined(TARGET_OS_IPHONE) || defined(EMSCRIPTEN)
+#  define DXPORTLIB_DRAW_OPENGL_ES2
+#endif
 
 /* ------------------------------------------------------------------------
  * DxLib-specific features.

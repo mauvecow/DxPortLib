@@ -36,11 +36,7 @@ static int s_screenFrameBufferB = -1;
 int PL_drawScreenWidth = -1;
 int PL_drawScreenHeight = -1;
 
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-static int s_drawOffscreen = DXTRUE;
-#else
 static int s_drawOffscreen = DXFALSE;
-#endif
 
 GLInfo PL_GL = { 0 };
 
@@ -179,15 +175,12 @@ static void s_LoadGL() {
     }
 #endif
 
-    if (PL_GL.hasFramebufferSupport == DXFALSE) {
-        s_drawOffscreen = DXFALSE;
-    } else {
+    s_drawOffscreen = DXFALSE;
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (PL_GL.hasFramebufferSupport == DXTRUE) {
         s_drawOffscreen = DXTRUE;
-#else
-        s_drawOffscreen = DXFALSE;
-#endif
     }
+#endif
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle")
