@@ -760,7 +760,7 @@ static int s_WaitForSound(int soundID) {
             return -1;
         }
         
-        SDL_Delay(1);
+        PL_Platform_Wait(1);
     }
     
     return playing;

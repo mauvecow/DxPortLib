@@ -147,7 +147,7 @@ int DxLib_ProcessMessage(void) {
 }
 
 int DxLib_WaitTimer(int msTime) {
-    SDL_Delay((Uint32)msTime);
+    PL_Platform_Wait(msTime);
     
     return 0;
 }
@@ -170,7 +170,7 @@ int DxLib_WaitKey() {
             lastHitState = hitState;
         }
         
-        SDL_Delay(1);
+        PL_Platform_Wait(1);
     }
     
     return 0;

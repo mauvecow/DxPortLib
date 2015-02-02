@@ -301,6 +301,11 @@ int PL_Window_ProcessMessages() {
             }
         }
         
+#ifdef EMSCRIPTEN
+        /* Emscripten uses an alternate main loop, so looping with Delay() here
+         * will just freeze the browser instead. */
+        s_lacksFocus = 0;
+#else
         if (s_lacksFocus) {
             if (s_alwaysRunFlag) {
                 s_lacksFocus = 0;
@@ -308,6 +313,7 @@ int PL_Window_ProcessMessages() {
                 SDL_Delay(1);
             }
         }
+#endif
     } while (s_lacksFocus);
     
     return 0;

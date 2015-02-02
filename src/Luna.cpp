@@ -182,6 +182,9 @@ void Luna::SyncFrame() {
     Sint32 ticks = (Sint32)PL_Platform_GetTicks();
     Sint32 diff = ticks - s_timerLastTicks;
     
+#ifndef EMSCRIPTEN
+    /* Emscripten uses an alternate main loop, so this will just
+     * freeze the browser if it runs. */
     if (s_frameRate > 0) {
         Sint32 waitTime = 1000 / s_frameRate;
         
@@ -193,6 +196,7 @@ void Luna::SyncFrame() {
             diff = ticks - s_timerLastTicks;
         }
     }
+#endif
     
     s_timerLastTicks = (Sint32)PL_Platform_GetTicks();
     
