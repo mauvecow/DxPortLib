@@ -94,8 +94,9 @@ static void PL_Window_HandleResize(int realWidth, int realHeight) {
             destRect.h = aspectCorrectHeight;
         }
     }
-    
+
     s_targetRect = destRect;
+    PL_SDL2GL_SetTargetRects(&fullRect, &destRect);
     
     s_windowRealWidth = realWidth;
     s_windowRealHeight = realHeight;
@@ -108,7 +109,7 @@ static void PL_Window_Refresh() {
         PL_Window_HandleResize(wWidth, wHeight);
     }
     
-    PL_SDL2GL_Refresh(s_window, &s_targetRect);
+    PL_SDL2GL_Refresh(s_window);
 }
 
 int PL_Window_Init(void) {
@@ -119,8 +120,6 @@ int PL_Window_Init(void) {
     s_windowFlags |= 
         SDL_WINDOW_OPENGL |
         SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
-    
-    PL_SDL2GL_SetAttributes();
     
     s_window = SDL_CreateWindow(
         windowTitle,
@@ -169,7 +168,7 @@ int PL_Window_End(void) {
 
 int PL_Window_SwapBuffers() {
     if (s_initialized == DXTRUE) {
-        PL_SDL2GL_SwapBuffers(s_window, &s_targetRect);
+        PL_SDL2GL_SwapBuffers(s_window);
     }
     return 0;
 }

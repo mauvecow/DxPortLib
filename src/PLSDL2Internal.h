@@ -35,9 +35,9 @@ extern SDL_RWops *PLSDL2_FileOpenReadDirect(const DXCHAR *filename);
 /* ------------------------------------------------------------- Screen.c */
 
 extern void PL_SDL2GL_ResizeWindow(int width, int height);
-extern void PL_SDL2GL_Refresh(SDL_Window *window, const SDL_Rect *targetRect);
-extern void PL_SDL2GL_SwapBuffers(SDL_Window *window, const SDL_Rect *targetRect);
-extern void PL_SDL2GL_SetAttributes();
+extern void PL_SDL2GL_SetTargetRects(const SDL_Rect *fullRect, const SDL_Rect *targetRect);
+extern void PL_SDL2GL_Refresh(SDL_Window *window);
+extern void PL_SDL2GL_SwapBuffers(SDL_Window *window);
 extern void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag);
 extern void PL_SDL2GL_End();
 
