@@ -345,7 +345,8 @@ typedef enum _PrimitiveType {
     PL_PRIM_POINTS,
     PL_PRIM_LINES,
     PL_PRIM_TRIANGLES,
-    PL_PRIM_TRIANGLEFAN
+    PL_PRIM_TRIANGLEFAN,
+    PL_PRIM_TRIANGLESTRIP
 } PrimitiveType;
 
 extern void PL_Render_SetBlendMode(

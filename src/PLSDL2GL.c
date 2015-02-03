@@ -269,6 +269,23 @@ static void s_LoadGL() {
 }
 
 /* -------------------------------------------- Offscreen drawing support */
+int s_offscreenVBO = -1;
+
+typedef struct RectVertex {
+    float x, y;
+    float tcx, tcy;
+    unsigned int color;
+} RectVertex;
+static const VertexElement s_RectVertexElements[] = {
+    { VERTEX_POSITION, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, x) },
+    { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, tcx) },
+    { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(RectVertex, color) },
+};
+VERTEX_DEFINITION(RectVertex);
+
+static PLMatrix s_projectionMatrix;
+static PLMatrix s_viewMatrix;
+
 void PL_SDL2GL_ResizeWindow(int width, int height) {
     if (!PL_GL.isInitialized) {
         return;
@@ -296,35 +313,21 @@ void PL_SDL2GL_ResizeWindow(int width, int height) {
     s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height, DXFALSE);
     PL_Texture_AddRef(s_screenFrameBufferB);
     
-    PL_GL.glClearColor(0, 0, 0, 1);
+    PL_Render_ClearColor(0, 0, 0, 1);
+    
     PL_Texture_BindFramebuffer(s_screenFrameBufferB);
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    PL_Render_Clear();
     
     PL_Texture_BindFramebuffer(s_screenFrameBufferA);
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    PL_Render_Clear();
 }
-
-typedef struct RectVertex {
-    float x, y;
-    float tcx, tcy;
-} RectVertex;
-static const VertexElement s_RectVertexElements[] = {
-    { VERTEX_POSITION, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, x) },
-    { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, tcx) },
-};
-VERTEX_DEFINITION(RectVertex);
-
-static RectVertex s_targetVertices[4];
-
-static PLMatrix s_projectionMatrix;
-static PLMatrix s_viewMatrix;
 
 void PL_SDL2GL_SetTargetRects(const SDL_Rect *fullRect, const SDL_Rect *targetRect) {
     float x1, y1, x2, y2;
     float tcx1, tcy1, tcx2, tcy2;
     SDL_Rect texRect;
     float xMult, yMult;
-    RectVertex *v;
+    RectVertex v[4];
     
     PL_Matrix_CreateOrthoOffCenterLH(&s_projectionMatrix,
         0, (float)fullRect->w, 0, (float)fullRect->h, 0.0, 1.0f);
@@ -346,69 +349,28 @@ void PL_SDL2GL_SetTargetRects(const SDL_Rect *fullRect, const SDL_Rect *targetRe
     x2 = x1 + (float)targetRect->w;
     y2 = y1 + (float)targetRect->h;
     
-    v = s_targetVertices;
-    v[0].x = x1; v[0].y = y1; v[0].tcx = tcx1; v[0].tcy = tcy1;
-    v[1].x = x2; v[1].y = y1; v[1].tcx = tcx2; v[1].tcy = tcy1;
-    v[2].x = x1; v[2].y = y2; v[2].tcx = tcx1; v[2].tcy = tcy2;
-    v[3].x = x2; v[3].y = y2; v[3].tcx = tcx2; v[3].tcy = tcy2;
+    v[0].x = x1; v[0].y = y1; v[0].tcx = tcx1; v[0].tcy = tcy1; v[0].color = 0xffffffff;
+    v[1].x = x2; v[1].y = y1; v[1].tcx = tcx2; v[1].tcy = tcy1; v[1].color = 0xffffffff;
+    v[2].x = x1; v[2].y = y2; v[2].tcx = tcx1; v[2].tcy = tcy2; v[2].color = 0xffffffff;
+    v[3].x = x2; v[3].y = y2; v[3].tcx = tcx2; v[3].tcy = tcy2; v[3].color = 0xffffffff;
+    
+    PL_VertexBuffer_SetData(s_offscreenVBO, (char *)v, 0, 4);
 }
 
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
 static void s_updateFramebuffersToScreen() {
-    PL_GL.glClearColor(0, 0, 0, 1);
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    PL_Render_ClearColor(0, 0, 0, 1);
+    PL_Render_Clear();
     
-    PL_GL.glActiveTexture(GL_TEXTURE0);
-    PL_Texture_Bind(s_screenFrameBufferB, DX_DRAWMODE_BILINEAR);
+    PL_Render_SetMatrices(&s_projectionMatrix, &s_viewMatrix);
+    PL_Render_DisableBlend();
+    PL_Render_DisableAlphaTest();
     
-    /* Fixed function mode */
-    PL_GL.glMatrixMode(GL_PROJECTION);
-    PL_GL.glLoadMatrixf((float *)&s_projectionMatrix);
+    PL_Render_SetTexturePresetMode(TEX_PRESET_MODULATE, s_screenFrameBufferB, DX_DRAWMODE_BILINEAR);
     
-    PL_GL.glMatrixMode(GL_MODELVIEW);
-    PL_GL.glLoadMatrixf((float *)&s_viewMatrix);
-    
-    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    PL_GL.glColor4f(1, 1, 1, 1);
-    
-    PL_GL.glEnableClientState(GL_VERTEX_ARRAY);
-    PL_GL.glVertexPointer(2, GL_FLOAT, sizeof(RectVertex), (unsigned char *)s_targetVertices + offsetof(RectVertex, x));
-    PL_GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    PL_GL.glTexCoordPointer(2, GL_FLOAT, sizeof(RectVertex), (unsigned char *)s_targetVertices + offsetof(RectVertex, tcx));
-    
-    PL_GL.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    
-    PL_GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    PL_GL.glDisableClientState(GL_VERTEX_ARRAY);
-    
-    PL_Texture_Unbind(s_screenFrameBufferB);
+    PL_Render_DrawVertexBuffer(&s_RectVertexDefinition,
+                               s_offscreenVBO,
+                               PL_PRIM_TRIANGLESTRIP, 0, 4);
 }
-#else
-static void s_updateFramebuffersToScreen() {
-    int programID;
-    
-    PL_GL.glClearColor(0, 0, 0, 1);
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
-    
-    PL_GL.glActiveTexture(GL_TEXTURE0);
-    PL_Texture_Bind(s_screenFrameBufferB, DX_DRAWMODE_BILINEAR);
-    
-    /* Shader program mode */
-    programID = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_NOCOLOR_TEX1);
-    PL_Shaders_ApplyProgram(
-        programID,
-        &s_projectionMatrix, &s_viewMatrix,
-        (const char *)s_targetVertices,
-        &s_RectVertexDefinition);
-    
-    PL_GL.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    
-    PL_Shaders_ClearProgram(
-        programID,
-        &s_RectVertexDefinition);
-    PL_Texture_Unbind(s_screenFrameBufferB);
-}
-#endif
 
 /* ------------------------------------------------------- Window context */
 
@@ -488,6 +450,8 @@ void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     s_LoadGL();
     
     PL_Render_Init();
+    
+    s_offscreenVBO = PL_VertexBuffer_Create(&s_RectVertexDefinition, NULL, 4, DXFALSE);
     
     PL_SDL2GL_ResizeWindow(width, height);
     PL_GL.glClearColor(0, 0, 0, 1);

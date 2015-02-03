@@ -47,6 +47,9 @@ typedef struct _VBufferData {
     int vertexByteSize;
     
     const VertexDefinition *vertexDefinition;
+    
+    int bufferSize;
+    char *fallbackData; /* If VBOs are not supported, we emulate with this. */
 } VBufferData;
 
 int PL_VertexBuffer_Create(const VertexDefinition *def,
@@ -58,27 +61,29 @@ int PL_VertexBuffer_Create(const VertexDefinition *def,
     VBufferData *vb;
     GLenum bufferUsage;
     
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return -1;
-    }
-    
-    bufferUsage = GL_DYNAMIC_DRAW;
-    if (isStatic) {
-        bufferUsage = GL_STATIC_DRAW;
-    }
-    
-    PL_GL.glGenBuffers(1, &vboID);
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vboID);
-    PL_GL.glBufferData(GL_ARRAY_BUFFER,
-                       vertexCount * byteSize,
-                       vertexData, bufferUsage);
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
     vboHandle = PL_Handle_AcquireID(DXHANDLE_VERTEXBUFFER);
     vb = (VBufferData *)PL_Handle_AllocateData(vboHandle, sizeof(VBufferData));
-    vb->vboID = vboID;
     vb->vertexByteSize = byteSize;
     vb->vertexDefinition = def;
+    vb->fallbackData = NULL;
+    vb->bufferSize = vertexCount * byteSize;
+    
+    if (PL_GL.hasVBOSupport == DXTRUE) {
+        bufferUsage = GL_DYNAMIC_DRAW;
+        if (isStatic) {
+            bufferUsage = GL_STATIC_DRAW;
+        }
+        
+        PL_GL.glGenBuffers(1, &vboID);
+        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vboID);
+        PL_GL.glBufferData(GL_ARRAY_BUFFER,
+                        vb->bufferSize,
+                        vertexData, bufferUsage);
+        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    } else {
+        vb->fallbackData = DXALLOC(vb->bufferSize);
+    }
+    vb->vboID = vboID;
     
     return vboHandle;
 }
@@ -86,18 +91,23 @@ int PL_VertexBuffer_Create(const VertexDefinition *def,
 int PL_VertexBuffer_SetData(int vboHandle, const char *vertices, int start, int count) {
     VBufferData *vb;
     
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return -1;
-    }
-    
     vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
-    if (vb != NULL && vb->vboID > 0) {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vb->vboID);
-        PL_GL.glBufferSubData(GL_ARRAY_BUFFER,
-                              vb->vertexByteSize * start,
-                              vb->vertexByteSize * count,
-                              vertices);
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (vb != NULL) {
+        if (vb->vboID > 0) {
+            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vb->vboID);
+            PL_GL.glBufferSubData(GL_ARRAY_BUFFER,
+                                vb->vertexByteSize * start,
+                                vb->vertexByteSize * count,
+                                vertices);
+            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        } else if (vb->fallbackData != NULL) {
+            int bufStart = vb->vertexByteSize * start;
+            int bufSize = vb->vertexByteSize * count;
+            
+            if ((bufStart + bufSize) <= vb->bufferSize) {
+                memcpy(vb->fallbackData + bufStart, vertices, bufSize);
+            }
+        }
         return 0;
     }
     return -1;
@@ -107,14 +117,14 @@ int PL_VertexBuffer_SetData(int vboHandle, const char *vertices, int start, int 
 char *PL_VertexBuffer_Lock(int vboHandle) {
     VBufferData *vb;
     
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return NULL;
-    }
-    
     vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
-    if (vb != NULL && PL_GL.glMapBuffer != NULL) {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vb->vboID);
-        return (char *)PL_GL.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    if (vb != NULL) {
+        if (PL_GL.hasVBOSupport == DXTRUE && PL_GL.glMapBuffer != NULL) {
+            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vb->vboID);
+            return (char *)PL_GL.glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        } else if (vb->fallbackData != NULL) {
+            return vb->fallbackData;
+        }
     }
     return NULL;
 }
@@ -123,10 +133,14 @@ char *PL_VertexBuffer_Lock(int vboHandle) {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
 int PL_VertexBuffer_Unlock(int vboHandle, char *buffer) {
     VBufferData *vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
-    if (vb != NULL && PL_GL.glUnmapBuffer != NULL) {
-        PL_GL.glUnmapBuffer(GL_ARRAY_BUFFER);
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-        return 0;
+    if (vb != NULL) {
+        if (PL_GL.hasVBOSupport == DXTRUE && PL_GL.glUnmapBuffer != NULL) {
+            PL_GL.glUnmapBuffer(GL_ARRAY_BUFFER);
+            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+            return 0;
+        } else if (vb->fallbackData == buffer) {
+            return 0;
+        }
     }
     return -1;
 }
@@ -135,13 +149,14 @@ int PL_VertexBuffer_Unlock(int vboHandle, char *buffer) {
 int PL_VertexBuffer_Delete(int vboHandle) {
     VBufferData *vb;
     
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return -1;
-    }
-    
     vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
     if (vb != NULL) {
-        PL_GL.glDeleteBuffers(1, &vb->vboID);
+        if (vb->vboID > 0 && PL_GL.hasVBOSupport == DXTRUE) {
+            PL_GL.glDeleteBuffers(1, &vb->vboID);
+        }
+        if (vb->fallbackData != NULL) {
+            DXFREE(vb->fallbackData);
+        }
         
         PL_Handle_ReleaseID(vboHandle, DXTRUE);
         return 0;
@@ -156,6 +171,13 @@ GLuint PL_VertexBuffer_GetGLID(int vboHandle) {
     }
     return 0;
 }
+char *PL_VertexBuffer_GetFallback(int vboHandle) {
+    VBufferData *vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
+    if (vb != NULL) {
+        return vb->fallbackData;
+    }
+    return 0;
+}
 
 /* ------------------------------------------------------- Index Buffers */
 
@@ -163,6 +185,10 @@ typedef struct _IBufferData {
     GLuint iboID;
     
     int indexByteSize;
+    
+    int bufferSize;
+    
+    char *fallbackData; /* If VBOs are not supported, we emulate with this. */
 } IBufferData;
 
 int PL_IndexBuffer_Create(const unsigned short *indexData, int indexCount,
@@ -173,45 +199,53 @@ int PL_IndexBuffer_Create(const unsigned short *indexData, int indexCount,
     IBufferData *ib;
     GLenum bufferUsage;
     
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return -1;
-    }
-    
-    bufferUsage = GL_DYNAMIC_DRAW;
-    if (isStatic) {
-        bufferUsage = GL_STATIC_DRAW;
-    }
-    
-    PL_GL.glGenBuffers(1, &iboID);
-    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
-    PL_GL.glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                       indexCount * byteSize,
-                       indexData, bufferUsage);
-    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    
     iboHandle = PL_Handle_AcquireID(DXHANDLE_INDEXBUFFER);
     ib = (IBufferData *)PL_Handle_AllocateData(iboHandle, sizeof(IBufferData));
-    ib->iboID = iboID;
     ib->indexByteSize = byteSize;
+    ib->bufferSize = indexCount * byteSize;
+    ib->fallbackData = NULL;
+    
+    if (PL_GL.hasVBOSupport == DXTRUE) {
+        bufferUsage = GL_DYNAMIC_DRAW;
+        if (isStatic) {
+            bufferUsage = GL_STATIC_DRAW;
+        }
+        
+        PL_GL.glGenBuffers(1, &iboID);
+        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboID);
+        PL_GL.glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                        ib->bufferSize,
+                        indexData, bufferUsage);
+        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    } else {
+        ib->fallbackData = DXALLOC(ib->bufferSize);
+    }
+    
+    ib->iboID = iboID;
     
     return iboHandle;
 }
 
 int PL_IndexBuffer_SetData(int iboHandle, const unsigned short *indices, int start, int count) {
     IBufferData *ib;
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return -1;
-    }
-    
     ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
-    if (ib != NULL && ib->iboID > 0) {
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->iboID);
-        PL_GL.glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
-                                ib->indexByteSize * start,
-                                ib->indexByteSize * count,
-                                indices);
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        return 0;
+    if (ib != NULL) {
+        if (ib->iboID > 0 && PL_GL.hasVBOSupport) {
+            PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->iboID);
+            PL_GL.glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,
+                                    ib->indexByteSize * start,
+                                    ib->indexByteSize * count,
+                                    indices);
+            PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            return 0;
+        } else if (ib->fallbackData != NULL) {
+            int bufStart = ib->indexByteSize * start;
+            int bufSize = ib->indexByteSize * count;
+            
+            if ((bufStart + bufSize) <= ib->bufferSize) {
+                memcpy(ib->fallbackData + bufStart, indices, bufSize);
+            }
+        }
     }
     return -1;
 }
@@ -219,14 +253,14 @@ int PL_IndexBuffer_SetData(int iboHandle, const unsigned short *indices, int sta
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
 unsigned short *PL_IndexBuffer_Lock(int iboHandle) {
     IBufferData *ib;
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return NULL;
-    }
-    
     ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
-    if (ib != NULL && PL_GL.glMapBuffer != NULL) {
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->iboID);
-        return (unsigned short *)PL_GL.glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+    if (ib != NULL) { 
+        if (PL_GL.hasVBOSupport == DXTRUE && PL_GL.glMapBuffer != NULL) {
+            PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->iboID);
+            return (unsigned short *)PL_GL.glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+        } else if (ib->fallbackData != NULL) {
+            return (unsigned short *)ib->fallbackData;
+        }
     }
     return NULL;
 }
@@ -235,15 +269,15 @@ unsigned short *PL_IndexBuffer_Lock(int iboHandle) {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
 int PL_IndexBuffer_Unlock(int iboHandle) {
     IBufferData *ib;
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return -1;
-    }
-    
     ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
-    if (ib != NULL && PL_GL.glUnmapBuffer != NULL) {
-        PL_GL.glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        return 0;
+    if (ib != NULL) {
+        if (PL_GL.hasVBOSupport == DXTRUE && PL_GL.glUnmapBuffer != NULL) {
+            PL_GL.glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+            PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            return 0;
+        } else if (ib->fallbackData != NULL) {
+            return 0;
+        }
     }
     return -1;
 }
@@ -257,7 +291,12 @@ int PL_IndexBuffer_Delete(int iboHandle) {
     
     ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
     if (ib != NULL) {
-        PL_GL.glDeleteBuffers(1, &ib->iboID);
+        if (PL_GL.hasVBOSupport == DXTRUE && ib->iboID > 0) {
+            PL_GL.glDeleteBuffers(1, &ib->iboID);
+        }
+        if (ib->fallbackData != NULL) {
+            DXFREE(ib->fallbackData);
+        }
         
         PL_Handle_ReleaseID(iboHandle, DXTRUE);
         return 0;
@@ -269,6 +308,14 @@ GLuint PL_IndexBuffer_GetGLID(int iboHandle) {
     IBufferData *ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
     if (ib != NULL) {
         return ib->iboID;
+    }
+    return 0;
+}
+
+char *PL_IndexBuffer_GetFallback(int iboHandle) {
+    IBufferData *ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
+    if (ib != NULL) {
+        return ib->fallbackData;
     }
     return 0;
 }

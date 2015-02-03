@@ -324,6 +324,8 @@ static GLuint PrimitiveToDrawType(int primitiveType) {
             return GL_LINES;
         case PL_PRIM_TRIANGLEFAN:
             return GL_TRIANGLE_FAN;
+        case PL_PRIM_TRIANGLESTRIP:
+            return GL_TRIANGLE_STRIP;
         default: /* case PL_PRIM_TRIANGLES: */
             return GL_TRIANGLES;
     }
@@ -438,7 +440,9 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
     GLuint vertexBufferID;
     
     if (PL_GL.hasVBOSupport == DXFALSE) {
-        return 0;
+        return PL_Render_DrawVertexArray(
+                    def, PL_VertexBuffer_GetFallback(vertexBufferHandle),
+                    primitiveType, vertexStart, vertexCount);
     }
     
     vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
@@ -485,7 +489,11 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
     GLuint vertexBufferID, indexBufferID;
     
     if (PL_GL.hasVBOSupport == DXFALSE) {
-        return 0;
+        /* FIXME this breaks if the index buffer is not 16 bit shorts */
+        return PL_Render_DrawVertexIndexArray(
+                    def, PL_VertexBuffer_GetFallback(vertexBufferHandle),
+                    (const unsigned short *)PL_IndexBuffer_GetFallback(indexBufferHandle),
+                    primitiveType, indexStart, indexCount);
     }
     
     vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);

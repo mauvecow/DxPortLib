@@ -247,7 +247,9 @@ extern int PL_Texture_ClearAllData();
 extern int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface);
 
 extern GLuint PL_VertexBuffer_GetGLID(int vertexBufferID);
+extern char *PL_VertexBuffer_GetFallback(int vboHandle);
 extern GLuint PL_IndexBuffer_GetGLID(int vertexBufferID);
+extern char *PL_IndexBuffer_GetFallback(int vboHandle);
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
 extern int PL_GLFixedFunction_ClearTexturePresetMode();
