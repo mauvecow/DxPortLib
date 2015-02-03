@@ -25,6 +25,7 @@ libDxPortLib_la_SOURCES =	\
 	PLAudio.c \
 	PLFile.c \
 	PLGLBuffers.c \
+	PLGLFixedFunction.c \
 	PLGLInternal.h \
 	PLGLRender.c \
 	PLGLTexture.c \

@@ -52,11 +52,9 @@
 #define DXPORTLIB_DRAW_OPENGL
 
 /* For OpenGL, define this to use the OpenGL ES 2.0 support.
- * This is enforced for Android, IOS, and Emscripten/WebGL targets.
+ * This is automatically enforced for Android, IOS, and Emscripten targets.
  */
-#if defined(ANDROID) || defined(__ANDROID__) || defined(TARGET_OS_IPHONE) || defined(EMSCRIPTEN)
-#  define DXPORTLIB_DRAW_OPENGL_ES2
-#endif
+/* #define DXPORTLIB_DRAW_OPENGL_ES2 */
 
 /* ------------------------------------------------------------------------
  * DxLib-specific features.
@@ -181,5 +179,15 @@
 
 /* printfDx is not currently supported. */
 #define DX_NON_PRINTF_DX
+
+/* ------------------------------------------------------------------------
+ * Implicit/required supports are handled down here.
+ */
+
+#if defined(ANDROID) || defined(__ANDROID__) || defined(TARGET_OS_IPHONE) || defined(EMSCRIPTEN)
+#  ifndef DXPORTLIB_DRAW_OPENGL_ES2
+#    define DXPORTLIB_DRAW_OPENGL_ES2
+#  endif
+#endif
 
 #endif /* _DXLIB_BUILDCONFIG_H */

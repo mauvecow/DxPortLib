@@ -249,6 +249,19 @@ extern int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurfac
 extern GLuint PL_VertexBuffer_GetGLID(int vertexBufferID);
 extern GLuint PL_IndexBuffer_GetGLID(int vertexBufferID);
 
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+extern int PL_GLFixedFunction_ClearTexturePresetMode();
+extern int PL_GLFixedFunction_SetTexturePresetMode(int preset,
+                                   int textureRefID, int textureDrawMode);
+extern int PL_GLFixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
+                                          const char *vertexData);
+extern int PL_GLFixedFunction_ClearVertexArrayData(const VertexDefinition *def);
+extern int PL_GLFixedFunction_ApplyVertexBufferData(const VertexDefinition *def);
+extern int PL_GLFixedFunction_ClearVertexBufferData(const VertexDefinition *def);
+extern int PL_GLFixedFunction_Init();
+extern int PL_GLFixedFunction_Cleanup();
+#endif
+
 extern int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition);
 extern void PL_Shaders_DeleteShader(int shaderHandle);
 extern void PL_Shaders_ApplyProgram(int shaderHandle,

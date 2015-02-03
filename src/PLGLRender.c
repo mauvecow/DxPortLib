@@ -41,8 +41,6 @@
 
 #include "SDL.h"
 
-static int s_pixelTexture = -1;
-
 /* ------------------------------------------------------- VIEW MATRICES */
 static PLMatrix s_matrixProjection;
 static PLMatrix s_matrixView;
@@ -113,6 +111,7 @@ int PL_Render_UpdateMatrices() {
         return 0;
     }
     
+    /* FIXME Untransformed vertices should be handled on the front-end, not here. */
     if (s_displayUntransformed == DXTRUE) {
         PL_Matrix_CreateOrthoOffCenterLH(&s_currentMatrixProjection,
                       (float)s_viewportX, (float)(s_viewportX + s_viewportW),
@@ -123,14 +122,6 @@ int PL_Render_UpdateMatrices() {
         PL_Matrix_Copy(&s_currentMatrixProjection, &s_matrixProjection);
         PL_Matrix_Copy(&s_currentMatrixView, &s_matrixView);
     }
-    
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    PL_GL.glMatrixMode(GL_PROJECTION);
-    PL_GL.glLoadMatrixf((const float *)&s_currentMatrixProjection);
-    
-    PL_GL.glMatrixMode(GL_MODELVIEW);
-    PL_GL.glLoadMatrixf((const float *)&s_currentMatrixView);
-#endif
     
     s_matrixDirty = DXFALSE;
     
@@ -165,6 +156,10 @@ void PL_Render_SetBlendMode(
     int blendEquation,
     int srcBlend, int destBlend
 ) {
+    if (blendEquation == PL_BLENDFUNC_DISABLE) {
+        PL_GL.glDisable(GL_BLEND);
+        return;
+    }
     PL_GL.glBlendFunc(BlendTypeToGL(srcBlend), BlendTypeToGL(destBlend));
     PL_GL.glBlendEquation(BlendFuncToGL(blendEquation));
     PL_GL.glEnable(GL_BLEND);
@@ -174,6 +169,10 @@ void PL_Render_SetBlendModeSeparate(
     int srcRGBBlend, int destRGBBlend,
     int srcAlphaBlend, int destAlphaBlend
 ) {
+    if (blendEquation == PL_BLENDFUNC_DISABLE) {
+        PL_GL.glDisable(GL_BLEND);
+        return;
+    }
     PL_GL.glBlendFuncSeparate(
         BlendTypeToGL(srcRGBBlend), BlendTypeToGL(destRGBBlend),
         BlendTypeToGL(srcAlphaBlend), BlendTypeToGL(destAlphaBlend));
@@ -185,30 +184,16 @@ void PL_Render_DisableBlend() {
 }
 
 /* ---------------------------------------------------------- ALPHA TEST */
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-int PL_Render_EnableAlphaTest() {
-    PL_GL.glEnable(GL_ALPHA_TEST);
-    PL_GL.glAlphaFunc(GL_GREATER, 0);
-    
-    return 0;
-}
-int PL_Render_DisableAlphaTest() {
-    PL_GL.glDisable(GL_ALPHA_TEST);
-    return 0;
-}
-#else
-/* OpenGL ES2 mode */
-static int s_ES2_AlphaTestEnable = DXFALSE;
+static int s_alphaTestEnable = DXFALSE;
 
 int PL_Render_EnableAlphaTest() {
-    s_ES2_AlphaTestEnable = DXTRUE;
+    s_alphaTestEnable = DXTRUE;
     return 0;
 }
 int PL_Render_DisableAlphaTest() {
-    s_ES2_AlphaTestEnable = DXFALSE;
+    s_alphaTestEnable = DXFALSE;
     return 0;
 }
-#endif
 
 /* ----------------------------------------------------- SCISSOR/CULLING */
 
@@ -234,24 +219,14 @@ int PL_Render_SetScissorRect(const RECT *rect) {
 
 /* ---------------------------------------------------- TEXTURE PROGRAMS */
 #define MAX_TEXTURE 4
+/* #ifdef DXPORTLIB_DRAW_OPENGL_ES2 */
+/* OpenGL ES2 Shader mode. */
 static int s_boundTextures[MAX_TEXTURE] = { -1 };
 static unsigned int s_boundTextureCount = 0;
 
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-/* For OpenGL, glTexEnv* combiners can take the place of fragment programs.
- * In Direct3D, the equivalent is texture stages.
- * 
- * They're effectively interchangable, so what we do is we support a
- * fixed subset of texenv collections that are basically like shaders.
- * 
- * A sane implementation might include actual shaders in its place, but
- * not quite that far in yet.
- * 
- * Do not use Presets _and_ Shaders at the same time.
- * 
- * Most of the stuff here is DxLib only so if you don't build for DxLib
- * you don't need it.
- */
+static int s_activeTexturePreset = -1;
+static int s_activeShaderProgram = 0;
+static int s_useFixedFunction = 0;
 
 int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureDrawMode) {
     if (stage >= MAX_TEXTURE) {
@@ -260,7 +235,6 @@ int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureD
     
     PL_GL.glActiveTexture(GL_TEXTURE0 + stage);
     PL_Texture_Bind(textureRefID, textureDrawMode);
-    //PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     
     s_boundTextures[stage] = textureRefID;
     
@@ -283,349 +257,62 @@ int PL_Render_ClearTextures() {
 }
 
 int PL_Render_ClearTexturePresetMode() {
-    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
-    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    PL_GL.glDisable(GL_BLEND);
-    
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (s_useFixedFunction == DXTRUE) {
+        PL_GLFixedFunction_ClearTexturePresetMode();
+    }
+#endif
     PL_Render_ClearTextures();
     
     return 0;
 }
 
+static int s_stockShaderPresetLookupNotex[TEX_PRESET_END] = {
+    PLGL_SHADER_BASIC_COLOR_NOTEX,
+    PLGL_SHADER_DX_MULA_COLOR_NOTEX,
+    PLGL_SHADER_DX_INVERT_COLOR_NOTEX,
+    PLGL_SHADER_DX_X4_COLOR_NOTEX,
+    PLGL_SHADER_DX_PMA_COLOR_NOTEX,
+    PLGL_SHADER_DX_PMA_INVERT_COLOR_NOTEX,
+    PLGL_SHADER_DX_PMA_X4_COLOR_NOTEX
+};
+static int s_stockShaderPresetLookupTex1[TEX_PRESET_END] = {
+    PLGL_SHADER_BASIC_COLOR_TEX1,
+    PLGL_SHADER_DX_MULA_COLOR_TEX1,
+    PLGL_SHADER_DX_INVERT_COLOR_TEX1,
+    PLGL_SHADER_DX_X4_COLOR_TEX1,
+    PLGL_SHADER_DX_PMA_COLOR_TEX1,
+    PLGL_SHADER_DX_PMA_INVERT_COLOR_TEX1,
+    PLGL_SHADER_DX_PMA_X4_COLOR_TEX1
+};
+
 int PL_Render_SetTexturePresetMode(int preset,
                                    int textureRefID, int textureDrawMode) {
-    unsigned int mainTexSlot = 0;
-    int rgbScale = 1;
+    int presetID;
     
-    PL_GL.glActiveTexture(GL_TEXTURE0);
+    s_activeTexturePreset = preset;
     
-    switch(preset) {
-        case TEX_PRESET_COPY:
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            PL_GL.glDisable(GL_BLEND);
-            PL_Render_SetTextureStage(0, textureRefID, textureDrawMode);
-            return 0; /* return, not break! */
-        case TEX_PRESET_DX_MULA:
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_ALPHA);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                PL_Render_SetTextureStage(0, s_pixelTexture, textureDrawMode);
-                
-                mainTexSlot = 1;
-            }
-            break;
-        case TEX_PRESET_DX_INVERT:
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_ONE_MINUS_SRC_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_REPLACE);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-            } else {
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_ONE_MINUS_SRC_COLOR);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-            }
-            break;
-        case TEX_PRESET_DX_X4:
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            }
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-            rgbScale = 4;
-            break;
-        case TEX_PRESET_DX_PMA:
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                PL_Render_SetTextureStage(0, s_pixelTexture, textureDrawMode);
-                
-                mainTexSlot = 1;
-            }
-            break;
-        case TEX_PRESET_DX_PMA_INVERT:
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_ONE_MINUS_SRC_COLOR);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            } else {
-                PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-            }
-            break;
-        case TEX_PRESET_DX_PMA_X4:
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_REPLACE);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_PRIMARY_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_ALPHA);
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-            if (textureRefID < 0) {
-                textureRefID = s_pixelTexture;
-            } else {
-                PL_Render_SetTextureStage(0, s_pixelTexture, textureDrawMode);
-                
-                mainTexSlot = 1;
-            }
-            rgbScale = 4;
-            break;
-        default: /* TEX_PRESET_MODULATE */
-            PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            break;
+    if (textureRefID <= 0) {
+        presetID = s_stockShaderPresetLookupNotex[preset];
+    } else {
+        presetID = s_stockShaderPresetLookupTex1[preset];
     }
     
-    PL_Render_SetTextureStage(mainTexSlot, textureRefID, textureDrawMode);
-    if (mainTexSlot != 0) {
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA, GL_MODULATE);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB, GL_PREVIOUS);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA, GL_PREVIOUS);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB, GL_TEXTURE);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA, GL_TEXTURE);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB, GL_SRC_COLOR);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB, GL_SRC_COLOR);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA, GL_SRC_ALPHA);
-        PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA, GL_SRC_ALPHA);
-    }
-    
-    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, rgbScale);
-    
-    return 0;
-}
+    s_activeShaderProgram = PL_Shaders_GetStockProgramForID(presetID);
+    if (s_activeShaderProgram >= 0) {
+        s_useFixedFunction = DXFALSE;
+        PL_Render_SetTextureStage(0, textureRefID, textureDrawMode);
+        return 0;
+    } else {
+        /* Fixed function fallback */
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+        s_useFixedFunction = DXTRUE;
+        return PL_GLFixedFunction_SetTexturePresetMode(preset, textureRefID, textureDrawMode);
 #else
-/* #ifdef DXPORTLIB_DRAW_OPENGL_ES2 */
-/* OpenGL ES2 Shader mode. */
-
-static int s_ES2ActiveShader = 0;
-
-int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureDrawMode) {
-    if (stage >= MAX_TEXTURE) {
         return -1;
-    }
-    
-    PL_GL.glActiveTexture(GL_TEXTURE0 + stage);
-    PL_Texture_Bind(textureRefID, textureDrawMode);
-    
-    s_boundTextures[stage] = textureRefID;
-    
-    stage += 1;
-    if (stage > s_boundTextureCount) {
-        s_boundTextureCount = stage;
-    }
-    return 0;
-}
-
-int PL_Render_ClearTextures() {
-    unsigned int i;
-    for (i = 0; i < s_boundTextureCount; ++i) {
-        PL_GL.glActiveTexture(GL_TEXTURE0 + i);
-        PL_Texture_Unbind(s_boundTextures[i]);
-        s_boundTextures[i] = -1;
-    }
-    s_boundTextureCount = 0;
-    return 0;
-}
-
-int PL_Render_ClearTexturePresetMode() {
-    PL_Render_ClearTextures();
-    
-    return 0;
-}
-
-int PL_Render_SetTexturePresetMode(int preset,
-                                   int textureRefID, int textureDrawMode) {
-    PL_Render_SetTextureStage(0, textureRefID, textureDrawMode);
-    
-    s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1);
-    
-    switch(preset) {
-        case TEX_PRESET_COPY:
-            PL_GL.glDisable(GL_BLEND);
-            if (textureRefID <= 0) {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_NOTEX);
-            } else {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1);
-            }
-            return 0; /* return, not break! */
-        case TEX_PRESET_DX_MULA:
-            if (textureRefID <= 0) {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_MULA_COLOR_NOTEX);
-            } else {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_MULA_COLOR_TEX1);
-            }
-            break;
-        case TEX_PRESET_DX_INVERT:
-            if (textureRefID <= 0) {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_INVERT_COLOR_NOTEX);
-            } else {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_INVERT_COLOR_TEX1);
-            }
-            break;
-        case TEX_PRESET_DX_X4:
-            if (textureRefID <= 0) {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_X4_COLOR_NOTEX);
-            } else {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_X4_COLOR_TEX1);
-            }
-            break;
-        case TEX_PRESET_DX_PMA:
-            if (textureRefID <= 0) {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_COLOR_NOTEX);
-            } else {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_COLOR_TEX1);
-            }
-            break;
-        case TEX_PRESET_DX_PMA_INVERT:
-            if (textureRefID <= 0) {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_INVERT_COLOR_NOTEX);
-            } else {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_INVERT_COLOR_TEX1);
-            }
-            break;
-        case TEX_PRESET_DX_PMA_X4:
-            if (textureRefID <= 0) {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_X4_COLOR_NOTEX);
-            } else {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_DX_PMA_X4_COLOR_TEX1);
-            }
-            break;
-        default: /* TEX_PRESET_MODULATE */
-            if (textureRefID <= 0) {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_NOTEX);
-            } else {
-                s_ES2ActiveShader = PL_Shaders_GetStockProgramForID(PLGL_SHADER_BASIC_COLOR_TEX1);
-            }
-            break;
-    }
-    return 0;
-}
-
 #endif
-
-/* ---------------------------------------------------- VERTEX RENDERING */
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-static GLenum VertexElementSizeToGL(int value) {
-    switch(value) {
-        case VERTEXSIZE_UNSIGNED_BYTE:
-            return GL_UNSIGNED_BYTE;
-        default: /* VERTEXSIZE_FLOAT */
-            return GL_FLOAT;
     }
 }
-
-static int PL_Render_ApplyVertexArrayData(const VertexDefinition *def,
-                                          const char *vertexData) {
-    int i;
-    const VertexElement *e = def->elements;
-    int elementCount = def->elementCount;
-    int vertexDataSize = def->vertexByteSize;
-    
-    for (i = 0; i < elementCount; ++i, ++e) {
-        GLenum vertexType = VertexElementSizeToGL(e->vertexElementSize);
-        switch (e->vertexType) {
-            case VERTEX_POSITION:
-                PL_GL.glEnableClientState(GL_VERTEX_ARRAY);
-                PL_GL.glVertexPointer(e->size, vertexType, vertexDataSize, vertexData + e->offset);
-                break; 
-            case VERTEX_TEXCOORD0:
-            case VERTEX_TEXCOORD1:
-            case VERTEX_TEXCOORD2:
-            case VERTEX_TEXCOORD3:
-                PL_GL.glClientActiveTexture(GL_TEXTURE0 - VERTEX_TEXCOORD0 + e->vertexType);
-                PL_GL.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                PL_GL.glTexCoordPointer(e->size, vertexType, vertexDataSize, vertexData + e->offset);
-                break;
-            case VERTEX_COLOR:
-                PL_GL.glEnableClientState(GL_COLOR_ARRAY);
-                PL_GL.glColorPointer(e->size, vertexType, vertexDataSize, vertexData + e->offset);
-                break;
-        }
-    }
-    return 0;
-}
-
-static int PL_Render_ClearVertexArrayData(const VertexDefinition *def) {
-    int i;
-    const VertexElement *e = def->elements;
-    int elementCount = def->elementCount;
-    
-    for (i = 0; i < elementCount; ++i, ++e) {
-        switch (e->vertexType) {
-            case VERTEX_POSITION:
-                PL_GL.glDisableClientState(GL_VERTEX_ARRAY);
-                break; 
-            case VERTEX_TEXCOORD0:
-            case VERTEX_TEXCOORD1:
-            case VERTEX_TEXCOORD2:
-            case VERTEX_TEXCOORD3:
-                PL_GL.glClientActiveTexture(GL_TEXTURE0 - VERTEX_TEXCOORD0 + e->vertexType);
-                PL_GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-                break; 
-            case VERTEX_COLOR:
-                PL_GL.glDisableClientState(GL_COLOR_ARRAY);
-                break;
-        }
-    }
-    return 0;
-}
-
-static int PL_Render_ApplyVertexBufferData(const VertexDefinition *def) {
-    return PL_Render_ApplyVertexArrayData(def, 0);
-}
-
-static int PL_Render_ClearVertexBufferData(const VertexDefinition *def) {
-    return PL_Render_ClearVertexArrayData(def);
-}
-#endif
 
 /* ----------------------------------------------- RENDERING VERTEX DATA */
 
@@ -643,228 +330,206 @@ static GLuint PrimitiveToDrawType(int primitiveType) {
 }
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-int PL_Render_DrawVertexArray(const VertexDefinition *def,
-                              const char *vertexData,
-                              int primitiveType, int vertexStart, int vertexCount
-                             ) {
-    PL_Render_UpdateMatrices();
+static void s_InitFixedFunctionState() {
+    PL_GL.glMatrixMode(GL_PROJECTION);
+    PL_GL.glLoadMatrixf((const float *)&s_currentMatrixProjection);
     
-    if (PL_GL.hasVBOSupport == DXTRUE) {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-    
-    PL_Render_ApplyVertexArrayData(def, vertexData);
-    
-    PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
-    
-    PL_Render_ClearVertexArrayData(def);
-    
-    return 0;
-}
+    PL_GL.glMatrixMode(GL_MODELVIEW);
+    PL_GL.glLoadMatrixf((const float *)&s_currentMatrixView);
 
-int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
-                                   const char *vertexData,
-                                   const unsigned short *indexData,
-                                   int primitiveType, int indexStart, int indexCount
-                             ) {
-    PL_Render_UpdateMatrices();
-    
-    if (PL_GL.hasVBOSupport == DXTRUE) {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    if (s_alphaTestEnable) {
+        PL_GL.glEnable(GL_ALPHA_TEST);
+        PL_GL.glAlphaFunc(GL_GREATER, 0);
+    } else {
+        PL_GL.glDisable(GL_ALPHA_TEST);
     }
-    
-    PL_Render_ApplyVertexArrayData(def, vertexData);
-    
-    PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
-                         indexCount, GL_UNSIGNED_SHORT, indexData + indexStart);
-    
-    PL_Render_ClearVertexArrayData(def);
-    
-    return 0;
 }
-
-int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
-                               int vertexBufferHandle,
-                               int primitiveType, int vertexStart, int vertexCount
-                               ) {
-    GLuint vertexBufferID;
-    
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return 0;
-    }
-    
-    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
-    
-    PL_Render_UpdateMatrices();
-    
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    
-    PL_Render_ApplyVertexBufferData(def);
-    
-    PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
-    
-    PL_Render_ClearVertexBufferData(def);
-    
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
-    return 0;
-}
-
-int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
-                                    int vertexBufferHandle, int indexBufferHandle,
-                                    int primitiveType, int indexStart, int indexCount
-                                    ) {
-    GLuint vertexBufferID, indexBufferID;
-    
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return 0;
-    }
-    
-    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
-    indexBufferID = PL_IndexBuffer_GetGLID(indexBufferHandle);
-    
-    PL_Render_UpdateMatrices();
-    
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-    
-    PL_Render_ApplyVertexBufferData(def);
-    
-    PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
-                         indexCount, GL_UNSIGNED_SHORT,
-                         (void *)(indexStart * sizeof(unsigned short)));
-    
-    PL_Render_ClearVertexBufferData(def);
-    
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    
-    return 0;
-}
-
-#else
-int PL_Render_DrawVertexArray(const VertexDefinition *def,
-                              const char *vertexData,
-                              int primitiveType, int vertexStart, int vertexCount
-                             ) {
-    PL_Render_UpdateMatrices();
-    
-    if (PL_GL.hasVBOSupport == DXTRUE) {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-    
-    PL_Shaders_ApplyProgram(
-        s_ES2ActiveShader,
-        &s_currentMatrixProjection, &s_currentMatrixView,
-        vertexData, def);
-    
-    PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
-    
-    PL_Shaders_ClearProgram(
-        s_ES2ActiveShader,
-        def);
-    
-    return 0;
-}
-
-int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
-                                   const char *vertexData,
-                                   const unsigned short *indexData,
-                                   int primitiveType, int indexStart, int indexCount
-                             ) {
-    PL_Render_UpdateMatrices();
-    
-    if (PL_GL.hasVBOSupport == DXTRUE) {
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-    
-    PL_Shaders_ApplyProgram(
-        s_ES2ActiveShader,
-        &s_currentMatrixProjection, &s_currentMatrixView,
-        vertexData, def);
-    
-    PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
-                         indexCount, GL_UNSIGNED_SHORT, indexData + indexStart);
-    
-    PL_Shaders_ClearProgram(
-        s_ES2ActiveShader,
-        def);
-    
-    return 0;
-}
-
-int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
-                               int vertexBufferHandle,
-                               int primitiveType, int vertexStart, int vertexCount
-                               ) {
-    GLuint vertexBufferID;
-    
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return 0;
-    }
-    
-    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
-    
-    PL_Render_UpdateMatrices();
-    
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    
-    PL_Shaders_ApplyProgram(
-        s_ES2ActiveShader,
-        &s_currentMatrixProjection, &s_currentMatrixView,
-        0, def);
-    
-    PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
-    
-    PL_Shaders_ClearProgram(
-        s_ES2ActiveShader,
-        def);
-    
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
-    return 0;
-}
-
-int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
-                                    int vertexBufferHandle, int indexBufferHandle,
-                                    int primitiveType, int indexStart, int indexCount
-                                    ) {
-    GLuint vertexBufferID, indexBufferID;
-    
-    if (PL_GL.hasVBOSupport == DXFALSE) {
-        return 0;
-    }
-    
-    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
-    indexBufferID = PL_IndexBuffer_GetGLID(indexBufferHandle);
-    
-    PL_Render_UpdateMatrices();
-    
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-    
-    PL_Shaders_ApplyProgram(
-        s_ES2ActiveShader,
-        &s_currentMatrixProjection, &s_currentMatrixView,
-        0, def);
-    
-    PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
-                         indexCount, GL_UNSIGNED_SHORT,
-                         (void *)(indexStart * sizeof(unsigned short)));
-    
-    PL_Shaders_ClearProgram(
-        s_ES2ActiveShader,
-        def);
-    
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    
-    return 0;
+static void s_ClearFixedFunctionState() {
 }
 #endif
+
+int PL_Render_DrawVertexArray(const VertexDefinition *def,
+                              const char *vertexData,
+                              int primitiveType, int vertexStart, int vertexCount
+                             ) {
+    PL_Render_UpdateMatrices();
+    
+    if (PL_GL.hasVBOSupport == DXTRUE) {
+        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (s_useFixedFunction == DXTRUE) {
+        s_InitFixedFunctionState();
+        
+        PL_GLFixedFunction_ApplyVertexArrayData(def, vertexData);
+        
+        PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
+        
+        PL_GLFixedFunction_ClearVertexArrayData(def);
+        
+        s_ClearFixedFunctionState();
+    } else
+#endif
+    {
+        PL_Shaders_ApplyProgram(
+            s_activeShaderProgram,
+            &s_currentMatrixProjection, &s_currentMatrixView,
+            vertexData, def);
+        
+        PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
+        
+        PL_Shaders_ClearProgram(
+            s_activeShaderProgram,
+            def);
+    }
+    
+    return 0;
+}
+
+int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
+                                   const char *vertexData,
+                                   const unsigned short *indexData,
+                                   int primitiveType, int indexStart, int indexCount
+                             ) {
+    PL_Render_UpdateMatrices();
+    
+    if (PL_GL.hasVBOSupport == DXTRUE) {
+        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (s_useFixedFunction == DXTRUE) {
+        s_InitFixedFunctionState();
+        
+        PL_GLFixedFunction_ApplyVertexArrayData(def, vertexData);
+        
+        PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
+                            indexCount, GL_UNSIGNED_SHORT, indexData + indexStart);
+        
+        PL_GLFixedFunction_ClearVertexArrayData(def);
+        
+        s_ClearFixedFunctionState();
+    } else
+#endif
+    {
+        PL_Shaders_ApplyProgram(
+            s_activeShaderProgram,
+            &s_currentMatrixProjection, &s_currentMatrixView,
+            vertexData, def);
+        
+        PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
+                            indexCount, GL_UNSIGNED_SHORT, indexData + indexStart);
+        
+        PL_Shaders_ClearProgram(
+            s_activeShaderProgram,
+            def);
+    }
+    
+    return 0;
+}
+
+int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
+                               int vertexBufferHandle,
+                               int primitiveType, int vertexStart, int vertexCount
+                               ) {
+    GLuint vertexBufferID;
+    
+    if (PL_GL.hasVBOSupport == DXFALSE) {
+        return 0;
+    }
+    
+    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
+    
+    PL_Render_UpdateMatrices();
+    
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (s_useFixedFunction == DXTRUE) {
+        s_InitFixedFunctionState();
+        
+        PL_GLFixedFunction_ApplyVertexBufferData(def);
+        
+        PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
+        
+        PL_GLFixedFunction_ClearVertexBufferData(def);
+        
+        s_ClearFixedFunctionState();
+    } else
+#endif
+    {
+        PL_Shaders_ApplyProgram(
+            s_activeShaderProgram,
+            &s_currentMatrixProjection, &s_currentMatrixView,
+            0, def);
+        
+        PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
+        
+        PL_Shaders_ClearProgram(
+            s_activeShaderProgram,
+            def);
+    }
+    
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+    return 0;
+}
+
+int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
+                                    int vertexBufferHandle, int indexBufferHandle,
+                                    int primitiveType, int indexStart, int indexCount
+                                    ) {
+    GLuint vertexBufferID, indexBufferID;
+    
+    if (PL_GL.hasVBOSupport == DXFALSE) {
+        return 0;
+    }
+    
+    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
+    indexBufferID = PL_IndexBuffer_GetGLID(indexBufferHandle);
+    
+    PL_Render_UpdateMatrices();
+    
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
+
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (s_useFixedFunction == DXTRUE) {
+        s_InitFixedFunctionState();
+        
+        PL_GLFixedFunction_ApplyVertexBufferData(def);
+        
+        PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
+                            indexCount, GL_UNSIGNED_SHORT,
+                            (void *)(indexStart * sizeof(unsigned short)));
+        
+        PL_GLFixedFunction_ClearVertexBufferData(def);
+        
+        s_ClearFixedFunctionState();
+    } else
+#endif
+    {
+        PL_Shaders_ApplyProgram(
+            s_activeShaderProgram,
+            &s_currentMatrixProjection, &s_currentMatrixView,
+            0, def);
+        
+        PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
+                            indexCount, GL_UNSIGNED_SHORT,
+                            (void *)(indexStart * sizeof(unsigned short)));
+        
+        PL_Shaders_ClearProgram(
+            s_activeShaderProgram,
+            def);
+    }
+    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
+    return 0;
+}
 
 /* ------------------------------------------------- INIT/FINISH/GENERAL */
 
@@ -892,25 +557,21 @@ int PL_Render_EndFrame() {
 }
 
 int PL_Render_Init() {
-    /* Create a texture that's a single white pixel. */
-    SDL_Surface *surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 1, 1, 32,
-                                   0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-    *((unsigned int *)(surface->pixels)) = 0xffffffff;
-    s_pixelTexture = PL_Texture_CreateFromSDLSurface(surface, DXFALSE);
-    SDL_FreeSurface(surface);
-    
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    PL_GLFixedFunction_Init();
+#endif
     PL_Shaders_Init();
+    
+    PL_Render_SetTexturePresetMode(PLGL_SHADER_BASIC_COLOR_NOTEX, -1, 0);
     
     return 0;
 }
 
 int PL_Render_End() {
-    if (s_pixelTexture >= 0) {
-        PL_Texture_Release(s_pixelTexture);
-        s_pixelTexture = -1;
-    }
-    
     PL_Shaders_Cleanup();
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    PL_GLFixedFunction_Cleanup();
+#endif
     
     return 0;
 }

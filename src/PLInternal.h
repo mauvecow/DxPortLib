@@ -296,6 +296,7 @@ enum PL_BlendType {
     PL_BLEND_ONE_MINUS_DST_ALPHA
 };
 enum PL_BlendFunctions {
+    PL_BLENDFUNC_DISABLE,
     PL_BLENDFUNC_ADD,
     PL_BLENDFUNC_RSUB,
 };
@@ -330,14 +331,14 @@ static const VertexDefinition s_ ## vertex ## Definition = \
     { s_ ## vertex ## Elements, elementsof(s_ ## vertex ## Elements), sizeof(vertex) };
 
 typedef enum _TexturePreset {
-    TEX_PRESET_COPY,
     TEX_PRESET_MODULATE,
     TEX_PRESET_DX_MULA,
     TEX_PRESET_DX_INVERT,
     TEX_PRESET_DX_X4,
     TEX_PRESET_DX_PMA,
     TEX_PRESET_DX_PMA_INVERT,
-    TEX_PRESET_DX_PMA_X4
+    TEX_PRESET_DX_PMA_X4,
+    TEX_PRESET_END
 } TexturePreset;
 
 typedef enum _PrimitiveType {

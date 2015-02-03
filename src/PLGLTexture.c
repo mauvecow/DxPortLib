@@ -360,6 +360,11 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     }
 
     /* - If not 2^n, use TEXTURE_RECTANGLE if available. */
+    if (wrappableFlag == DXFALSE && PL_GL.hasNPTSupport) {
+        textureTarget = GL_TEXTURE_2D;
+        texWidth = width;
+        texHeight = height;
+    } else
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (wrappableFlag == DXFALSE && PL_GL.hasTextureRectangleSupport) {
         textureTarget = GL_TEXTURE_RECTANGLE_ARB;
@@ -367,11 +372,7 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
         texHeight = height;
     } else
 #endif
-    if (wrappableFlag == DXFALSE && PL_GL.hasNPTSupport) {
-        textureTarget = GL_TEXTURE_2D;
-        texWidth = width;
-        texHeight = height;
-    } else {
+    {
         textureTarget = GL_TEXTURE_2D;
         texWidth = widthpow2;
         texHeight = heightpow2;
