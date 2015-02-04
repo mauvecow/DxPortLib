@@ -324,6 +324,98 @@ int PL_Render_SetTexturePresetMode(int preset,
     }
 }
 
+/* -------------------------------------------------- FULL ES2 EMULATION */
+#ifdef DXPORTLIB_EMULATE_FULL_ES2
+/* This is only used for the Emscripten target, because WebGL
+ * doesn't support calls to glDrawArrays/glDrawElements without a
+ * bound vbo/ibo.
+ * 
+ * Emscripten itself supports this via -s FULL_ES2=1 , but it's not that
+ * difficult to write so I just go for it, rounding up to the nearest
+ * power of two.
+ */
+#define MAX_EMULATED_BUFFERS    24
+static int s_emulatedVBOs[MAX_EMULATED_BUFFERS] = { -1 };
+static int s_emulatedIBOs[MAX_EMULATED_BUFFERS] = { -1 };
+
+/* Returns valid VBO/IBOs for the given inputs. */
+static int s_emulateVertexBuffer(const VertexDefinition *def,
+                                 const char *vertexData,
+                                 int vertexStart, int vertexCount) {
+    int n = 4;
+    int size = 1 << n;
+    int vertexByteSize = def->vertexByteSize;
+    int targetSize = (vertexStart + vertexCount) * vertexByteSize;
+    int vboID;
+    
+    while (size < targetSize && n < MAX_EMULATED_BUFFERS) { size <<= 1; n += 1; }
+    if (n >= MAX_EMULATED_BUFFERS) {
+        return -1;
+    }
+    
+    vboID = s_emulatedVBOs[n];
+    if (vboID <= 0) {
+        vboID = PL_VertexBuffer_CreateBytes(1, 0, size, DXFALSE);
+        s_emulatedVBOs[n] = vboID;
+    }
+
+    PL_VertexBuffer_SetDataBytes(vboID,
+                                 vertexData,
+                                 vertexStart * vertexByteSize,
+                                 vertexCount * vertexByteSize);
+    
+    return vboID;
+}
+static int s_emulateIndexBuffer(const unsigned short *indexData,
+                                int indexStart, int indexCount) {
+    int n = 4;
+    int size = 1 << n;
+    int targetSize = (indexStart + indexCount);
+    int iboID;
+    
+    while (size < targetSize && n < MAX_EMULATED_BUFFERS) { size <<= 1; n += 1; }
+    if (n >= MAX_EMULATED_BUFFERS) {
+        return -1;
+    }
+    
+    iboID = s_emulatedIBOs[n];
+    if (iboID <= 0) {
+        iboID = PL_IndexBuffer_Create(0, size, DXFALSE);
+        s_emulatedIBOs[n] = iboID;
+    }
+    
+    PL_IndexBuffer_SetData(iboID, indexData, indexStart, indexCount);
+    
+    return iboID;
+}
+
+static int s_emulateFullES2Init() {
+    int i;
+    for (i = 0; i < MAX_EMULATED_BUFFERS; ++i) {
+        s_emulatedVBOs[i] = -1;
+        s_emulatedIBOs[i] = -1;
+    }
+    return 0;
+}
+static int s_emulateFullES2Cleanup() {
+    int i;
+    for (i = 0; i < MAX_EMULATED_BUFFERS; ++i) {
+        PL_VertexBuffer_Delete(s_emulatedVBOs[i]);
+        PL_IndexBuffer_Delete(s_emulatedIBOs[i]);
+    }
+    return 0;
+}
+
+#else
+static int s_emulateFullES2Init() {
+    return 0;
+}
+static int s_emulateFullES2Cleanup() {
+    return 0;
+}
+
+#endif
+
 /* ----------------------------------------------- RENDERING VERTEX DATA */
 
 static GLuint PrimitiveToDrawType(int primitiveType) {
@@ -364,6 +456,15 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
                               const char *vertexData,
                               int primitiveType, int vertexStart, int vertexCount
                              ) {
+#ifdef DXPORTLIB_EMULATE_FULL_ES2
+    PL_Render_DrawVertexBuffer(
+        def,
+        s_emulateVertexBuffer(def, vertexData + (vertexStart * def->vertexByteSize),
+                              0, vertexCount),
+        primitiveType, 0, vertexCount);
+    
+    return 0;
+#else
     PL_Render_UpdateMatrices();
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
@@ -398,13 +499,24 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
     }
     
     return 0;
+#endif
 }
 
 int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
                                    const char *vertexData,
+                                   int vertexStart, int vertexCount,
                                    const unsigned short *indexData,
                                    int primitiveType, int indexStart, int indexCount
                              ) {
+#ifdef DXPORTLIB_EMULATE_FULL_ES2
+    PL_Render_DrawVertexIndexBuffer(
+        def,
+        s_emulateVertexBuffer(def, vertexData, vertexStart, vertexCount), vertexStart, vertexCount,
+        s_emulateIndexBuffer(indexData + indexStart, 0, indexCount),
+        primitiveType, 0, indexCount);
+    
+    return 0;
+#else
     PL_Render_UpdateMatrices();
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
@@ -439,8 +551,9 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
             s_activeShaderProgram,
             def);
     }
-    
+
     return 0;
+#endif
 }
 
 int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
@@ -449,11 +562,13 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
                                ) {
     GLuint vertexBufferID;
     
+#ifndef DXPORTLIB_EMULATE_FULL_ES2
     if (PL_GL.hasVBOSupport == DXFALSE) {
         return PL_Render_DrawVertexArray(
                     def, PL_VertexBuffer_GetFallback(vertexBufferHandle),
                     primitiveType, vertexStart, vertexCount);
     }
+#endif
     
     vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
     
@@ -493,18 +608,23 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
 }
 
 int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
-                                    int vertexBufferHandle, int indexBufferHandle,
+                                    int vertexBufferHandle,
+                                    int vertexStart, int vertexCount,
+                                    int indexBufferHandle,
                                     int primitiveType, int indexStart, int indexCount
                                     ) {
     GLuint vertexBufferID, indexBufferID;
     
+#ifndef DXPORTLIB_EMULATE_FULL_ES2
     if (PL_GL.hasVBOSupport == DXFALSE) {
-        /* FIXME this breaks if the index buffer is not 16 bit shorts */
+        /* Incredibly slow in some situations. */
         return PL_Render_DrawVertexIndexArray(
-                    def, PL_VertexBuffer_GetFallback(vertexBufferHandle),
+                    def,
+                    PL_VertexBuffer_GetFallback(vertexBufferHandle), vertexStart, vertexCount,
                     (const unsigned short *)PL_IndexBuffer_GetFallback(indexBufferHandle),
                     primitiveType, indexStart, indexCount);
     }
+#endif
     
     vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
     indexBufferID = PL_IndexBuffer_GetGLID(indexBufferHandle);
@@ -582,10 +702,14 @@ int PL_Render_Init() {
     
     PL_Render_SetTexturePresetMode(PLGL_SHADER_BASIC_COLOR_NOTEX, -1, 0);
     
+    s_emulateFullES2Init();
+    
     return 0;
 }
 
 int PL_Render_End() {
+    s_emulateFullES2Cleanup();
+    
     PL_Shaders_Cleanup();
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GLFixedFunction_Cleanup();

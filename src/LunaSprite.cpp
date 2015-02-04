@@ -309,7 +309,8 @@ void LunaSprite::Rendering(LSPRITE lSpr) {
         
         PL_Render_DrawVertexIndexBuffer(
             sprite->vertexInfo->def,
-            sprite->vboHandle, sprite->iboHandle,
+            sprite->vboHandle, 0, sprite->vertexPtr,
+            sprite->iboHandle,
             PL_PRIM_TRIANGLES, 0, sprite->indexPtr);
         
         PL_Render_ClearTextures();

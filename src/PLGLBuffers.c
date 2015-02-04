@@ -46,16 +46,13 @@ typedef struct _VBufferData {
     
     int vertexByteSize;
     
-    const VertexDefinition *vertexDefinition;
-    
     int bufferSize;
     char *fallbackData; /* If VBOs are not supported, we emulate with this. */
 } VBufferData;
 
-int PL_VertexBuffer_Create(const VertexDefinition *def,
-                           const char *vertexData, int vertexCount,
-                           int isStatic) {
-    int byteSize = def->vertexByteSize;
+int PL_VertexBuffer_CreateBytes(int vertexByteSize,
+                                const char *vertexData, int bufferSize,
+                                int isStatic) {
     GLuint vboID = 0;
     int vboHandle;
     VBufferData *vb;
@@ -63,10 +60,9 @@ int PL_VertexBuffer_Create(const VertexDefinition *def,
     
     vboHandle = PL_Handle_AcquireID(DXHANDLE_VERTEXBUFFER);
     vb = (VBufferData *)PL_Handle_AllocateData(vboHandle, sizeof(VBufferData));
-    vb->vertexByteSize = byteSize;
-    vb->vertexDefinition = def;
+    vb->vertexByteSize = vertexByteSize;
     vb->fallbackData = NULL;
-    vb->bufferSize = vertexCount * byteSize;
+    vb->bufferSize = bufferSize;
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
         bufferUsage = GL_DYNAMIC_DRAW;
@@ -86,6 +82,33 @@ int PL_VertexBuffer_Create(const VertexDefinition *def,
     vb->vboID = vboID;
     
     return vboHandle;
+}
+
+int PL_VertexBuffer_Create(const VertexDefinition *def,
+                           const char *vertexData, int vertexCount,
+                           int isStatic) {
+    return PL_VertexBuffer_CreateBytes(def->vertexByteSize, vertexData,
+                                       vertexCount * def->vertexByteSize,
+                                       isStatic);
+}
+
+int PL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices, int start, int count) {
+    VBufferData *vb;
+    
+    vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
+    if (vb != NULL) {
+        if (vb->vboID > 0) {
+            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vb->vboID);
+            PL_GL.glBufferSubData(GL_ARRAY_BUFFER, start, count, vertices);
+            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
+        } else if (vb->fallbackData != NULL) {
+            if ((start + count) <= vb->bufferSize) {
+                memcpy(vb->fallbackData + start, vertices, count);
+            }
+        }
+        return 0;
+    }
+    return -1;
 }
 
 int PL_VertexBuffer_SetData(int vboHandle, const char *vertices, int start, int count) {
@@ -171,6 +194,7 @@ GLuint PL_VertexBuffer_GetGLID(int vboHandle) {
     }
     return 0;
 }
+
 char *PL_VertexBuffer_GetFallback(int vboHandle) {
     VBufferData *vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
     if (vb != NULL) {

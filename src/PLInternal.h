@@ -378,7 +378,7 @@ extern int PL_Render_DrawVertexArray(const VertexDefinition *def,
                const char *vertexData,
                int primitiveType, int vertexStart, int vertexCount);
 extern int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
-               const char *vertexData,
+               const char *vertexData, int vertexStart, int vertexCount,
                const unsigned short *indexData,
                int primitiveType, int indexStart, int indexCount);
 
@@ -386,7 +386,8 @@ extern int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
                int vertexBufferHandle,
                int primitiveType, int vertexStart, int vertexCount);
 extern int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
-               int vertexBufferHandle, int indexBufferHandle,
+               int vertexBufferHandle, int vertexStart, int vertexCount,
+               int indexBufferHandle,
                int primitiveType, int indexStart, int indexCount);
 
 extern int PL_Render_SetViewport(int x, int y, int w, int h);
@@ -407,11 +408,15 @@ extern int PL_Render_End();
 
 /* ----------------------------------------------------------- Buffers.c */
 
+extern int PL_VertexBuffer_CreateBytes(int vertexByteSize,
+                                       const char *vertexData, int bufferSize,
+                                       int isStatic);
 extern int PL_VertexBuffer_Create(const VertexDefinition *def,
                                   const char *vertexData, int vertexCount,
                                   int isStatic);
-extern int PL_VertexBuffer_SetData(int vboHandle,
-                                   const char *vertices,
+extern int PL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices,
+                                        int start, int count);
+extern int PL_VertexBuffer_SetData(int vboHandle, const char *vertices,
                                    int start, int count);
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
 extern char *PL_VertexBuffer_Lock(int vboHandle);
