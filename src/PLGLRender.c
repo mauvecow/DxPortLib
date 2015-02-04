@@ -217,6 +217,16 @@ int PL_Render_SetScissorRect(const RECT *rect) {
     }
 }
 
+int PL_Render_DisableCulling() {
+    PL_GL.glDisable(GL_CULL_FACE);
+    return 0;
+}
+
+int PL_Render_DisableDepthTest() {
+    PL_GL.glDisable(GL_DEPTH_TEST);
+    return 0;
+}
+
 /* ---------------------------------------------------- TEXTURE PROGRAMS */
 #define MAX_TEXTURE 4
 /* #ifdef DXPORTLIB_DRAW_OPENGL_ES2 */

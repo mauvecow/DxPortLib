@@ -47,6 +47,105 @@ static char *s_windowTitle = NULL;
 
 static int s_mouseVisible = DXTRUE;
 
+static int s_screenFrameBufferA = -1;
+static int s_screenFrameBufferB = -1;
+
+int PL_drawScreenWidth = -1;
+int PL_drawScreenHeight = -1;
+
+int PL_drawOffscreen = DXFALSE;
+
+static int s_offscreenVBO = -1;
+
+typedef struct RectVertex {
+    float x, y;
+    float tcx, tcy;
+    unsigned int color;
+} RectVertex;
+static const VertexElement s_RectVertexElements[] = {
+    { VERTEX_POSITION, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, x) },
+    { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, tcx) },
+    { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(RectVertex, color) },
+};
+VERTEX_DEFINITION(RectVertex);
+
+static PLMatrix s_projectionMatrix;
+static PLMatrix s_viewMatrix;
+static SDL_Rect s_fullRect;
+
+void PL_Window_ResizeBuffer(int width, int height) {
+    if (width == PL_drawScreenWidth && height == PL_drawScreenHeight) {
+        return;
+    }
+    
+    PL_drawScreenWidth = width;
+    PL_drawScreenHeight = height;
+    
+    PL_Texture_Release(s_screenFrameBufferA);
+    PL_Texture_Release(s_screenFrameBufferB);
+    
+    if (PL_drawOffscreen == DXFALSE) {
+        s_screenFrameBufferA = -1;
+        s_screenFrameBufferB = -1;
+        return;
+    }
+    
+    /* Reinitialize our target backbuffers */
+    s_screenFrameBufferA = PL_Texture_CreateFramebuffer(width, height, DXFALSE);
+    PL_Texture_AddRef(s_screenFrameBufferA);
+    s_screenFrameBufferB = PL_Texture_CreateFramebuffer(width, height, DXFALSE);
+    PL_Texture_AddRef(s_screenFrameBufferB);
+    
+    PL_Render_ClearColor(0, 0, 0, 1);
+    
+    PL_Texture_BindFramebuffer(s_screenFrameBufferB);
+    PL_Render_Clear();
+    
+    PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+    PL_Render_Clear();
+}
+
+int PL_Window_GetFramebuffer() {
+    return s_screenFrameBufferA;
+}
+
+void PL_Window_UpdateTargetRects(const SDL_Rect *fullRect, const SDL_Rect *targetRect) {
+    float x1, y1, x2, y2;
+    float tcx1, tcy1, tcx2, tcy2;
+    SDL_Rect texRect;
+    float xMult, yMult;
+    RectVertex v[4];
+    
+    PL_Matrix_CreateOrthoOffCenterLH(&s_projectionMatrix,
+        0, (float)fullRect->w, 0, (float)fullRect->h, 0.0, 1.0f);
+    PL_Matrix_CreateIdentity(&s_viewMatrix);
+    
+    s_fullRect = *fullRect;
+    
+    if (s_screenFrameBufferB < 0) {
+        return;
+    }
+    
+    PL_Texture_RenderGetTextureInfo(s_screenFrameBufferB, &texRect, &xMult, &yMult);
+    
+    tcx1 = (float)texRect.x * xMult;
+    tcy1 = (float)texRect.y * yMult;
+    tcx2 = tcx1 + ((float)texRect.w * xMult);
+    tcy2 = tcy1 + ((float)texRect.h * yMult);
+    
+    x1 = (float)targetRect->x;
+    y1 = (float)targetRect->y;
+    x2 = x1 + (float)targetRect->w;
+    y2 = y1 + (float)targetRect->h;
+    
+    v[0].x = x1; v[0].y = y1; v[0].tcx = tcx1; v[0].tcy = tcy1; v[0].color = 0xffffffff;
+    v[1].x = x2; v[1].y = y1; v[1].tcx = tcx2; v[1].tcy = tcy1; v[1].color = 0xffffffff;
+    v[2].x = x1; v[2].y = y2; v[2].tcx = tcx1; v[2].tcy = tcy2; v[2].color = 0xffffffff;
+    v[3].x = x2; v[3].y = y2; v[3].tcx = tcx2; v[3].tcy = tcy2; v[3].color = 0xffffffff;
+    
+    PL_VertexBuffer_SetData(s_offscreenVBO, (char *)v, 0, 4);
+}
+
 int PL_Window_ResetSettings() {
     if (s_initialized == DXTRUE) {
         return -1;
@@ -96,7 +195,7 @@ static void PL_Window_HandleResize(int realWidth, int realHeight) {
     }
 
     s_targetRect = destRect;
-    PL_SDL2GL_SetTargetRects(&fullRect, &destRect);
+    PL_Window_UpdateTargetRects(&fullRect, &destRect);
     
     s_windowRealWidth = realWidth;
     s_windowRealHeight = realHeight;
@@ -109,7 +208,38 @@ static void PL_Window_Refresh() {
         PL_Window_HandleResize(wWidth, wHeight);
     }
     
-    PL_SDL2GL_Refresh(s_window);
+    /* Set up the main screen for drawing. */
+    PL_Texture_BindFramebuffer(-1);
+    
+    PL_Render_DisableDepthTest();
+    PL_Render_DisableCulling();
+    PL_Render_DisableScissor();
+    
+    PL_Render_SetViewport(0, 0, s_fullRect.w, s_fullRect.h);
+    PL_Render_SetZRange(0, 1);
+    
+    if (PL_drawOffscreen == DXTRUE) {
+        PL_Render_ClearColor(0, 0, 0, 1);
+        PL_Render_Clear();
+        
+        PL_Render_SetMatrices(&s_projectionMatrix, &s_viewMatrix);
+        PL_Render_DisableBlend();
+        PL_Render_DisableAlphaTest();
+        
+        PL_Render_SetTexturePresetMode(TEX_PRESET_MODULATE, s_screenFrameBufferB, DX_DRAWMODE_BILINEAR);
+        
+        PL_Render_DrawVertexBuffer(&s_RectVertexDefinition,
+                                   s_offscreenVBO,
+                                   PL_PRIM_TRIANGLESTRIP, 0, 4);
+        
+        SDL_GL_SwapWindow(s_window);
+        
+        PL_Texture_BindFramebuffer(s_screenFrameBufferA);
+    } else {
+        SDL_GL_SwapWindow(s_window);
+    }
+    
+    PL_Render_SetMatrixDirtyFlag();
 }
 
 int PL_Window_Init(void) {
@@ -138,6 +268,13 @@ int PL_Window_Init(void) {
     
     PL_SDL2GL_Init(s_window, PL_windowWidth, PL_windowHeight, s_windowVSync);
     
+    s_offscreenVBO = PL_VertexBuffer_Create(&s_RectVertexDefinition, NULL, 4, DXFALSE);
+    
+    PL_Window_ResizeBuffer(PL_windowWidth, PL_windowHeight);
+    PL_Window_HandleResize(PL_windowWidth, PL_windowHeight);
+    PL_Render_ClearColor(0, 0, 0, 1);
+    PL_Render_Clear();
+    
     s_windowRealWidth = 0;
     s_windowRealHeight = 0;
     
@@ -156,6 +293,12 @@ int PL_Window_End(void) {
     
     s_initialized = DXFALSE;
     
+    PL_Texture_Release(s_screenFrameBufferA);
+    PL_Texture_Release(s_screenFrameBufferB);
+    
+    PL_VertexBuffer_Delete(s_offscreenVBO);
+    s_offscreenVBO = -1;
+    
     PL_SDL2GL_End();
     
     SDL_EnableScreenSaver();
@@ -168,7 +311,13 @@ int PL_Window_End(void) {
 
 int PL_Window_SwapBuffers() {
     if (s_initialized == DXTRUE) {
-        PL_SDL2GL_SwapBuffers(s_window);
+        int tempBuffer;
+        
+        tempBuffer = s_screenFrameBufferB;
+        s_screenFrameBufferB = s_screenFrameBufferA;
+        s_screenFrameBufferA = tempBuffer;
+        
+        PL_Window_Refresh();
     }
     return 0;
 }
@@ -207,7 +356,7 @@ int PL_Window_SetDimensions(int width, int height, int colorDepth, int refreshRa
              * window size. (unless it's smaller?) */
             SDL_SetWindowSize(s_window, width, height);
             
-            PL_SDL2GL_ResizeWindow(width, height);
+            PL_Window_ResizeBuffer(PL_windowWidth, PL_windowHeight);
         }
     }
     

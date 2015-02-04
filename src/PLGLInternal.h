@@ -237,7 +237,6 @@ typedef struct _PLGLShaderInfo {
 extern int PL_drawScreenWidth;
 extern int PL_drawScreenHeight;
 
-extern int PL_Render_SetMatrixDirtyFlag();
 extern int PL_Render_UpdateMatrices();
 
 extern int PL_Texture_Bind(int textureRefID, int drawMode);

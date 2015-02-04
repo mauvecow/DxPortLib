@@ -360,16 +360,19 @@ extern void PL_Render_DisableBlend();
 extern int PL_Render_EnableAlphaTest();
 extern int PL_Render_DisableAlphaTest();
 
+extern int PL_Render_SetScissor(int x, int y, int w, int h);
+extern int PL_Render_SetScissorRect(const RECT *rect);
+extern int PL_Render_DisableScissor();
+
+extern int PL_Render_DisableCulling();
+extern int PL_Render_DisableDepthTest();
+
 extern int PL_Render_SetTextureStage(unsigned int stage,
                                      int textureRefID, int textureDrawMode);
 extern int PL_Render_SetTexturePresetMode(int preset,
                                      int textureRefID, int textureDrawMode);
 extern int PL_Render_ClearTextures();
 extern int PL_Render_ClearTexturePresetMode();
-
-extern int PL_Render_SetScissor(int x, int y, int w, int h);
-extern int PL_Render_SetScissorRect(const RECT *rect);
-extern int PL_Render_DisableScissor();
 
 extern int PL_Render_DrawVertexArray(const VertexDefinition *def,
                const char *vertexData,
@@ -395,6 +398,7 @@ extern int PL_Render_ClearColor(float r, float g, float b, float a);
 extern int PL_Render_Clear();
 
 extern int PL_Render_SetMatrices(const PLMatrix *projection, const PLMatrix *view);
+extern int PL_Render_SetMatrixDirtyFlag();
 extern int PL_Render_StartFrame();
 extern int PL_Render_EndFrame();
 

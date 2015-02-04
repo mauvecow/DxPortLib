@@ -41,6 +41,8 @@ extern void PL_SDL2GL_SwapBuffers(SDL_Window *window);
 extern void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag);
 extern void PL_SDL2GL_End();
 
+extern int PL_drawOffscreen;
+
 #endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */
 
 #endif /* #ifndef DXPORTLIB_SDL2_DXINTERNAL_H_HEADER */
