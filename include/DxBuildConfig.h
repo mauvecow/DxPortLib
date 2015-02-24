@@ -190,10 +190,4 @@
 #  endif
 #endif
 
-#if defined(EMSCRIPTEN)
-#  ifndef DXPORTLIB_EMULATE_FULL_ES2
-#    define DXPORTLIB_EMULATE_FULL_ES2
-#  endif
-#endif
-
 #endif /* _DXLIB_BUILDCONFIG_H */

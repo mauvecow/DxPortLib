@@ -414,10 +414,11 @@ extern int PL_VertexBuffer_CreateBytes(int vertexByteSize,
 extern int PL_VertexBuffer_Create(const VertexDefinition *def,
                                   const char *vertexData, int vertexCount,
                                   int isStatic);
+extern int PL_VertexBuffer_ResetBuffer(int vboHandle);
 extern int PL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices,
-                                        int start, int count);
+                                        int start, int count, int resetBufferFlag);
 extern int PL_VertexBuffer_SetData(int vboHandle, const char *vertices,
-                                   int start, int count);
+                                   int start, int count, int resetBufferFlag);
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
 extern char *PL_VertexBuffer_Lock(int vboHandle);
 extern int PL_VertexBuffer_Unlock(int vboHandle, char *buffer);
@@ -426,9 +427,10 @@ extern int PL_VertexBuffer_Delete(int vboHandle);
 
 extern int PL_IndexBuffer_Create(const unsigned short *indexData,
                                  int indexCount, int isStatic);
+extern int PL_IndexBuffer_ResetBuffer(int iboHandle);
 extern int PL_IndexBuffer_SetData(int iboHandle,
                                   const unsigned short *indices,
-                                  int start, int count);
+                                  int start, int count, int resetBufferFlag);
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
 extern unsigned short *PL_IndexBuffer_Lock(int iboHandle);
 extern int PL_IndexBuffer_Unlock(int iboHandle);

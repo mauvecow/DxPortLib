@@ -143,7 +143,7 @@ void PL_Window_UpdateTargetRects(const SDL_Rect *fullRect, const SDL_Rect *targe
     v[2].x = x1; v[2].y = y2; v[2].tcx = tcx1; v[2].tcy = tcy2; v[2].color = 0xffffffff;
     v[3].x = x2; v[3].y = y2; v[3].tcx = tcx2; v[3].tcy = tcy2; v[3].color = 0xffffffff;
     
-    PL_VertexBuffer_SetData(s_offscreenVBO, (char *)v, 0, 4);
+    PL_VertexBuffer_SetData(s_offscreenVBO, (char *)v, 0, 4, DXTRUE);
 }
 
 int PL_Window_ResetSettings() {

@@ -294,7 +294,7 @@ void LunaSprite::UpdateBuffer(LSPRITE lSpr) {
     if (sprite != NULL && sprite->vertexPtr > 0) {
         PL_VertexBuffer_SetData(sprite->vboHandle,
                                 sprite->vertexData,
-                                0, sprite->vertexPtr);
+                                0, sprite->vertexPtr, DXTRUE);
     }
 }
 void LunaSprite::Rendering(LSPRITE lSpr) {

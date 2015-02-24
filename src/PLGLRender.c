@@ -325,14 +325,8 @@ int PL_Render_SetTexturePresetMode(int preset,
 }
 
 /* -------------------------------------------------- FULL ES2 EMULATION */
-#ifdef DXPORTLIB_EMULATE_FULL_ES2
-/* This is only used for the Emscripten target, because WebGL
- * doesn't support calls to glDrawArrays/glDrawElements without a
- * bound vbo/ibo.
- * 
- * Emscripten itself supports this via -s FULL_ES2=1 , but it's not that
- * difficult to write so I just go for it, rounding up to the nearest
- * power of two.
+/* OpenGL, as of 3.0 core, requires a bound vbo/ibo for calls to
+ * glDrawArrays/glDrawElements.
  */
 #define MAX_EMULATED_BUFFERS    24
 static int s_emulatedVBOs[MAX_EMULATED_BUFFERS] = { -1 };
@@ -342,7 +336,7 @@ static int s_emulatedIBOs[MAX_EMULATED_BUFFERS] = { -1 };
 static int s_emulateVertexBuffer(const VertexDefinition *def,
                                  const char *vertexData,
                                  int vertexStart, int vertexCount) {
-    int n = 4;
+    int n = 5;
     int size = 1 << n;
     int vertexByteSize = def->vertexByteSize;
     int targetSize = (vertexStart + vertexCount) * vertexByteSize;
@@ -362,13 +356,14 @@ static int s_emulateVertexBuffer(const VertexDefinition *def,
     PL_VertexBuffer_SetDataBytes(vboID,
                                  vertexData,
                                  vertexStart * vertexByteSize,
-                                 vertexCount * vertexByteSize);
+                                 vertexCount * vertexByteSize,
+                                 DXTRUE);
     
     return vboID;
 }
 static int s_emulateIndexBuffer(const unsigned short *indexData,
                                 int indexStart, int indexCount) {
-    int n = 4;
+    int n = 5;
     int size = 1 << n;
     int targetSize = (indexStart + indexCount);
     int iboID;
@@ -384,12 +379,13 @@ static int s_emulateIndexBuffer(const unsigned short *indexData,
         s_emulatedIBOs[n] = iboID;
     }
     
-    PL_IndexBuffer_SetData(iboID, indexData, indexStart, indexCount);
+    PL_IndexBuffer_ResetBuffer(iboID);
+    PL_IndexBuffer_SetData(iboID, indexData, indexStart, indexCount, DXTRUE);
     
     return iboID;
 }
 
-static int s_emulateFullES2Init() {
+static int s_emulateBuffersInit() {
     int i;
     for (i = 0; i < MAX_EMULATED_BUFFERS; ++i) {
         s_emulatedVBOs[i] = -1;
@@ -397,24 +393,17 @@ static int s_emulateFullES2Init() {
     }
     return 0;
 }
-static int s_emulateFullES2Cleanup() {
+static int s_emulateBuffersCleanup() {
     int i;
     for (i = 0; i < MAX_EMULATED_BUFFERS; ++i) {
         PL_VertexBuffer_Delete(s_emulatedVBOs[i]);
+        s_emulatedVBOs[i] = -1;
+        
         PL_IndexBuffer_Delete(s_emulatedIBOs[i]);
+        s_emulatedIBOs[i] = -1;
     }
     return 0;
 }
-
-#else
-static int s_emulateFullES2Init() {
-    return 0;
-}
-static int s_emulateFullES2Cleanup() {
-    return 0;
-}
-
-#endif
 
 /* ----------------------------------------------- RENDERING VERTEX DATA */
 
@@ -456,15 +445,17 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
                               const char *vertexData,
                               int primitiveType, int vertexStart, int vertexCount
                              ) {
-#ifdef DXPORTLIB_EMULATE_FULL_ES2
-    PL_Render_DrawVertexBuffer(
-        def,
-        s_emulateVertexBuffer(def, vertexData + (vertexStart * def->vertexByteSize),
-                              0, vertexCount),
-        primitiveType, 0, vertexCount);
-    
-    return 0;
-#else
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (PL_GL.hasVBOSupport == DXTRUE) {
+#endif
+        return PL_Render_DrawVertexBuffer(
+                def,
+                s_emulateVertexBuffer(def, vertexData + (vertexStart * def->vertexByteSize),
+                                      0, vertexCount),
+                primitiveType, 0, vertexCount);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    }
+
     PL_Render_UpdateMatrices();
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
@@ -472,7 +463,6 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
         PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (s_useFixedFunction == DXTRUE) {
         s_InitFixedFunctionState();
         
@@ -483,9 +473,8 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
         PL_GLFixedFunction_ClearVertexArrayData(def);
         
         s_ClearFixedFunctionState();
-    } else
-#endif
-    {
+    } else {
+        /* TESTME This might be invalid on some drivers, but works okay on nvidia. */
         PL_Shaders_ApplyProgram(
             s_activeShaderProgram,
             &s_currentMatrixProjection, &s_currentMatrixView,
@@ -508,15 +497,19 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
                                    const unsigned short *indexData,
                                    int primitiveType, int indexStart, int indexCount
                              ) {
-#ifdef DXPORTLIB_EMULATE_FULL_ES2
-    PL_Render_DrawVertexIndexBuffer(
-        def,
-        s_emulateVertexBuffer(def, vertexData, vertexStart, vertexCount), vertexStart, vertexCount,
-        s_emulateIndexBuffer(indexData + indexStart, 0, indexCount),
-        primitiveType, 0, indexCount);
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    if (PL_GL.hasVBOSupport == DXTRUE) {
+#endif
+        PL_Render_DrawVertexIndexBuffer(
+            def,
+            s_emulateVertexBuffer(def, vertexData, vertexStart, vertexCount), vertexStart, vertexCount,
+            s_emulateIndexBuffer(indexData + indexStart, 0, indexCount),
+            primitiveType, 0, indexCount);
+        
+        return 0;
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+    }
     
-    return 0;
-#else
     PL_Render_UpdateMatrices();
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
@@ -524,7 +517,6 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
         PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (s_useFixedFunction == DXTRUE) {
         s_InitFixedFunctionState();
         
@@ -536,22 +528,22 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
         PL_GLFixedFunction_ClearVertexArrayData(def);
         
         s_ClearFixedFunctionState();
-    } else
-#endif
-    {
+    } else {
+        /* TESTME This might be invalid on some drivers, but works okay on nvidia. */
         PL_Shaders_ApplyProgram(
             s_activeShaderProgram,
             &s_currentMatrixProjection, &s_currentMatrixView,
             vertexData, def);
         
         PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
-                            indexCount, GL_UNSIGNED_SHORT, indexData + indexStart);
+                            indexCount, GL_UNSIGNED_SHORT,
+                            (void *)(indexStart * sizeof(unsigned short)));
         
         PL_Shaders_ClearProgram(
             s_activeShaderProgram,
             def);
     }
-
+    
     return 0;
 #endif
 }
@@ -562,13 +554,11 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
                                ) {
     GLuint vertexBufferID;
     
-#ifndef DXPORTLIB_EMULATE_FULL_ES2
     if (PL_GL.hasVBOSupport == DXFALSE) {
         return PL_Render_DrawVertexArray(
                     def, PL_VertexBuffer_GetFallback(vertexBufferHandle),
                     primitiveType, vertexStart, vertexCount);
     }
-#endif
     
     vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
     
@@ -615,7 +605,6 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
                                     ) {
     GLuint vertexBufferID, indexBufferID;
     
-#ifndef DXPORTLIB_EMULATE_FULL_ES2
     if (PL_GL.hasVBOSupport == DXFALSE) {
         /* Incredibly slow in some situations. */
         return PL_Render_DrawVertexIndexArray(
@@ -624,7 +613,6 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
                     (const unsigned short *)PL_IndexBuffer_GetFallback(indexBufferHandle),
                     primitiveType, indexStart, indexCount);
     }
-#endif
     
     vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
     indexBufferID = PL_IndexBuffer_GetGLID(indexBufferHandle);
@@ -702,13 +690,13 @@ int PL_Render_Init() {
     
     PL_Render_SetTexturePresetMode(PLGL_SHADER_BASIC_COLOR_NOTEX, -1, 0);
     
-    s_emulateFullES2Init();
+    s_emulateBuffersInit();
     
     return 0;
 }
 
 int PL_Render_End() {
-    s_emulateFullES2Cleanup();
+    s_emulateBuffersCleanup();
     
     PL_Shaders_Cleanup();
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
