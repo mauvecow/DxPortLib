@@ -554,11 +554,13 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
                                ) {
     GLuint vertexBufferID;
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.hasVBOSupport == DXFALSE) {
         return PL_Render_DrawVertexArray(
                     def, PL_VertexBuffer_GetFallback(vertexBufferHandle),
                     primitiveType, vertexStart, vertexCount);
     }
+#endif
     
     vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
     
@@ -605,6 +607,7 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
                                     ) {
     GLuint vertexBufferID, indexBufferID;
     
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.hasVBOSupport == DXFALSE) {
         /* Incredibly slow in some situations. */
         return PL_Render_DrawVertexIndexArray(
@@ -613,6 +616,7 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
                     (const unsigned short *)PL_IndexBuffer_GetFallback(indexBufferHandle),
                     primitiveType, indexStart, indexCount);
     }
+#endif
     
     vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
     indexBufferID = PL_IndexBuffer_GetGLID(indexBufferHandle);
