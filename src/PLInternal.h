@@ -234,6 +234,9 @@ extern int PLEXT_Window_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
 extern int PL_Window_GetFramebuffer();
 
 /* -------------------------------------------------------------- Math.c */
+typedef struct _PLRect {
+    int x, y, w, h;
+} PLRect;
 typedef struct _PLMatrix {
     union {
         struct {
@@ -461,9 +464,9 @@ extern int PL_Texture_CreateFromSDLSurface(SDL_Surface *surface, int hasAlphaCha
 extern int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel);
 extern int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel);
 
-extern int PL_Texture_BlitSurface(int textureID, SDL_Surface *surface, const SDL_Rect *rect);
+extern int PL_Texture_BlitSurface(int textureID, SDL_Surface *surface, const PLRect *rect);
 
-extern int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMult, float *yMult);
+extern int PL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMult, float *yMult);
 
 extern int PL_Texture_SetWrap(int textureRefID, int wrapState);
 

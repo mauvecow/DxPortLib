@@ -243,7 +243,7 @@ extern int PL_Texture_Bind(int textureRefID, int drawMode);
 extern int PL_Texture_Unbind(int textureRefID);
 extern int PL_Texture_ClearAllData();
 
-extern int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface);
+extern int PL_Framebuffer_GetSurface(const PLRect *rect, SDL_Surface **dSurface);
 
 extern GLuint PL_VertexBuffer_GetGLID(int vertexBufferID);
 extern char *PL_VertexBuffer_GetFallback(int vboHandle);

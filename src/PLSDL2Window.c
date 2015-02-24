@@ -33,7 +33,7 @@ int PL_windowHeight = 480;
 static int s_windowRefreshRate = 60;
 static int s_windowDepth = 32;
 static SDL_Window *s_window = NULL;
-static SDL_Rect s_targetRect = { 0, 0, 640, 480 };
+static PLRect s_targetRect = { 0, 0, 640, 480 };
 static int s_windowRealWidth = 640;
 static int s_windowRealHeight = 480;
 static SDL_Surface *s_windowIcon = NULL;
@@ -71,7 +71,7 @@ VERTEX_DEFINITION(RectVertex);
 
 static PLMatrix s_projectionMatrix;
 static PLMatrix s_viewMatrix;
-static SDL_Rect s_fullRect;
+static PLRect s_fullRect;
 
 void PL_Window_ResizeBuffer(int width, int height) {
     if (width == PL_drawScreenWidth && height == PL_drawScreenHeight) {
@@ -109,10 +109,10 @@ int PL_Window_GetFramebuffer() {
     return s_screenFrameBufferA;
 }
 
-void PL_Window_UpdateTargetRects(const SDL_Rect *fullRect, const SDL_Rect *targetRect) {
+void PL_Window_UpdateTargetRects(const PLRect *fullRect, const PLRect *targetRect) {
     float x1, y1, x2, y2;
     float tcx1, tcy1, tcx2, tcy2;
-    SDL_Rect texRect;
+    PLRect texRect;
     float xMult, yMult;
     RectVertex v[4];
     
@@ -169,8 +169,8 @@ int PL_Window_ResetSettings() {
 
 static void PL_Window_HandleResize(int realWidth, int realHeight) {
     /* Update target rectangle. */
-    SDL_Rect fullRect;
-    SDL_Rect destRect;
+    PLRect fullRect;
+    PLRect destRect;
     int aspectCorrectWidth;
     
     fullRect.x = 0;

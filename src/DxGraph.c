@@ -38,7 +38,7 @@ static int s_graphCount = 0;
 static int s_applyPMA = DXFALSE;
 
 typedef struct Graph {
-    SDL_Rect rect;
+    PLRect rect;
     
     int textureRefID;
     
@@ -50,7 +50,7 @@ static Graph *s_GetGraph(int graphID) {
     return (Graph *)PL_Handle_GetData(graphID, DXHANDLE_GRAPH);
 }
 
-static int s_AllocateGraphID(int textureRefID, SDL_Rect rect, int linkToGraphID) {
+static int s_AllocateGraphID(int textureRefID, PLRect rect, int linkToGraphID) {
     int graphID;
     Graph *graph, *linkedGraph;
     
@@ -86,7 +86,7 @@ static int s_AllocateGraphID(int textureRefID, SDL_Rect rect, int linkToGraphID)
 int Dx_Graph_CreateFromSurface(int surfaceID) {
     int textureRefID;
     int graphID;
-    SDL_Rect rect;
+    PLRect rect;
     int hasAlphaChannel = PL_Surface_HasTransparency(surfaceID);
     
     if (hasAlphaChannel != DXFALSE && s_applyPMA != DXFALSE) {
@@ -114,7 +114,7 @@ int Dx_Graph_CreateFromSurface(int surfaceID) {
 int Dx_Graph_MakeScreen(int width, int height, int hasAlphaChannel) {
     int textureRefID;
     int graphID;
-    SDL_Rect rect;
+    PLRect rect;
     
     textureRefID = PL_Texture_CreateFramebuffer(width, height, hasAlphaChannel);
     if (textureRefID < 0) {
@@ -160,7 +160,7 @@ int Dx_Graph_Load(const DXCHAR *filename, int flipFlag) {
     return graphID;
 }
 
-int Dx_Graph_FromTexture(int textureRefID, SDL_Rect rect) {
+int Dx_Graph_FromTexture(int textureRefID, PLRect rect) {
     int graphID = s_AllocateGraphID(textureRefID, rect, -1);
     
     return graphID;
@@ -235,7 +235,7 @@ int Dx_Graph_GetSize(int graphID, int *w, int *h) {
 
 int Dx_Graph_Derivation(int x, int y, int w, int h, int srcGraphID) {
     Graph *srcGraph;
-    SDL_Rect rect;
+    PLRect rect;
     
     srcGraph = s_GetGraph(srcGraphID);
     if (srcGraph == NULL) {
@@ -326,7 +326,7 @@ void Dx_Graph_End() {
     /* That should clear all texture refs. If they're not 0, we have a bug. */
 }
 
-int Dx_Graph_GetTextureID(int graphID, SDL_Rect *rect) {
+int Dx_Graph_GetTextureID(int graphID, PLRect *rect) {
     Graph *graph = s_GetGraph(graphID);
     if (graph == NULL) {
         return -1;
@@ -339,7 +339,7 @@ int Dx_Graph_GetTextureID(int graphID, SDL_Rect *rect) {
     return graph->textureRefID;
 }
 
-int Dx_Graph_GetTextureInfo(int graphID, int *dTextureRefID, SDL_Rect *rect, float *xMult, float *yMult) {
+int Dx_Graph_GetTextureInfo(int graphID, int *dTextureRefID, PLRect *rect, float *xMult, float *yMult) {
     Graph *graph = s_GetGraph(graphID);
     if (graph == NULL) {
         return -1;

@@ -361,7 +361,7 @@ static void s_GrowGlyphTexture(FontData *fontData) {
     static int nestCount = 0;
     GlyphTexture *glyphTexture = &fontData->glyphTexture;
     unsigned int glyphsLeft;
-    SDL_Rect texRect;
+    PLRect texRect;
     int nest;
     int i;
     
@@ -560,7 +560,7 @@ static SDL_Surface *s_GetGlyphSurface(FontData *fontData, GlyphData *glyph) {
 static int s_FitSurface(FontData *fontData, SDL_Surface *surface, GlyphRect *rect) {
     GlyphTexture *glyphTexture = &fontData->glyphTexture;
     int x, y, w, h, nextY;
-    SDL_Rect texRect;
+    PLRect texRect;
     
     /* - Fit glyph onto the texture, updating the next position. */
     x = glyphTexture->X;

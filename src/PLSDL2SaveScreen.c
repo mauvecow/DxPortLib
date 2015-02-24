@@ -43,7 +43,7 @@ int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
                            int compressionLevel) {
     SDL_Surface *surface;
     char namebuf[4096];
-    SDL_Rect rect;
+    PLRect rect;
     rect.x = x1;
     rect.y = y1;
     rect.w = x2 - x1;

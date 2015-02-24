@@ -137,7 +137,7 @@ static int s_GLFrameBuffer_Release(int handleID) {
     return 0;
 }
 
-int PL_Framebuffer_GetSurface(const SDL_Rect *rect, SDL_Surface **dSurface) {
+int PL_Framebuffer_GetSurface(const PLRect *rect, SDL_Surface **dSurface) {
     SDL_Surface *surface;
     
     surface = SDL_CreateRGBSurface(SDL_SWSURFACE, rect->w, rect->h, 32,
@@ -226,7 +226,7 @@ static int s_AllocateTextureRefID(GLuint textureID) {
     return textureRefID;
 }
 
-static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const SDL_Rect *rect) {
+static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const PLRect *rect) {
     GLuint textureTarget = textureRef->glTarget;
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
@@ -576,9 +576,9 @@ int PL_Texture_Release(int textureRefID) {
     return 0;
 }
 
-int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const SDL_Rect *rect) {
+int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const PLRect *rect) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
-    SDL_Rect tempRect;
+    PLRect tempRect;
     
     if (textureref == NULL || textureref->textureID == 0) {
         return -1;
@@ -616,7 +616,7 @@ int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const SDL_Rec
     return 0;
 }
 
-int PL_Texture_RenderGetTextureInfo(int textureRefID, SDL_Rect *rect, float *xMult, float *yMult) {
+int PL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMult, float *yMult) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     
     if (textureref == NULL) {

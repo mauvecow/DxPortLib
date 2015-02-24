@@ -540,7 +540,7 @@ int Dx_Draw_Box(int x1, int y1, int x2, int y2, DXCOLOR color, int FillFlag) {
 }
 
 int Dx_Draw_GraphF(float x1, float y1, int graphID, int blendFlag) {
-    SDL_Rect texRect;
+    PLRect texRect;
     int textureRefID;
     float xMult, yMult;
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
@@ -572,7 +572,7 @@ int Dx_Draw_Graph(int x, int y, int graphID, int blendFlag) {
 }
 
 int Dx_Draw_ExtendGraphF(float x1, float y1, float x2, float y2, int graphID, int blendFlag) {
-    SDL_Rect texRect;
+    PLRect texRect;
     int textureRefID;
     float xMult, yMult;
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
@@ -613,7 +613,7 @@ int Dx_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
      * source coordinates to be partially outside of the texture and
      * it will still be valid!
      */
-    SDL_Rect texRect;
+    PLRect texRect;
     int textureRefID;
     float xMult, yMult;
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
@@ -699,7 +699,7 @@ int Dx_EXT_Draw_RectGraphFastF(
                             float dx1, float dy1, float dw, float dh,
                             int sx, int sy, int sw, int sh,
                             int graphID, int blendFlag) {
-    SDL_Rect texRect;
+    PLRect texRect;
     int textureRefID;
     float xMult, yMult;
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
@@ -729,7 +729,7 @@ int Dx_EXT_Draw_RectGraphFastF(
 int Dx_Draw_RectExtendGraphF(float dx1, float dy1, float dx2, float dy2,
                              int sx, int sy, int sw, int sh,
                              int graphID, int blendFlag, int turnFlag) {
-    SDL_Rect texRect;
+    PLRect texRect;
     int textureRefID;
     float xMult, yMult;
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
@@ -763,7 +763,7 @@ int Dx_Draw_RectExtendGraph(int dx1, int dy1, int dx2, int dy2,
 
 static int s_Draw_RotaGraphMain(
                        int textureRefID,
-                       const SDL_Rect *texRect,
+                       const PLRect *texRect,
                        float xMult, float yMult,
                        float x, float y, 
                        float cx, float cy,
@@ -834,7 +834,7 @@ int Dx_Draw_RotaGraphF(float x, float y,
                        double scaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
     int textureRefID;
-    SDL_Rect texRect;
+    PLRect texRect;
     float xMult, yMult;
     
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
@@ -857,7 +857,7 @@ int Dx_Draw_RotaGraph2F(float x, float y, float cx, float cy,
                        double scaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
     int textureRefID;
-    SDL_Rect texRect;
+    PLRect texRect;
     float xMult, yMult;
     
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
@@ -884,7 +884,7 @@ int Dx_Draw_RotaGraph3F(float x, float y, float cx, float cy,
                        double xScaleFactor, double yScaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
     int textureRefID;
-    SDL_Rect texRect;
+    PLRect texRect;
     float xMult, yMult;
     
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
@@ -912,7 +912,7 @@ int Dx_Draw_RectRotaGraphF(float x, float y,
                            double scaleFactor, double angle,
                            int graphID, int blendFlag, int turn) {
     int textureRefID;
-    SDL_Rect texRect;
+    PLRect texRect;
     float xMult, yMult;
     
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
@@ -945,7 +945,7 @@ int Dx_Draw_RectRotaGraph2F(float x, float y,
                             double scaleFactor, double angle,
                             int graphID, int blendFlag, int turn) {
     int textureRefID;
-    SDL_Rect texRect;
+    PLRect texRect;
     float xMult, yMult;
     
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
@@ -981,7 +981,7 @@ int Dx_Draw_RectRotaGraph3F(float x, float y,
                             double xScaleFactor, double yScaleFactor, double angle,
                             int graphID, int blendFlag, int turn) {
     int textureRefID;
-    SDL_Rect texRect;
+    PLRect texRect;
     float xMult, yMult;
     
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) < 0) {
@@ -1017,7 +1017,7 @@ int Dx_Draw_ModiGraphF(
     float x3, float y3, float x4, float y4,
     int graphID, int blendFlag
 ) {
-    SDL_Rect texRect;
+    PLRect texRect;
     int textureRefID;
     float xMult, yMult;
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
@@ -1050,7 +1050,7 @@ int Dx_Draw_ModiGraph(
 }
 
 int Dx_Draw_TurnGraphF(float x1, float y1, int graphID, int blendFlag) {
-    SDL_Rect texRect;
+    PLRect texRect;
     int textureRefID;
     float xMult, yMult;
     if (Dx_Graph_GetTextureInfo(graphID, &textureRefID, &texRect, &xMult, &yMult) >= 0) {
@@ -1219,7 +1219,7 @@ int Dx_Draw_UpdateDrawScreen() {
         PL_Texture_BindFramebuffer(s_drawScreenID);
         
         if (s_currentScreenID >= 0) {
-            SDL_Rect screenRect;
+            PLRect screenRect;
             PL_Texture_RenderGetTextureInfo(s_currentScreenID, &screenRect, NULL, NULL);
             s_drawScreenWidth = screenRect.w;
             s_drawScreenHeight = screenRect.h;

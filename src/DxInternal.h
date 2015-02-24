@@ -233,7 +233,7 @@ extern int Dx_Graph_LoadDiv(const DXCHAR *filename, int graphCount,
                             int xCount, int yCount, int xSize, int ySize,
                             int *handleBuf, int textureFlag, int flipFlag);
 extern int Dx_Graph_CreateFromSurface(int surfaceID);
-extern int Dx_Graph_FromTexture(int textureID, SDL_Rect rect);
+extern int Dx_Graph_FromTexture(int textureID, PLRect rect);
 extern int Dx_Graph_Delete(int graphID);
 extern int Dx_Graph_DeleteSharingGraph(int graphID);
 extern int Dx_Graph_GetSize(int graphID, int *w, int *h);
@@ -253,9 +253,9 @@ extern int Dx_Graph_InitGraph();
 extern int Dx_Graph_ResetSettings();
 extern void Dx_Graph_End();
 
-extern int Dx_Graph_GetTextureID(int graphID, SDL_Rect *rect);
+extern int Dx_Graph_GetTextureID(int graphID, PLRect *rect);
 extern int Dx_Graph_GetTextureInfo(int graphID, int *dTextureRefID,
-                                   SDL_Rect *rect, float *xMult, float *yMult);
+                                   PLRect *rect, float *xMult, float *yMult);
 
 #ifdef __cplusplus
 };
