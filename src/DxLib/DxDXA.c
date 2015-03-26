@@ -25,7 +25,7 @@
 
 #ifndef DX_NON_DXA
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "DxInternal.h"
 
 #include "SDL.h"

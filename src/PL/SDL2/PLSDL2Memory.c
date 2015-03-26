@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 
 #ifdef DXPORTLIB_PLATFORM_SDL2
 

@@ -22,9 +22,11 @@
 #ifndef DXPORTLIB_OPENGL_DXINTERNAL_H_HEADER
 #define DXPORTLIB_OPENGL_DXINTERNAL_H_HEADER
 
-#include "PLInternal.h"
+#include "DxBuildConfig.h"
 
 #ifdef DXPORTLIB_DRAW_OPENGL
+
+#include "PL/PLInternal.h"
 
 #include "SDL.h"
 

@@ -27,7 +27,7 @@
 #include <math.h>
 
 #include "PLInternal.h"
-#include "PLSDL2Internal.h"
+#include "SDL2/PLSDL2Internal.h"
 
 #ifndef DX_NON_OGGVORBIS
 #include <vorbis/vorbisfile.h>

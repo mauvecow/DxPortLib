@@ -26,11 +26,8 @@
 #include "DxLib.h"
 #include "DxLib_c.h"
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "DxInternal.h"
-
-#include "SDL.h"
-#include "SDL_opengl.h"
 
 // DxLib.cpp is a gateway to the C core internal to the library.
 

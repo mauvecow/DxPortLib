@@ -32,7 +32,7 @@
 
 #include "Luna.h"
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "LunaInternal.h"
 
 #include <time.h>

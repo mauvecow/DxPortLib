@@ -24,7 +24,7 @@
 #ifdef DXPORTLIB_LUNA_INTERFACE
 
 #include "LunaInternal.h"
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 
 struct CameraData {
     PLMatrix projection;

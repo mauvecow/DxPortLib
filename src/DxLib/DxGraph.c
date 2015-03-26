@@ -23,7 +23,7 @@
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "DxInternal.h"
 
 /* ---------------------------------------------------------- GRAPH DATA */

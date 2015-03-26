@@ -25,7 +25,7 @@
 
 #include "DxLib_c.h"
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "DxInternal.h"
 
 #include "SDL.h"

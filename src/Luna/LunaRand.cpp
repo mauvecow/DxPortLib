@@ -23,7 +23,7 @@
 
 #ifdef DXPORTLIB_LUNA_INTERFACE
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 
 /* TODO: LunaRand is thread-safe. We are not.
  */

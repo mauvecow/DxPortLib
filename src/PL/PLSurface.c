@@ -21,7 +21,7 @@
 
 #include "PLInternal.h"
 
-#include "PLSDL2Internal.h"
+#include "SDL2/PLSDL2Internal.h"
 
 #include "SDL_image.h"
 

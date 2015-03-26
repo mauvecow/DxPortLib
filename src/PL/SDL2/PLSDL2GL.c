@@ -24,8 +24,8 @@
 #ifdef DXPORTLIB_PLATFORM_SDL2
 #ifdef DXPORTLIB_DRAW_OPENGL
 
-#include "PLInternal.h"
-#include "PLGLInternal.h"
+#include "PL/PLInternal.h"
+#include "PL/GL/PLGLInternal.h"
 #include "PLSDL2Internal.h"
 
 static SDL_GLContext *s_context = NULL;

@@ -34,7 +34,7 @@
 
 #include "Luna.h"
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 
 /* types, vertex definitions, etc */
 typedef struct _LunaTexcoords {

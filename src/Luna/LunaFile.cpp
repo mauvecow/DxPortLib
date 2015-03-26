@@ -28,7 +28,7 @@
 #ifdef DXPORTLIB_LUNA_INTERFACE
 
 #include "LunaInternal.h"
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 
 typedef struct _ArchiveHeader {
     Uint32 ID;

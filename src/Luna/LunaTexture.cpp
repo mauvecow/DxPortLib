@@ -25,7 +25,7 @@
 
 #ifdef DXPORTLIB_LUNA_INTERFACE
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "LunaInternal.h"
 
 LTEXTURE LunaTexture::CreateFromFile(const DXCHAR *pFileName,

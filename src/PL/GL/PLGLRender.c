@@ -35,7 +35,7 @@
 
 #ifdef DXPORTLIB_DRAW_OPENGL
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 
 #include "PLGLInternal.h"
 

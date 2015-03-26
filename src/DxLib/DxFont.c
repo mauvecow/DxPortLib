@@ -24,10 +24,10 @@
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 #ifndef DX_NON_FONT
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "DxInternal.h"
 
-#include "PLSDL2Internal.h"
+#include "PL/SDL2/PLSDL2Internal.h"
 #include "SDL_ttf.h"
 
 /* DxLib itself uses Windows font functions for most of its work.

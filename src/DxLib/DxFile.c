@@ -23,10 +23,10 @@
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "DxInternal.h"
 
-#include "PLSDL2Internal.h"
+#include "PL/SDL2/PLSDL2Internal.h"
 
 #include "SDL.h"
 

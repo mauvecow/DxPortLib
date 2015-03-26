@@ -19,43 +19,26 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "PLInternal.h"
+#ifndef DXPORTLIB_SDL2_DXINTERNAL_H_HEADER
+#define DXPORTLIB_SDL2_DXINTERNAL_H_HEADER
+
+#include "DxBuildConfig.h"
 
 #ifdef DXPORTLIB_PLATFORM_SDL2
 
-#include "PLGLInternal.h"
+#include "PL/PLInternal.h"
 
-#include "SDL_image.h"
+extern SDL_RWops *PLSDL2_FileToRWops(int fileHandle);
+extern int PLSDL2_RWopsToFile(SDL_RWops *rwops);
+extern SDL_RWops *PLSDL2_FileOpenReadDirect(const DXCHAR *filename);
 
-int PL_SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
-                           const DXCHAR *filename) {
-    return -1;
-}
+/* ------------------------------------------------------------- Screen.c */
 
-int PL_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
-                            const DXCHAR *filename,
-                            int quality, int sample2x1) {
-    return -1;
-}
+extern void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag);
+extern void PL_SDL2GL_End();
 
-int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
-                           const DXCHAR *filename,
-                           int compressionLevel) {
-    SDL_Surface *surface;
-    char namebuf[4096];
-    PLRect rect;
-    rect.x = x1;
-    rect.y = y1;
-    rect.w = x2 - x1;
-    rect.h = y2 - y1;
-    
-    if (PL_Framebuffer_GetSurface(&rect, &surface) < 0) {
-        return -1;
-    }
-    
-    PL_Text_DxStringToString(filename, namebuf, 4096, DX_CHARSET_EXT_UTF8);
-    
-    return IMG_SavePNG(surface, namebuf);
-}
+extern int PL_drawOffscreen;
 
-#endif
+#endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */
+
+#endif /* #ifndef DXPORTLIB_SDL2_DXINTERNAL_H_HEADER */

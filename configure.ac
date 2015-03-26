@@ -7,7 +7,9 @@ AC_INIT([DxPortLib], [0.3.0], [], [DxPortLib])
 AC_CONFIG_AUX_DIR(autotools)
 AC_CONFIG_MACRO_DIR(autotools)
 
-AM_INIT_AUTOMAKE(DxPortLib, $VERSION)
+AC_CONFIG_SRCDIR([src/Makefile.am])
+
+AM_INIT_AUTOMAKE([subdir-objects])
 
 AC_PROG_CC
 AC_PROG_CXX
@@ -47,8 +49,8 @@ CXXFLAGS="$CXXFLAGS -Wall -fvisibility=hidden"
 
 srcdir=`cd $srcdir && pwd`
 
-CFLAGS="$CFLAGS -I$srcdir/include"
-CXXFLAGS="$CXXFLAGS -I$srcdir/include"
+CFLAGS="$CFLAGS -I$srcdir/include -I$srcdir/src"
+CXXFLAGS="$CXXFLAGS -I$srcdir/include -I$srcdir/src"
 
 SDL_VERSION=2.0.0
 AC_SUBST(SDL_VERSION)

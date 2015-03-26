@@ -23,7 +23,7 @@
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 #include "DxInternal.h"
 
 /* Similar to DxLib, we maintain a rolling vertex buffer that is used to

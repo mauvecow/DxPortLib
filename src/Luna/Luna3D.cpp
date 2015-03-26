@@ -24,7 +24,7 @@
 #ifdef DXPORTLIB_LUNA_INTERFACE
 
 #include "LunaInternal.h"
-#include "PLInternal.h"
+#include "PL/PLInternal.h"
 
 float g_lunaFilterOffset = 0.5f;
 int g_lunaFilterMode = DX_DRAWMODE_BILINEAR;

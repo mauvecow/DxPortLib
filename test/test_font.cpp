@@ -111,7 +111,8 @@ int main(int argc, char **argv) {
         SetDrawBlendMode(fontBlendMode, 255);
         
         for (int i = 0; i < 17; ++i) {
-            DrawStringToHandle(30, 30 + (i * 32), _T("The quick brown fox jumped over the lazy dog. あいうえお"), 0xffffff, fonts[i]);
+            DrawStringToHandle(30, 30 + (i * 32), _T("The creeping coin does 123456789 damage!"), 0xffffff, fonts[i]);
+            //DrawStringToHandle(30, 30 + (i * 32), _T("The quick brown fox jumped over the lazy dog. あいうえお"), 0xffffff, fonts[i]);
         }
         
         ScreenFlip();

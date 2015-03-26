@@ -30,9 +30,13 @@ list(APPEND ADD_LIB_DIRS ${VORBISFILE_LIBRARY_DIRS})
 list(APPEND ADD_LIBS ${VORBISFILE_LIBRARIES})
 
 list(APPEND ADD_CFLAGS "-fvisibility=hidden")
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${ADD_INCLUDES})
+include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	${CMAKE_CURRENT_SOURCE_DIR}/src
+	${ADD_INCLUDES}
+)
 
-file(GLOB DXPORTLIB_SOURCES
+file(GLOB_RECURSE DXPORTLIB_SOURCES
 	src/*.c
 	src/*.cpp
 )
