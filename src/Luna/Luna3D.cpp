@@ -33,11 +33,11 @@ int g_luna3DCamera = INVALID_CAMERA;
 RECT g_viewportRect;
 
 Bool Luna3D::BeginScene(void) {
-    PL_Render_StartFrame();
+    PLG.StartFrame();
     return true;
 }
 void Luna3D::EndScene(void) {
-    PL_Render_EndFrame();
+    PLG.EndFrame();
 }
 
 void Luna3D::Refresh(void) {
@@ -57,11 +57,11 @@ void Luna3D::SetViewport(const RECT *rect) {
         r.bottom = h;
     }
     
-    PL_Render_SetViewport(
+    PLG.SetViewport(
         rect->left, rect->top,
         rect->right - rect->left,
         rect->bottom - rect->top);
-    PL_Render_SetZRange(0.0f, 1.0f);
+    PLG.SetZRange(0.0f, 1.0f);
     
     g_viewportRect = *rect;
 }
@@ -81,18 +81,18 @@ void Luna3D::SetFilterEnable(Bool Flag) {
 }
 void Luna3D::SetColorkeyEnable(Bool Flag) {
     if (Flag) {
-        PL_Render_EnableAlphaTest();
+        PLG.EnableAlphaTest();
     } else {
-        PL_Render_DisableAlphaTest();
+        PLG.DisableAlphaTest();
     }
 }
 void Luna3D::SetBlendingType(eBlendType BlendType) {
     switch(BlendType) {
         case BLEND_NONE:
-            PL_Render_DisableBlend();
+            PLG.DisableBlend();
             break;
         case BLEND_NORMAL:
-            PL_Render_SetBlendModeSeparate(
+            PLG.SetBlendModeSeparate(
                 PL_BLENDFUNC_ADD,
                 PL_BLEND_SRC_ALPHA,
                 PL_BLEND_ONE_MINUS_SRC_ALPHA,
@@ -100,7 +100,7 @@ void Luna3D::SetBlendingType(eBlendType BlendType) {
                 PL_BLEND_ONE);
             break;
         case BLEND_ADD:
-            PL_Render_SetBlendModeSeparate(
+            PLG.SetBlendModeSeparate(
                 PL_BLENDFUNC_ADD,
                 PL_BLEND_SRC_ALPHA,
                 PL_BLEND_ONE,
@@ -108,7 +108,7 @@ void Luna3D::SetBlendingType(eBlendType BlendType) {
                 PL_BLEND_ONE);
             break;
         case BLEND_ADD_NOALPHA:
-            PL_Render_SetBlendModeSeparate(
+            PLG.SetBlendModeSeparate(
                 PL_BLENDFUNC_ADD,
                 PL_BLEND_ONE,
                 PL_BLEND_ONE,
@@ -116,7 +116,7 @@ void Luna3D::SetBlendingType(eBlendType BlendType) {
                 PL_BLEND_ONE);
             break;
         case BLEND_SUB:
-            PL_Render_SetBlendModeSeparate(
+            PLG.SetBlendModeSeparate(
                 PL_BLENDFUNC_RSUB,
                 PL_BLEND_SRC_ALPHA,
                 PL_BLEND_ONE,
@@ -124,7 +124,7 @@ void Luna3D::SetBlendingType(eBlendType BlendType) {
                 PL_BLEND_ONE);
             break;
         case BLEND_SUB_NOALPHA:
-            PL_Render_SetBlendModeSeparate(
+            PLG.SetBlendModeSeparate(
                 PL_BLENDFUNC_RSUB,
                 PL_BLEND_ONE,
                 PL_BLEND_ONE,
@@ -132,7 +132,7 @@ void Luna3D::SetBlendingType(eBlendType BlendType) {
                 PL_BLEND_ONE);
             break;
         case BLEND_MUL:
-            PL_Render_SetBlendModeSeparate(
+            PLG.SetBlendModeSeparate(
                 PL_BLENDFUNC_ADD,
                 PL_BLEND_ZERO,
                 PL_BLEND_SRC_COLOR,
@@ -140,7 +140,7 @@ void Luna3D::SetBlendingType(eBlendType BlendType) {
                 PL_BLEND_ONE);
             break;
         case BLEND_REVERSE:
-            PL_Render_SetBlendModeSeparate(
+            PLG.SetBlendModeSeparate(
                 PL_BLENDFUNC_ADD,
                 PL_BLEND_ONE_MINUS_DST_COLOR,
                 PL_BLEND_ZERO,

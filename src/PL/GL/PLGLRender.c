@@ -55,7 +55,7 @@ static int s_viewportH = 480;
 static float s_nearZ = 0;
 static float s_farZ = 1;
 
-int PL_Render_SetViewport(int x, int y, int w, int h) {
+int PLGL_SetViewport(int x, int y, int w, int h) {
     PL_GL.glViewport(x, y, w, h);
     
     s_viewportX = x;
@@ -70,7 +70,7 @@ int PL_Render_SetViewport(int x, int y, int w, int h) {
     return 0;
 }
 
-int PL_Render_SetZRange(float nearZ, float farZ) {
+int PLGL_SetZRange(float nearZ, float farZ) {
     s_nearZ = nearZ;
     s_farZ = farZ;
     
@@ -81,7 +81,7 @@ int PL_Render_SetZRange(float nearZ, float farZ) {
     return 0;
 }
 
-int PL_Render_SetMatrices(const PLMatrix *projection, const PLMatrix *view) {
+int PLGL_SetMatrices(const PLMatrix *projection, const PLMatrix *view) {
     PL_Matrix_Copy(&s_matrixProjection, projection);
     PL_Matrix_Copy(&s_matrixView, view);
     
@@ -92,7 +92,7 @@ int PL_Render_SetMatrices(const PLMatrix *projection, const PLMatrix *view) {
     return 0;
 }
 
-int PL_Render_SetUntransformedFlag(int untransformedFlag) {
+int PLGL_SetUntransformedFlag(int untransformedFlag) {
     if (untransformedFlag != s_displayUntransformed) {
         s_displayUntransformed = untransformedFlag;
         s_matrixDirty = DXTRUE;
@@ -101,12 +101,12 @@ int PL_Render_SetUntransformedFlag(int untransformedFlag) {
     return 0;
 }
 
-int PL_Render_SetMatrixDirtyFlag() {
+int PLGL_SetMatrixDirtyFlag() {
     s_matrixDirty = DXTRUE;
     return 0;
 }
 
-int PL_Render_UpdateMatrices() {
+int PLGL_UpdateMatrices() {
     if (s_matrixDirty == DXFALSE) {
         return 0;
     }
@@ -152,7 +152,7 @@ static GLuint BlendFuncToGL(int blendFunc) {
     }
 }
 
-void PL_Render_SetBlendMode(
+void PLGL_SetBlendMode(
     int blendEquation,
     int srcBlend, int destBlend
 ) {
@@ -164,7 +164,7 @@ void PL_Render_SetBlendMode(
     PL_GL.glBlendEquation(BlendFuncToGL(blendEquation));
     PL_GL.glEnable(GL_BLEND);
 }
-void PL_Render_SetBlendModeSeparate(
+void PLGL_SetBlendModeSeparate(
     int blendEquation,
     int srcRGBBlend, int destRGBBlend,
     int srcAlphaBlend, int destAlphaBlend
@@ -179,50 +179,50 @@ void PL_Render_SetBlendModeSeparate(
     PL_GL.glBlendEquation(BlendFuncToGL(blendEquation));
     PL_GL.glEnable(GL_BLEND);
 }
-void PL_Render_DisableBlend() {
+void PLGL_DisableBlend() {
     PL_GL.glDisable(GL_BLEND);
 }
 
 /* ---------------------------------------------------------- ALPHA TEST */
 static int s_alphaTestEnable = DXFALSE;
 
-int PL_Render_EnableAlphaTest() {
+int PLGL_EnableAlphaTest() {
     s_alphaTestEnable = DXTRUE;
     return 0;
 }
-int PL_Render_DisableAlphaTest() {
+int PLGL_DisableAlphaTest() {
     s_alphaTestEnable = DXFALSE;
     return 0;
 }
 
 /* ----------------------------------------------------- SCISSOR/CULLING */
 
-int PL_Render_SetScissor(int x, int y, int w, int h) {
+int PLGL_SetScissor(int x, int y, int w, int h) {
     PL_GL.glEnable(GL_SCISSOR_TEST);
     PL_GL.glScissor(x, y, w, h);
     return 0;
 }
 
-int PL_Render_DisableScissor() {
+int PLGL_DisableScissor() {
     PL_GL.glDisable(GL_SCISSOR_TEST);
     return 0;
 }
 
-int PL_Render_SetScissorRect(const RECT *rect) {
+int PLGL_SetScissorRect(const RECT *rect) {
     if (rect == NULL) {
-        return PL_Render_DisableScissor();
+        return PLGL_DisableScissor();
     } else {
-        return PL_Render_SetScissor(rect->left, rect->top,
+        return PLGL_SetScissor(rect->left, rect->top,
                    rect->right - rect->left, rect->bottom - rect->top);
     }
 }
 
-int PL_Render_DisableCulling() {
+int PLGL_DisableCulling() {
     PL_GL.glDisable(GL_CULL_FACE);
     return 0;
 }
 
-int PL_Render_DisableDepthTest() {
+int PLGL_DisableDepthTest() {
     PL_GL.glDisable(GL_DEPTH_TEST);
     return 0;
 }
@@ -238,13 +238,13 @@ static int s_activeTexturePreset = -1;
 static int s_activeShaderProgram = 0;
 static int s_useFixedFunction = 0;
 
-int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureDrawMode) {
+int PLGL_SetTextureStage(unsigned int stage, int textureRefID, int textureDrawMode) {
     if (stage >= MAX_TEXTURE) {
         return -1;
     }
     
     PL_GL.glActiveTexture(GL_TEXTURE0 + stage);
-    PL_Texture_Bind(textureRefID, textureDrawMode);
+    PLGL_Texture_Bind(textureRefID, textureDrawMode);
     
     s_boundTextures[stage] = textureRefID;
     
@@ -255,24 +255,24 @@ int PL_Render_SetTextureStage(unsigned int stage, int textureRefID, int textureD
     return 0;
 }
 
-int PL_Render_ClearTextures() {
+int PLGL_ClearTextures() {
     unsigned int i;
     for (i = 0; i < s_boundTextureCount; ++i) {
         PL_GL.glActiveTexture(GL_TEXTURE0 + i);
-        PL_Texture_Unbind(s_boundTextures[i]);
+        PLGL_Texture_Unbind(s_boundTextures[i]);
         s_boundTextures[i] = -1;
     }
     s_boundTextureCount = 0;
     return 0;
 }
 
-int PL_Render_ClearTexturePresetMode() {
+int PLGL_ClearTexturePresetMode() {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (s_useFixedFunction == DXTRUE) {
-        PL_GLFixedFunction_ClearTexturePresetMode();
+        PLGL_FixedFunction_ClearTexturePresetMode();
     }
 #endif
-    PL_Render_ClearTextures();
+    PLGL_ClearTextures();
     
     return 0;
 }
@@ -296,7 +296,7 @@ static int s_stockShaderPresetLookupTex1[TEX_PRESET_END] = {
     PLGL_SHADER_DX_PMA_X4_COLOR_TEX1
 };
 
-int PL_Render_SetTexturePresetMode(int preset,
+int PLGL_SetTexturePresetMode(int preset,
                                    int textureRefID, int textureDrawMode) {
     int presetID;
     
@@ -308,16 +308,16 @@ int PL_Render_SetTexturePresetMode(int preset,
         presetID = s_stockShaderPresetLookupTex1[preset];
     }
     
-    s_activeShaderProgram = PL_Shaders_GetStockProgramForID(presetID);
+    s_activeShaderProgram = PLGL_Shaders_GetStockProgramForID(presetID);
     if (s_activeShaderProgram >= 0) {
         s_useFixedFunction = DXFALSE;
-        PL_Render_SetTextureStage(0, textureRefID, textureDrawMode);
+        PLGL_SetTextureStage(0, textureRefID, textureDrawMode);
         return 0;
     } else {
         /* Fixed function fallback */
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
         s_useFixedFunction = DXTRUE;
-        return PL_GLFixedFunction_SetTexturePresetMode(preset, textureRefID, textureDrawMode);
+        return PLGL_FixedFunction_SetTexturePresetMode(preset, textureRefID, textureDrawMode);
 #else
         return -1;
 #endif
@@ -349,11 +349,11 @@ static int s_emulateVertexBuffer(const VertexDefinition *def,
     
     vboID = s_emulatedVBOs[n];
     if (vboID <= 0) {
-        vboID = PL_VertexBuffer_CreateBytes(1, 0, size, DXFALSE);
+        vboID = PLGL_VertexBuffer_CreateBytes(1, 0, size, DXFALSE);
         s_emulatedVBOs[n] = vboID;
     }
 
-    PL_VertexBuffer_SetDataBytes(vboID,
+    PLGL_VertexBuffer_SetDataBytes(vboID,
                                  vertexData,
                                  vertexStart * vertexByteSize,
                                  vertexCount * vertexByteSize,
@@ -375,12 +375,12 @@ static int s_emulateIndexBuffer(const unsigned short *indexData,
     
     iboID = s_emulatedIBOs[n];
     if (iboID <= 0) {
-        iboID = PL_IndexBuffer_Create(0, size, DXFALSE);
+        iboID = PLGL_IndexBuffer_Create(0, size, DXFALSE);
         s_emulatedIBOs[n] = iboID;
     }
     
-    PL_IndexBuffer_ResetBuffer(iboID);
-    PL_IndexBuffer_SetData(iboID, indexData, indexStart, indexCount, DXTRUE);
+    PLGL_IndexBuffer_ResetBuffer(iboID);
+    PLGL_IndexBuffer_SetData(iboID, indexData, indexStart, indexCount, DXTRUE);
     
     return iboID;
 }
@@ -396,10 +396,10 @@ static int s_emulateBuffersInit() {
 static int s_emulateBuffersCleanup() {
     int i;
     for (i = 0; i < MAX_EMULATED_BUFFERS; ++i) {
-        PL_VertexBuffer_Delete(s_emulatedVBOs[i]);
+        PLGL_VertexBuffer_Delete(s_emulatedVBOs[i]);
         s_emulatedVBOs[i] = -1;
         
-        PL_IndexBuffer_Delete(s_emulatedIBOs[i]);
+        PLGL_IndexBuffer_Delete(s_emulatedIBOs[i]);
         s_emulatedIBOs[i] = -1;
     }
     return 0;
@@ -441,14 +441,14 @@ static void s_ClearFixedFunctionState() {
 }
 #endif
 
-int PL_Render_DrawVertexArray(const VertexDefinition *def,
+int PLGL_DrawVertexArray(const VertexDefinition *def,
                               const char *vertexData,
                               int primitiveType, int vertexStart, int vertexCount
                              ) {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.hasVBOSupport == DXTRUE) {
 #endif
-        return PL_Render_DrawVertexBuffer(
+        return PLGL_DrawVertexBuffer(
                 def,
                 s_emulateVertexBuffer(def, vertexData + (vertexStart * def->vertexByteSize),
                                       0, vertexCount),
@@ -456,7 +456,7 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     }
 
-    PL_Render_UpdateMatrices();
+    PLGL_UpdateMatrices();
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
         PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -466,23 +466,23 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
     if (s_useFixedFunction == DXTRUE) {
         s_InitFixedFunctionState();
         
-        PL_GLFixedFunction_ApplyVertexArrayData(def, vertexData);
+        PLGL_FixedFunction_ApplyVertexArrayData(def, vertexData);
         
         PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
         
-        PL_GLFixedFunction_ClearVertexArrayData(def);
+        PLGL_FixedFunction_ClearVertexArrayData(def);
         
         s_ClearFixedFunctionState();
     } else {
         /* TESTME This might be invalid on some drivers, but works okay on nvidia. */
-        PL_Shaders_ApplyProgram(
+        PLGL_Shaders_ApplyProgram(
             s_activeShaderProgram,
             &s_currentMatrixProjection, &s_currentMatrixView,
             vertexData, def);
         
         PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
         
-        PL_Shaders_ClearProgram(
+        PLGL_Shaders_ClearProgram(
             s_activeShaderProgram,
             def);
     }
@@ -491,7 +491,7 @@ int PL_Render_DrawVertexArray(const VertexDefinition *def,
 #endif
 }
 
-int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
+int PLGL_DrawVertexIndexArray(const VertexDefinition *def,
                                    const char *vertexData,
                                    int vertexStart, int vertexCount,
                                    const unsigned short *indexData,
@@ -500,7 +500,7 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.hasVBOSupport == DXTRUE) {
 #endif
-        PL_Render_DrawVertexIndexBuffer(
+        PLGL_DrawVertexIndexBuffer(
             def,
             s_emulateVertexBuffer(def, vertexData, vertexStart, vertexCount), vertexStart, vertexCount,
             s_emulateIndexBuffer(indexData + indexStart, 0, indexCount),
@@ -510,7 +510,7 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     }
     
-    PL_Render_UpdateMatrices();
+    PLGL_UpdateMatrices();
     
     if (PL_GL.hasVBOSupport == DXTRUE) {
         PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -520,17 +520,17 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
     if (s_useFixedFunction == DXTRUE) {
         s_InitFixedFunctionState();
         
-        PL_GLFixedFunction_ApplyVertexArrayData(def, vertexData);
+        PLGL_FixedFunction_ApplyVertexArrayData(def, vertexData);
         
         PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
                             indexCount, GL_UNSIGNED_SHORT, indexData + indexStart);
         
-        PL_GLFixedFunction_ClearVertexArrayData(def);
+        PLGL_FixedFunction_ClearVertexArrayData(def);
         
         s_ClearFixedFunctionState();
     } else {
         /* TESTME This might be invalid on some drivers, but works okay on nvidia. */
-        PL_Shaders_ApplyProgram(
+        PLGL_Shaders_ApplyProgram(
             s_activeShaderProgram,
             &s_currentMatrixProjection, &s_currentMatrixView,
             vertexData, def);
@@ -539,7 +539,7 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
                             indexCount, GL_UNSIGNED_SHORT,
                             (void *)(indexStart * sizeof(unsigned short)));
         
-        PL_Shaders_ClearProgram(
+        PLGL_Shaders_ClearProgram(
             s_activeShaderProgram,
             def);
     }
@@ -548,7 +548,7 @@ int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
 #endif
 }
 
-int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
+int PLGL_DrawVertexBuffer(const VertexDefinition *def,
                                int vertexBufferHandle,
                                int primitiveType, int vertexStart, int vertexCount
                                ) {
@@ -556,15 +556,15 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.hasVBOSupport == DXFALSE) {
-        return PL_Render_DrawVertexArray(
-                    def, PL_VertexBuffer_GetFallback(vertexBufferHandle),
+        return PLGL_DrawVertexArray(
+                    def, PLGL_VertexBuffer_GetFallback(vertexBufferHandle),
                     primitiveType, vertexStart, vertexCount);
     }
 #endif
     
-    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
+    vertexBufferID = PLGL_VertexBuffer_GetGLID(vertexBufferHandle);
     
-    PL_Render_UpdateMatrices();
+    PLGL_UpdateMatrices();
     
     PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
     
@@ -572,24 +572,24 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
     if (s_useFixedFunction == DXTRUE) {
         s_InitFixedFunctionState();
         
-        PL_GLFixedFunction_ApplyVertexBufferData(def);
+        PLGL_FixedFunction_ApplyVertexBufferData(def);
         
         PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
         
-        PL_GLFixedFunction_ClearVertexBufferData(def);
+        PLGL_FixedFunction_ClearVertexBufferData(def);
         
         s_ClearFixedFunctionState();
     } else
 #endif
     {
-        PL_Shaders_ApplyProgram(
+        PLGL_Shaders_ApplyProgram(
             s_activeShaderProgram,
             &s_currentMatrixProjection, &s_currentMatrixView,
             0, def);
         
         PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
         
-        PL_Shaders_ClearProgram(
+        PLGL_Shaders_ClearProgram(
             s_activeShaderProgram,
             def);
     }
@@ -599,7 +599,7 @@ int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
     return 0;
 }
 
-int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
+int PLGL_DrawVertexIndexBuffer(const VertexDefinition *def,
                                     int vertexBufferHandle,
                                     int vertexStart, int vertexCount,
                                     int indexBufferHandle,
@@ -610,18 +610,18 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.hasVBOSupport == DXFALSE) {
         /* Incredibly slow in some situations. */
-        return PL_Render_DrawVertexIndexArray(
+        return PLGL_DrawVertexIndexArray(
                     def,
-                    PL_VertexBuffer_GetFallback(vertexBufferHandle), vertexStart, vertexCount,
-                    (const unsigned short *)PL_IndexBuffer_GetFallback(indexBufferHandle),
+                    PLGL_VertexBuffer_GetFallback(vertexBufferHandle), vertexStart, vertexCount,
+                    (const unsigned short *)PLGL_IndexBuffer_GetFallback(indexBufferHandle),
                     primitiveType, indexStart, indexCount);
     }
 #endif
     
-    vertexBufferID = PL_VertexBuffer_GetGLID(vertexBufferHandle);
-    indexBufferID = PL_IndexBuffer_GetGLID(indexBufferHandle);
+    vertexBufferID = PLGL_VertexBuffer_GetGLID(vertexBufferHandle);
+    indexBufferID = PLGL_IndexBuffer_GetGLID(indexBufferHandle);
     
-    PL_Render_UpdateMatrices();
+    PLGL_UpdateMatrices();
     
     PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
     PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
@@ -630,19 +630,19 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
     if (s_useFixedFunction == DXTRUE) {
         s_InitFixedFunctionState();
         
-        PL_GLFixedFunction_ApplyVertexBufferData(def);
+        PLGL_FixedFunction_ApplyVertexBufferData(def);
         
         PL_GL.glDrawElements(PrimitiveToDrawType(primitiveType),
                             indexCount, GL_UNSIGNED_SHORT,
                             (void *)(indexStart * sizeof(unsigned short)));
         
-        PL_GLFixedFunction_ClearVertexBufferData(def);
+        PLGL_FixedFunction_ClearVertexBufferData(def);
         
         s_ClearFixedFunctionState();
     } else
 #endif
     {
-        PL_Shaders_ApplyProgram(
+        PLGL_Shaders_ApplyProgram(
             s_activeShaderProgram,
             &s_currentMatrixProjection, &s_currentMatrixView,
             0, def);
@@ -651,7 +651,7 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
                             indexCount, GL_UNSIGNED_SHORT,
                             (void *)(indexStart * sizeof(unsigned short)));
         
-        PL_Shaders_ClearProgram(
+        PLGL_Shaders_ClearProgram(
             s_activeShaderProgram,
             def);
     }
@@ -663,48 +663,48 @@ int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
 
 /* ------------------------------------------------- INIT/FINISH/GENERAL */
 
-int PL_Render_ClearColor(float r, float g, float b, float a) {
+int PLGL_ClearColor(float r, float g, float b, float a) {
     PL_GL.glClearColor(r, g, b, a);
     return 0;
 }
 
-int PL_Render_Clear() {
+int PLGL_Clear() {
     PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     
     return 0;
 }
 
-int PL_Render_StartFrame() {
-    PL_Render_ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    PL_Render_Clear();
+int PLGL_StartFrame() {
+    PLGL_ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    PLGL_Clear();
     
     s_matrixDirty = DXTRUE;
     
     return 0;
 }
-int PL_Render_EndFrame() {
+int PLGL_EndFrame() {
     return 0;
 }
 
-int PL_Render_Init() {
+int PLGL_Render_Init() {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    PL_GLFixedFunction_Init();
+    PLGL_FixedFunction_Init();
 #endif
-    PL_Shaders_Init();
+    PLGL_Shaders_Init();
     
-    PL_Render_SetTexturePresetMode(PLGL_SHADER_BASIC_COLOR_NOTEX, -1, 0);
+    PLGL_SetTexturePresetMode(PLGL_SHADER_BASIC_COLOR_NOTEX, -1, 0);
     
     s_emulateBuffersInit();
     
     return 0;
 }
 
-int PL_Render_End() {
+int PLGL_Render_End() {
     s_emulateBuffersCleanup();
     
-    PL_Shaders_Cleanup();
+    PLGL_Shaders_Cleanup();
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    PL_GLFixedFunction_Cleanup();
+    PLGL_FixedFunction_Cleanup();
 #endif
     
     return 0;

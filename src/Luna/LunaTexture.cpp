@@ -45,7 +45,7 @@ LTEXTURE LunaTexture::CreateFromFile(const DXCHAR *pFileName,
     handle = PL_Surface_ToTexture(surfaceID);
     PL_Surface_Delete(surfaceID);
     
-    PL_Texture_SetWrap(handle, DXTRUE);
+    PLG.Texture_SetWrap(handle, DXTRUE);
     
     return handle;
 }
@@ -58,7 +58,7 @@ LTEXTURE LunaTexture::CreateFromLAG(const DXCHAR *pFileName,
 }
 
 void LunaTexture::Release(LTEXTURE texture) {
-    PL_Texture_Release(texture);
+    PLG.Texture_Release(texture);
 }
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

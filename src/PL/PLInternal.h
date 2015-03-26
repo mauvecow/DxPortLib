@@ -352,93 +352,115 @@ typedef enum _PrimitiveType {
     PL_PRIM_TRIANGLESTRIP
 } PrimitiveType;
 
-extern void PL_Render_SetBlendMode(
+typedef struct _PLIGraphics {
+    void (*SetBlendMode)(
                 int blendEquation,
                 int srcBlend, int destBlend);
-extern void PL_Render_SetBlendModeSeparate(
+    void (*SetBlendModeSeparate)(
                 int blendEquation,
                 int srcRGBBlend, int destRGBBlend,
                 int srcAlphaBlend, int destAlphaBlend);
-extern void PL_Render_DisableBlend();
-extern int PL_Render_EnableAlphaTest();
-extern int PL_Render_DisableAlphaTest();
+    void (*DisableBlend)();
+    int (*EnableAlphaTest)();
+    int (*DisableAlphaTest)();
 
-extern int PL_Render_SetScissor(int x, int y, int w, int h);
-extern int PL_Render_SetScissorRect(const RECT *rect);
-extern int PL_Render_DisableScissor();
+    int (*SetScissor)(int x, int y, int w, int h);
+    int (*SetScissorRect)(const RECT *rect);
+    int (*DisableScissor)();
 
-extern int PL_Render_DisableCulling();
-extern int PL_Render_DisableDepthTest();
+    int (*DisableCulling)();
+    int (*DisableDepthTest)();
 
-extern int PL_Render_SetTextureStage(unsigned int stage,
+    int (*SetTextureStage)(unsigned int stage,
                                      int textureRefID, int textureDrawMode);
-extern int PL_Render_SetTexturePresetMode(int preset,
+    int (*SetTexturePresetMode)(int preset,
                                      int textureRefID, int textureDrawMode);
-extern int PL_Render_ClearTextures();
-extern int PL_Render_ClearTexturePresetMode();
+    int (*ClearTextures)();
+    int (*ClearTexturePresetMode)();
 
-extern int PL_Render_DrawVertexArray(const VertexDefinition *def,
+    int (*VertexBuffer_CreateBytes)(int vertexByteSize,
+                                       const char *vertexData, int bufferSize,
+                                       int isStatic);
+    int (*VertexBuffer_Create)(const VertexDefinition *def,
+                                  const char *vertexData, int vertexCount,
+                                  int isStatic);
+    int (*VertexBuffer_ResetBuffer)(int vboHandle);
+    int (*VertexBuffer_SetDataBytes)(int vboHandle, const char *vertices,
+                                        int start, int count, int resetBufferFlag);
+    int (*VertexBuffer_SetData)(int vboHandle, const char *vertices,
+                                   int start, int count, int resetBufferFlag);
+    char *(*VertexBuffer_Lock)(int vboHandle);
+    int (*VertexBuffer_Unlock)(int vboHandle, char *buffer);
+    int (*VertexBuffer_Delete)(int vboHandle);
+
+    int (*IndexBuffer_Create)(const unsigned short *indexData,
+                                 int indexCount, int isStatic);
+    int (*IndexBuffer_ResetBuffer)(int iboHandle);
+    int (*IndexBuffer_SetData)(int iboHandle,
+                                  const unsigned short *indices,
+                                  int start, int count, int resetBufferFlag);
+    unsigned short *(*IndexBuffer_Lock)(int iboHandle);
+    int (*IndexBuffer_Unlock)(int iboHandle);
+    int (*IndexBuffer_Delete)(int iboHandle);
+
+    int (*Texture_CreateFromSDLSurface)(SDL_Surface *surface, int hasAlphaChannel);
+    int (*Texture_CreateFromDimensions)(int width, int height, int hasAlphaChannel);
+    int (*Texture_CreateFramebuffer)(int width, int height, int hasAlphaChannel);
+
+    int (*Texture_BlitSurface)(int textureID, SDL_Surface *surface, const PLRect *rect);
+
+    int (*Texture_RenderGetTextureInfo)(int textureRefID, PLRect *rect, float *xMult, float *yMult);
+
+    int (*Texture_SetWrap)(int textureRefID, int wrapState);
+
+    int (*Texture_HasAlphaChannel)(int textureRefID);
+
+    int (*Texture_BindFramebuffer)(int textureRefID);
+
+    int (*Texture_AddRef)(int textureID);
+    int (*Texture_Release)(int textureID);
+
+    int (*DrawVertexArray)(const VertexDefinition *def,
                const char *vertexData,
                int primitiveType, int vertexStart, int vertexCount);
-extern int PL_Render_DrawVertexIndexArray(const VertexDefinition *def,
+    int (*DrawVertexIndexArray)(const VertexDefinition *def,
                const char *vertexData, int vertexStart, int vertexCount,
                const unsigned short *indexData,
                int primitiveType, int indexStart, int indexCount);
 
-extern int PL_Render_DrawVertexBuffer(const VertexDefinition *def,
+    int (*DrawVertexBuffer)(const VertexDefinition *def,
                int vertexBufferHandle,
                int primitiveType, int vertexStart, int vertexCount);
-extern int PL_Render_DrawVertexIndexBuffer(const VertexDefinition *def,
+    int (*DrawVertexIndexBuffer)(const VertexDefinition *def,
                int vertexBufferHandle, int vertexStart, int vertexCount,
                int indexBufferHandle,
                int primitiveType, int indexStart, int indexCount);
 
-extern int PL_Render_SetViewport(int x, int y, int w, int h);
-extern int PL_Render_SetZRange(float nearZ, float farZ);
-extern int PL_Render_SetMatrices(const PLMatrix *projection, const PLMatrix *view);
-extern int PL_Render_SetUntransformedFlag(int untransformedFlag);
+    int (*SetViewport)(int x, int y, int w, int h);
+    int (*SetZRange)(float nearZ, float farZ);
+    int (*SetUntransformedFlag)(int untransformedFlag);
 
-extern int PL_Render_ClearColor(float r, float g, float b, float a);
-extern int PL_Render_Clear();
+    int (*ClearColor)(float r, float g, float b, float a);
+    int (*Clear)();
 
-extern int PL_Render_SetMatrices(const PLMatrix *projection, const PLMatrix *view);
-extern int PL_Render_SetMatrixDirtyFlag();
-extern int PL_Render_StartFrame();
-extern int PL_Render_EndFrame();
+    int (*SetMatrices)(const PLMatrix *projection, const PLMatrix *view);
+    int (*SetMatrixDirtyFlag)();
+    int (*StartFrame)();
+    int (*EndFrame)();
 
-extern int PL_Render_Init();
-extern int PL_Render_End();
+    int (*Init)();
+    int (*End)();
+} PLIGraphics;
 
-/* ----------------------------------------------------------- Buffers.c */
+extern PLIGraphics PLG;
 
-extern int PL_VertexBuffer_CreateBytes(int vertexByteSize,
-                                       const char *vertexData, int bufferSize,
-                                       int isStatic);
-extern int PL_VertexBuffer_Create(const VertexDefinition *def,
-                                  const char *vertexData, int vertexCount,
-                                  int isStatic);
-extern int PL_VertexBuffer_ResetBuffer(int vboHandle);
-extern int PL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices,
-                                        int start, int count, int resetBufferFlag);
-extern int PL_VertexBuffer_SetData(int vboHandle, const char *vertices,
-                                   int start, int count, int resetBufferFlag);
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-extern char *PL_VertexBuffer_Lock(int vboHandle);
-extern int PL_VertexBuffer_Unlock(int vboHandle, char *buffer);
-#endif
-extern int PL_VertexBuffer_Delete(int vboHandle);
+typedef void *(*PLGLGetGLFunction)(const char *name);
+typedef int (*PLGLIsGLExtSupported)(const char *name);
 
-extern int PL_IndexBuffer_Create(const unsigned short *indexData,
-                                 int indexCount, int isStatic);
-extern int PL_IndexBuffer_ResetBuffer(int iboHandle);
-extern int PL_IndexBuffer_SetData(int iboHandle,
-                                  const unsigned short *indices,
-                                  int start, int count, int resetBufferFlag);
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-extern unsigned short *PL_IndexBuffer_Lock(int iboHandle);
-extern int PL_IndexBuffer_Unlock(int iboHandle);
-#endif
-extern int PL_IndexBuffer_Delete(int iboHandle);
+extern int PLGL_Init(PLGLGetGLFunction GetGLFunction,
+                     PLGLIsGLExtSupported IsGLExtSupported,
+                     int majorVersion, int minorVersion
+                    );
 
 /* ----------------------------------------------------------- Surface.c */
 extern int PL_Surface_ApplyTransparentColor(int surfaceID,
@@ -458,24 +480,6 @@ extern int PL_Surface_ToTexture(int surfaceID);
 extern int PL_Surface_GetCount();
 extern int PL_Surface_InitSurface();
 extern void PL_Surface_End();
-
-/* ----------------------------------------------------------- Texture.c */
-extern int PL_Texture_CreateFromSDLSurface(SDL_Surface *surface, int hasAlphaChannel);
-extern int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel);
-extern int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel);
-
-extern int PL_Texture_BlitSurface(int textureID, SDL_Surface *surface, const PLRect *rect);
-
-extern int PL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMult, float *yMult);
-
-extern int PL_Texture_SetWrap(int textureRefID, int wrapState);
-
-extern int PL_Texture_HasAlphaChannel(int textureRefID);
-
-extern int PL_Texture_BindFramebuffer(int textureRefID);
-
-extern int PL_Texture_AddRef(int textureID);
-extern int PL_Texture_Release(int textureID);
 
 /* -------------------------------------------------------- SaveScreen.c */
 extern int PL_SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,

@@ -51,9 +51,9 @@ typedef struct _VBufferData {
     char *fallbackData; /* If VBOs are not supported, we emulate with this. */
 } VBufferData;
 
-int PL_VertexBuffer_CreateBytes(int vertexByteSize,
-                                const char *vertexData, int bufferSize,
-                                int isStatic) {
+int PLGL_VertexBuffer_CreateBytes(int vertexByteSize,
+                                  const char *vertexData, int bufferSize,
+                                  int isStatic) {
     GLuint vboID = 0;
     int vboHandle;
     VBufferData *vb;
@@ -86,15 +86,15 @@ int PL_VertexBuffer_CreateBytes(int vertexByteSize,
     return vboHandle;
 }
 
-int PL_VertexBuffer_Create(const VertexDefinition *def,
-                           const char *vertexData, int vertexCount,
-                           int isStatic) {
-    return PL_VertexBuffer_CreateBytes(def->vertexByteSize, vertexData,
-                                       vertexCount * def->vertexByteSize,
-                                       isStatic);
+int PLGL_VertexBuffer_Create(const VertexDefinition *def,
+                             const char *vertexData, int vertexCount,
+                             int isStatic) {
+    return PLGL_VertexBuffer_CreateBytes(def->vertexByteSize, vertexData,
+                                         vertexCount * def->vertexByteSize,
+                                         isStatic);
 }
 
-int PL_VertexBuffer_ResetBuffer(int vboHandle) {
+int PLGL_VertexBuffer_ResetBuffer(int vboHandle) {
     VBufferData *vb;
     
     vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
@@ -109,7 +109,7 @@ int PL_VertexBuffer_ResetBuffer(int vboHandle) {
     return 0;
 }
 
-int PL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices, int start, int count,
+int PLGL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices, int start, int count,
                                  int resetBufferFlag) {
     VBufferData *vb;
     
@@ -132,8 +132,8 @@ int PL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices, int start,
     return -1;
 }
 
-int PL_VertexBuffer_SetData(int vboHandle, const char *vertices, int start, int count,
-                            int resetBufferFlag) {
+int PLGL_VertexBuffer_SetData(int vboHandle, const char *vertices, int start, int count,
+                              int resetBufferFlag) {
     VBufferData *vb;
     
     vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
@@ -162,7 +162,7 @@ int PL_VertexBuffer_SetData(int vboHandle, const char *vertices, int start, int 
 }
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-char *PL_VertexBuffer_Lock(int vboHandle) {
+char *PLGL_VertexBuffer_Lock(int vboHandle) {
     VBufferData *vb;
     
     vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
@@ -176,10 +176,14 @@ char *PL_VertexBuffer_Lock(int vboHandle) {
     }
     return NULL;
 }
+#else
+char *PLGL_VertexBuffer_Lock(int vboHandle) {
+    return NULL;
+}
 #endif
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-int PL_VertexBuffer_Unlock(int vboHandle, char *buffer) {
+int PLGL_VertexBuffer_Unlock(int vboHandle, char *buffer) {
     VBufferData *vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
     if (vb != NULL) {
         if (PL_GL.hasVBOSupport == DXTRUE && PL_GL.glUnmapBuffer != NULL) {
@@ -192,9 +196,13 @@ int PL_VertexBuffer_Unlock(int vboHandle, char *buffer) {
     }
     return -1;
 }
+#else
+int PLGL_VertexBuffer_Unlock(int vboHandle, char *buffer) {
+    return -1;
+}
 #endif
 
-int PL_VertexBuffer_Delete(int vboHandle) {
+int PLGL_VertexBuffer_Delete(int vboHandle) {
     VBufferData *vb;
     
     vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
@@ -212,7 +220,7 @@ int PL_VertexBuffer_Delete(int vboHandle) {
     return -1;
 }
 
-GLuint PL_VertexBuffer_GetGLID(int vboHandle) {
+GLuint PLGL_VertexBuffer_GetGLID(int vboHandle) {
     VBufferData *vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
     if (vb != NULL) {
         return vb->vboID;
@@ -220,7 +228,7 @@ GLuint PL_VertexBuffer_GetGLID(int vboHandle) {
     return 0;
 }
 
-char *PL_VertexBuffer_GetFallback(int vboHandle) {
+char *PLGL_VertexBuffer_GetFallback(int vboHandle) {
     VBufferData *vb = (VBufferData *)PL_Handle_GetData(vboHandle, DXHANDLE_VERTEXBUFFER);
     if (vb != NULL) {
         return vb->fallbackData;
@@ -241,7 +249,7 @@ typedef struct _IBufferData {
     char *fallbackData; /* If VBOs are not supported, we emulate with this. */
 } IBufferData;
 
-int PL_IndexBuffer_Create(const unsigned short *indexData, int indexCount,
+int PLGL_IndexBuffer_Create(const unsigned short *indexData, int indexCount,
                           int isStatic) {
     int byteSize = 2;
     GLuint iboID = 0;
@@ -277,7 +285,7 @@ int PL_IndexBuffer_Create(const unsigned short *indexData, int indexCount,
     return iboHandle;
 }
 
-int PL_IndexBuffer_ResetBuffer(int iboHandle) {
+int PLGL_IndexBuffer_ResetBuffer(int iboHandle) {
     IBufferData *ib;
     
     ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
@@ -292,7 +300,7 @@ int PL_IndexBuffer_ResetBuffer(int iboHandle) {
     return 0;
 }
 
-int PL_IndexBuffer_SetData(int iboHandle, const unsigned short *indices, int start, int count,
+int PLGL_IndexBuffer_SetData(int iboHandle, const unsigned short *indices, int start, int count,
                            int resetBufferFlag) {
     IBufferData *ib;
     ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
@@ -321,7 +329,7 @@ int PL_IndexBuffer_SetData(int iboHandle, const unsigned short *indices, int sta
 }
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-unsigned short *PL_IndexBuffer_Lock(int iboHandle) {
+unsigned short *PLGL_IndexBuffer_Lock(int iboHandle) {
     IBufferData *ib;
     ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
     if (ib != NULL) { 
@@ -334,10 +342,14 @@ unsigned short *PL_IndexBuffer_Lock(int iboHandle) {
     }
     return NULL;
 }
+#else
+unsigned short *PLGL_IndexBuffer_Lock(int iboHandle) {
+    return NULL;
+}
 #endif
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-int PL_IndexBuffer_Unlock(int iboHandle) {
+int PLGL_IndexBuffer_Unlock(int iboHandle) {
     IBufferData *ib;
     ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
     if (ib != NULL) {
@@ -351,9 +363,13 @@ int PL_IndexBuffer_Unlock(int iboHandle) {
     }
     return -1;
 }
+#else
+int PLGL_IndexBuffer_Unlock(int iboHandle) {
+    return -1;
+}
 #endif
 
-int PL_IndexBuffer_Delete(int iboHandle) {
+int PLGL_IndexBuffer_Delete(int iboHandle) {
     IBufferData *ib;
     if (PL_GL.hasVBOSupport == DXFALSE) {
         return -1;
@@ -374,7 +390,7 @@ int PL_IndexBuffer_Delete(int iboHandle) {
     return -1;
 }
 
-GLuint PL_IndexBuffer_GetGLID(int iboHandle) {
+GLuint PLGL_IndexBuffer_GetGLID(int iboHandle) {
     IBufferData *ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
     if (ib != NULL) {
         return ib->iboID;
@@ -382,7 +398,7 @@ GLuint PL_IndexBuffer_GetGLID(int iboHandle) {
     return 0;
 }
 
-char *PL_IndexBuffer_GetFallback(int iboHandle) {
+char *PLGL_IndexBuffer_GetFallback(int iboHandle) {
     IBufferData *ib = (IBufferData *)PL_Handle_GetData(iboHandle, DXHANDLE_INDEXBUFFER);
     if (ib != NULL) {
         return ib->fallbackData;

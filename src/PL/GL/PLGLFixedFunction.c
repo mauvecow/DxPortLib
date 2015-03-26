@@ -61,14 +61,14 @@ static int s_pixelTexture = -1;
  * you don't need it.
  */
 
-int PL_GLFixedFunction_ClearTexturePresetMode() {
+int PLGL_FixedFunction_ClearTexturePresetMode() {
     PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
     PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     
     return 0;
 }
 
-int PL_GLFixedFunction_SetTexturePresetMode(int preset,
+int PLGL_FixedFunction_SetTexturePresetMode(int preset,
                                    int textureRefID, int textureDrawMode) {
     unsigned int mainTexSlot = 0;
     int rgbScale = 1;
@@ -91,7 +91,7 @@ int PL_GLFixedFunction_SetTexturePresetMode(int preset,
             if (textureRefID < 0) {
                 textureRefID = s_pixelTexture;
             } else {
-                PL_Render_SetTextureStage(0, s_pixelTexture, textureDrawMode);
+                PLGL_SetTextureStage(0, s_pixelTexture, textureDrawMode);
                 
                 mainTexSlot = 1;
             }
@@ -146,7 +146,7 @@ int PL_GLFixedFunction_SetTexturePresetMode(int preset,
             if (textureRefID < 0) {
                 textureRefID = s_pixelTexture;
             } else {
-                PL_Render_SetTextureStage(0, s_pixelTexture, textureDrawMode);
+                PLGL_SetTextureStage(0, s_pixelTexture, textureDrawMode);
                 
                 mainTexSlot = 1;
             }
@@ -182,7 +182,7 @@ int PL_GLFixedFunction_SetTexturePresetMode(int preset,
             if (textureRefID < 0) {
                 textureRefID = s_pixelTexture;
             } else {
-                PL_Render_SetTextureStage(0, s_pixelTexture, textureDrawMode);
+                PLGL_SetTextureStage(0, s_pixelTexture, textureDrawMode);
                 
                 mainTexSlot = 1;
             }
@@ -193,7 +193,7 @@ int PL_GLFixedFunction_SetTexturePresetMode(int preset,
             break;
     }
     
-    PL_Render_SetTextureStage(mainTexSlot, textureRefID, textureDrawMode);
+    PLGL_SetTextureStage(mainTexSlot, textureRefID, textureDrawMode);
     if (mainTexSlot != 0) {
         PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
         PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB, GL_MODULATE);
@@ -223,7 +223,7 @@ static GLenum VertexElementSizeToGL(int value) {
     }
 }
 
-int PL_GLFixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
+int PLGL_FixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
                                           const char *vertexData) {
     int i;
     const VertexElement *e = def->elements;
@@ -254,7 +254,7 @@ int PL_GLFixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
     return 0;
 }
 
-int PL_GLFixedFunction_ClearVertexArrayData(const VertexDefinition *def) {
+int PLGL_FixedFunction_ClearVertexArrayData(const VertexDefinition *def) {
     int i;
     const VertexElement *e = def->elements;
     int elementCount = def->elementCount;
@@ -279,27 +279,27 @@ int PL_GLFixedFunction_ClearVertexArrayData(const VertexDefinition *def) {
     return 0;
 }
 
-int PL_GLFixedFunction_ApplyVertexBufferData(const VertexDefinition *def) {
-    return PL_GLFixedFunction_ApplyVertexArrayData(def, 0);
+int PLGL_FixedFunction_ApplyVertexBufferData(const VertexDefinition *def) {
+    return PLGL_FixedFunction_ApplyVertexArrayData(def, 0);
 }
 
-int PL_GLFixedFunction_ClearVertexBufferData(const VertexDefinition *def) {
-    return PL_GLFixedFunction_ClearVertexArrayData(def);
+int PLGL_FixedFunction_ClearVertexBufferData(const VertexDefinition *def) {
+    return PLGL_FixedFunction_ClearVertexArrayData(def);
 }
 
-int PL_GLFixedFunction_Init() {
+int PLGL_FixedFunction_Init() {
     /* Create a texture that's a single white pixel. */
     SDL_Surface *surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 1, 1, 32,
                                    0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     *((unsigned int *)(surface->pixels)) = 0xffffffff;
-    s_pixelTexture = PL_Texture_CreateFromSDLSurface(surface, DXFALSE);
+    s_pixelTexture = PLGL_Texture_CreateFromSDLSurface(surface, DXFALSE);
     SDL_FreeSurface(surface);
     
     return 0;
 }
-int PL_GLFixedFunction_Cleanup() {
+int PLGL_FixedFunction_Cleanup() {
     if (s_pixelTexture >= 0) {
-        PL_Texture_Release(s_pixelTexture);
+        PLGL_Texture_Release(s_pixelTexture);
         s_pixelTexture = -1;
     }
     

@@ -27,6 +27,8 @@
 
 #include "SDL_image.h"
 
+PLIGraphics PLG;
+
 /* For setting the floating precision to the system value.
  * There is no real architecture agnostic answer here, so
  * add more of these as needed. */

@@ -110,7 +110,7 @@ void LunaCamera::LookAt(LCAMERA lCam, CVector3D *pEye,
 void LunaCamera_SetDevice(LCAMERA lCam) {
     CameraData *camera = (CameraData *)PL_Handle_GetData((int)lCam, DXHANDLE_LUNACAMERA);
     if (camera != NULL) {
-        PL_Render_SetMatrices(&camera->projection, &camera->view);
+        PLG.SetMatrices(&camera->projection, &camera->view);
     }
 }
 

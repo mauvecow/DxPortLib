@@ -59,7 +59,7 @@ static int s_AllocateGraphID(int textureRefID, PLRect rect, int linkToGraphID) {
         return -1;
     }
     
-    PL_Texture_AddRef(textureRefID);
+    PLG.Texture_AddRef(textureRefID);
     
     graph = (Graph *)PL_Handle_AllocateData(graphID, sizeof(Graph));
     graph->textureRefID = textureRefID;
@@ -105,7 +105,7 @@ int Dx_Graph_CreateFromSurface(int surfaceID) {
     graphID = s_AllocateGraphID(textureRefID, rect, -1);
     
     if (graphID < 0) {
-        PL_Texture_Release(textureRefID);
+        PLG.Texture_Release(textureRefID);
     }
     
     return graphID;
@@ -116,7 +116,7 @@ int Dx_Graph_MakeScreen(int width, int height, int hasAlphaChannel) {
     int graphID;
     PLRect rect;
     
-    textureRefID = PL_Texture_CreateFramebuffer(width, height, hasAlphaChannel);
+    textureRefID = PLG.Texture_CreateFramebuffer(width, height, hasAlphaChannel);
     if (textureRefID < 0) {
         return -1;
     }
@@ -129,7 +129,7 @@ int Dx_Graph_MakeScreen(int width, int height, int hasAlphaChannel) {
     graphID = s_AllocateGraphID(textureRefID, rect, -1);
     
     if (graphID < 0) {
-        PL_Texture_Release(textureRefID);
+        PLG.Texture_Release(textureRefID);
     }
     
     return graphID;
@@ -184,7 +184,7 @@ int Dx_Graph_Delete(int graphID) {
         relGraph->prevLinkedGraphID = graph->prevLinkedGraphID;
     }
     
-    PL_Texture_Release(graph->textureRefID);
+    PLG.Texture_Release(graph->textureRefID);
     
     PL_Handle_ReleaseID(graphID, DXTRUE);
     
@@ -277,7 +277,7 @@ int Dx_Graph_LoadDiv(const DXCHAR *filename, int graphCount,
 int Dx_Graph_SetWrap(int graphID, int wrapState) {
     int textureID = Dx_Graph_GetTextureID(graphID, NULL);
     
-    PL_Texture_SetWrap(textureID, wrapState);
+    PLG.Texture_SetWrap(textureID, wrapState);
     
     return 0;
 }
@@ -353,7 +353,7 @@ int Dx_Graph_GetTextureInfo(int graphID, int *dTextureRefID, PLRect *rect, float
         *rect = graph->rect;
     }
     
-    return PL_Texture_RenderGetTextureInfo(graph->textureRefID, NULL, xMult, yMult);
+    return PLG.Texture_RenderGetTextureInfo(graph->textureRefID, NULL, xMult, yMult);
 }
 
 #endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */

@@ -71,7 +71,7 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
         PL_GL.glViewport(0, 0, info->width, info->height);
         PL_GL.glClear(GL_COLOR_BUFFER_BIT);
         
-        PL_Render_SetMatrixDirtyFlag();
+        PLGL_SetMatrixDirtyFlag();
     }
     
     return 0;
@@ -137,7 +137,7 @@ static int s_GLFrameBuffer_Release(int handleID) {
     return 0;
 }
 
-int PL_Framebuffer_GetSurface(const PLRect *rect, SDL_Surface **dSurface) {
+int PLGL_Framebuffer_GetSurface(const PLRect *rect, SDL_Surface **dSurface) {
     SDL_Surface *surface;
     
     surface = SDL_CreateRGBSurface(SDL_SWSURFACE, rect->w, rect->h, 32,
@@ -255,7 +255,7 @@ static void s_blitSurface(TextureRef *textureRef, SDL_Surface *surface, const PL
 #endif
 }
 
-int PL_Texture_Bind(int textureRefID, int drawMode) {
+int PLGL_Texture_Bind(int textureRefID, int drawMode) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     GLuint textureTarget;
     if (textureref == NULL) {
@@ -286,7 +286,7 @@ int PL_Texture_Bind(int textureRefID, int drawMode) {
     return 0;
 }
 
-int PL_Texture_Unbind(int textureRefID) {
+int PLGL_Texture_Unbind(int textureRefID) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     if (textureref == NULL) {
         return -1;
@@ -298,7 +298,7 @@ int PL_Texture_Unbind(int textureRefID) {
     return 0;
 }
 
-int PL_Texture_BindFramebuffer(int textureRefID) {
+int PLGL_Texture_BindFramebuffer(int textureRefID) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     int framebufferID = -1;
     GLenum textureTarget = GL_TEXTURE_2D;
@@ -312,7 +312,7 @@ int PL_Texture_BindFramebuffer(int textureRefID) {
     return s_GLFrameBuffer_Bind(framebufferID, textureTarget, textureID);
 }
 
-int PL_Texture_HasAlphaChannel(int textureRefID) {
+int PLGL_Texture_HasAlphaChannel(int textureRefID) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     if (textureref == NULL) {
         return 0;
@@ -320,24 +320,24 @@ int PL_Texture_HasAlphaChannel(int textureRefID) {
     return textureref->hasAlphaChannel;
 }
 
-int PL_Texture_CreateFromSDLSurface(SDL_Surface *surface, int hasAlphaChannel) {
+int PLGL_Texture_CreateFromSDLSurface(SDL_Surface *surface, int hasAlphaChannel) {
     int textureRefID;
     
     if (SDL_GetColorKey(surface, 0) >= 0) {
         hasAlphaChannel = DXTRUE;
     }
     
-    textureRefID = PL_Texture_CreateFromDimensions(surface->w, surface->h, hasAlphaChannel);
+    textureRefID = PLGL_Texture_CreateFromDimensions(surface->w, surface->h, hasAlphaChannel);
     if (textureRefID < 0) {
         return -1;
     }
     
-    PL_Texture_BlitSurface(textureRefID, surface, NULL);
+    PLGL_Texture_BlitSurface(textureRefID, surface, NULL);
     
     return textureRefID;
 }
 
-int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) {
+int PLGL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) {
     int textureRefID;
     TextureRef *textureref;
     GLint textureInternalFormat = 0;
@@ -469,12 +469,12 @@ int PL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel) 
     return textureRefID;
 }
 
-int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel) {
+int PLGL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel) {
     int textureRefID = -1;
     int framebufferID = -1;
     TextureRef *textureref;
     
-    textureRefID = PL_Texture_CreateFromDimensions(width, height, hasAlphaChannel);
+    textureRefID = PLGL_Texture_CreateFromDimensions(width, height, hasAlphaChannel);
     if (textureRefID < 0) {
         return -1;
     }
@@ -483,7 +483,7 @@ int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel) {
     
     framebufferID = s_GLFrameBuffer_Create(width, height);
     if (framebufferID < 0) {
-        PL_Texture_Release(textureRefID);
+        PLGL_Texture_Release(textureRefID);
         return -1;
     }
     
@@ -492,7 +492,7 @@ int PL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel) {
     return textureRefID;
 }
 
-int PL_Texture_SetWrap(int textureRefID, int wrapState) {
+int PLGL_Texture_SetWrap(int textureRefID, int wrapState) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     GLuint textureTarget;
     GLenum wrapMode;
@@ -546,7 +546,7 @@ int s_glSetFilter(int textureRefID, GLint minFilter, GLint magFilter) {
     return 0;
 }
 
-int PL_Texture_AddRef(int textureRefID) {
+int PLGL_Texture_AddRef(int textureRefID) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     if (textureref == NULL) {
         return -1;
@@ -556,7 +556,7 @@ int PL_Texture_AddRef(int textureRefID) {
     return 0;
 }
 
-int PL_Texture_Release(int textureRefID) {
+int PLGL_Texture_Release(int textureRefID) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     if (textureref == NULL) {
         return -1;
@@ -576,7 +576,7 @@ int PL_Texture_Release(int textureRefID) {
     return 0;
 }
 
-int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const PLRect *rect) {
+int PLGL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const PLRect *rect) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     PLRect tempRect;
     
@@ -616,7 +616,7 @@ int PL_Texture_BlitSurface(int textureRefID, SDL_Surface *surface, const PLRect 
     return 0;
 }
 
-int PL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMult, float *yMult) {
+int PLGL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMult, float *yMult) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     
     if (textureref == NULL) {
@@ -639,7 +639,7 @@ int PL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMult
     return 0;
 }
 
-int PL_Texture_ClearAllData() {
+int PLGL_Texture_ClearAllData() {
     /* We can't actually get rid of the handles,
      * but we can toast the data inside. */
     int textureRefID;

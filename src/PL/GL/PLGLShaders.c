@@ -273,7 +273,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
     }
 };
 
-int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
+int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
     GLuint glVertexShaderID = 0;
     GLuint glFragmentShaderID = 0;
     GLuint glProgramID = 0;
@@ -361,7 +361,7 @@ int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
     return -1;
 }
 
-void PL_Shaders_DeleteShader(int shaderHandle) {
+void PLGL_Shaders_DeleteShader(int shaderHandle) {
     PLGLShaderInfo *info = (PLGLShaderInfo *)PL_Handle_GetData(shaderHandle, DXHANDLE_SHADER);
     
     if (info != NULL) {
@@ -386,7 +386,7 @@ static GLenum VertexElementSizeToGL(int value) {
     }
 }
 
-void PL_Shaders_ApplyProgram(int shaderHandle,
+void PLGL_Shaders_ApplyProgram(int shaderHandle,
                              PLMatrix *projectionMatrix, PLMatrix *viewMatrix,
                              const char *vertexData, const VertexDefinition *definition)
 {
@@ -444,7 +444,7 @@ void PL_Shaders_ApplyProgram(int shaderHandle,
     }
 }
 
-void PL_Shaders_ClearProgram(int shaderHandle, const VertexDefinition *definition) {
+void PLGL_Shaders_ClearProgram(int shaderHandle, const VertexDefinition *definition) {
     PLGLShaderInfo *info = (PLGLShaderInfo *)PL_Handle_GetData(shaderHandle, DXHANDLE_SHADER);
     int i;
     
@@ -485,23 +485,23 @@ void PL_Shaders_ClearProgram(int shaderHandle, const VertexDefinition *definitio
 
 static int s_stockShaderIDs[PLGL_SHADER_END] = { 0 };
 
-int PL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType) {
+int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType) {
     return s_stockShaderIDs[shaderType];
 }
 
-void PL_Shaders_Init() {
+void PLGL_Shaders_Init() {
     int i;
     
     for (i = 0; i < PLGL_SHADER_END; ++i) {
-        s_stockShaderIDs[i] = PL_Shaders_CompileDefinition(&s_stockShaderDefinitions[i]);
+        s_stockShaderIDs[i] = PLGL_Shaders_CompileDefinition(&s_stockShaderDefinitions[i]);
     }
 }
 
-void PL_Shaders_Cleanup() {
+void PLGL_Shaders_Cleanup() {
     int i;
     
     for (i = 0; i < PLGL_SHADER_END; ++i) {
-        PL_Shaders_DeleteShader(s_stockShaderIDs[i]);
+        PLGL_Shaders_DeleteShader(s_stockShaderIDs[i]);
         s_stockShaderIDs[i] = 0;
     }
 }

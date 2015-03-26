@@ -49,7 +49,7 @@ int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
     rect.w = x2 - x1;
     rect.h = y2 - y1;
     
-    if (PL_Framebuffer_GetSurface(&rect, &surface) < 0) {
+    if (PLGL_Framebuffer_GetSurface(&rect, &surface) < 0) {
         return -1;
     }
     

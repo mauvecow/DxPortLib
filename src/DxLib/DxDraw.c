@@ -140,18 +140,18 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
     
     blend = &s_blendModeTable[blendMode];
     
-    PL_Render_SetBlendModeSeparate(
+    PLG.SetBlendModeSeparate(
         blend->blendEquation,
         blend->srcRGBBlend, blend->destRGBBlend,
         blend->srcAlphaBlend, blend->destAlphaBlend);
-    PL_Render_SetTexturePresetMode(
+    PLG.SetTexturePresetMode(
         blend->texturePreset, textureRefID, s_drawMode);
     
     return 0;
 }
 
 static void s_FinishDrawMode() {
-    PL_Render_ClearTexturePresetMode();
+    PLG.ClearTexturePresetMode();
 }
 
 /* --------------------------------------------------------- VERTEX CACHE */
@@ -264,14 +264,14 @@ int Dx_Draw_FlushCache() {
     
     /* Apply blending mode */
     if (s_cache.blendFlag) {
-        s_ApplyDrawMode(s_blendMode, PL_Texture_HasAlphaChannel(s_cache.textureRefID),
+        s_ApplyDrawMode(s_blendMode, PLG.Texture_HasAlphaChannel(s_cache.textureRefID),
                         s_cache.textureRefID);
     } else {
         s_ApplyDrawMode(DX_BLENDMODE_NOBLEND, DXFALSE,
                         s_cache.textureRefID);
     }
     
-    PL_Render_DrawVertexArray(
+    PLG.DrawVertexArray(
         s_cache.definition,
         (const char *)s_cache.vertexData,
         s_cache.drawMode,
@@ -1092,9 +1092,9 @@ static int s_drawScreenHeight = 480;
 static void s_RefreshScissor() {
     Dx_Draw_UpdateDrawScreen();
     if (s_scissorEnabled == DXFALSE) {
-        PL_Render_DisableScissor();
+        PLG.DisableScissor();
     } else {
-        PL_Render_SetScissor(s_scissorX, s_scissorY, s_scissorW, s_scissorH);
+        PLG.SetScissor(s_scissorX, s_scissorY, s_scissorW, s_scissorH);
     }
 }
 
@@ -1127,13 +1127,13 @@ int Dx_Draw_ClearDrawScreen(const RECT *rect) {
     Dx_Draw_FlushCache();
     Dx_Draw_UpdateDrawScreen();
     
-    PL_Render_ClearColor(s_bgColorR / 255.0f, s_bgColorG / 255.0f, s_bgColorB / 255.0f, 1.0f);
+    PLG.ClearColor(s_bgColorR / 255.0f, s_bgColorG / 255.0f, s_bgColorB / 255.0f, 1.0f);
     if (rect == NULL) {
-        PL_Render_DisableScissor();
-        PL_Render_Clear();
+        PLG.DisableScissor();
+        PLG.Clear();
     } else {
-        PL_Render_SetScissor(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
-        PL_Render_Clear();
+        PLG.SetScissor(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
+        PLG.Clear();
     }
     
     s_RefreshScissor();
@@ -1216,11 +1216,11 @@ int Dx_Draw_UpdateDrawScreen() {
         PLMatrix projection, view;
         
         s_currentScreenID = s_drawScreenID;
-        PL_Texture_BindFramebuffer(s_drawScreenID);
+        PLG.Texture_BindFramebuffer(s_drawScreenID);
         
         if (s_currentScreenID >= 0) {
             PLRect screenRect;
-            PL_Texture_RenderGetTextureInfo(s_currentScreenID, &screenRect, NULL, NULL);
+            PLG.Texture_RenderGetTextureInfo(s_currentScreenID, &screenRect, NULL, NULL);
             s_drawScreenWidth = screenRect.w;
             s_drawScreenHeight = screenRect.h;
         } else {
@@ -1232,7 +1232,7 @@ int Dx_Draw_UpdateDrawScreen() {
             0, (float)s_drawScreenWidth, (float)s_drawScreenHeight, 0, -32768, 32767);
         PL_Matrix_CreateIdentity(&view);
         
-        PL_Render_SetMatrices(&projection, &view);
+        PLG.SetMatrices(&projection, &view);
     }
     return 0;
 }

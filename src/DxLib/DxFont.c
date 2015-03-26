@@ -375,17 +375,17 @@ static void s_GrowGlyphTexture(FontData *fontData) {
             glyphTexture->height *= 2;
         }
         
-        PL_Texture_Release(glyphTexture->textureID);
+        PLG.Texture_Release(glyphTexture->textureID);
         Dx_Graph_Delete(glyphTexture->graphID);
     }
     
-    glyphTexture->textureID = PL_Texture_CreateFromDimensions(
+    glyphTexture->textureID = PLG.Texture_CreateFromDimensions(
             glyphTexture->width,
             glyphTexture->height,
             DXTRUE
         );
     
-    PL_Texture_AddRef(glyphTexture->textureID);
+    PLG.Texture_AddRef(glyphTexture->textureID);
     
     texRect.x = 0;
     texRect.y = 0;
@@ -602,7 +602,7 @@ static int s_FitSurface(FontData *fontData, SDL_Surface *surface, GlyphRect *rec
     texRect.w = w;
     texRect.h = h;
     
-    PL_Texture_BlitSurface(glyphTexture->textureID, surface, &texRect);
+    PLG.Texture_BlitSurface(glyphTexture->textureID, surface, &texRect);
     
     glyphTexture->X = x + w;
     
@@ -1187,7 +1187,7 @@ int PL_Font_DeleteFontToHandle(int handle) {
         Dx_Graph_Delete(fontData->glyphTexture.graphID);
     }
     if (fontData->glyphTexture.textureID >= 0) {
-        PL_Texture_Release(fontData->glyphTexture.textureID);
+        PLG.Texture_Release(fontData->glyphTexture.textureID);
     }
     
     if (fontData->glyphData != NULL) {

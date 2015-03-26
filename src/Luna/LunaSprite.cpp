@@ -86,14 +86,14 @@ static LSPRITE s_SpriteCreate(const LunaVertexInfo *vertexInfo,
         int spriteCount = VertexMax / 4;
         int indexCount = spriteCount * 6;
         
-        vboID = PL_VertexBuffer_Create(vertexInfo->def,
+        vboID = PLG.VertexBuffer_Create(vertexInfo->def,
                                     NULL, VertexMax, DXFALSE);
         if (vboID < 0) {
             break;
         }
         
         indices = s_createStaticSpriteIndexBuffer(indexCount);
-        iboID = PL_IndexBuffer_Create(indices, indexCount, DXTRUE);
+        iboID = PLG.IndexBuffer_Create(indices, indexCount, DXTRUE);
         DXFREE(indices);
         
         if (iboID < 0) {
@@ -127,8 +127,8 @@ static LSPRITE s_SpriteCreate(const LunaVertexInfo *vertexInfo,
         return spriteID;
     } while (0);
     
-    PL_VertexBuffer_Delete(vboID);
-    PL_IndexBuffer_Delete(iboID);
+    PLG.VertexBuffer_Delete(vboID);
+    PLG.IndexBuffer_Delete(iboID);
     
     return INVALID_SPRITE;
 }
@@ -148,8 +148,8 @@ LSPRITE LunaSprite3D::Create(Uint32 VertexMax, eVertexPrimitiveType vertexType,
 void LunaSprite::Release(LSPRITE lSpr) {
     LunaSpriteData *sprite = (LunaSpriteData *)PL_Handle_GetData((int)lSpr, DXHANDLE_LUNASPRITE);
     if (sprite != NULL) {
-        PL_VertexBuffer_Delete(sprite->vboHandle);
-        PL_IndexBuffer_Delete(sprite->iboHandle);
+        PLG.VertexBuffer_Delete(sprite->vboHandle);
+        PLG.IndexBuffer_Delete(sprite->iboHandle);
         
         DXFREE(sprite->vertexData);
         
@@ -204,7 +204,7 @@ static void s_drawSquare2D(LunaSpriteData *sprite,
         int texRefID = sprite->textureIDs[i];
         float xMult, yMult;
         float tx1, ty1, tx2, ty2;
-        if (PL_Texture_RenderGetTextureInfo(texRefID, NULL, &xMult, &yMult) < 0) {
+        if (PLG.Texture_RenderGetTextureInfo(texRefID, NULL, &xMult, &yMult) < 0) {
             tx1 = 0; ty1 = 0;
             tx2 = 0; ty2 = 0;
         } else {
@@ -292,7 +292,7 @@ void LunaSprite::ResetBuffer(LSPRITE lSpr) {
 void LunaSprite::UpdateBuffer(LSPRITE lSpr) {
     LunaSpriteData *sprite = (LunaSpriteData *)PL_Handle_GetData((int)lSpr, DXHANDLE_LUNASPRITE);
     if (sprite != NULL && sprite->vertexPtr > 0) {
-        PL_VertexBuffer_SetData(sprite->vboHandle,
+        PLG.VertexBuffer_SetData(sprite->vboHandle,
                                 sprite->vertexData,
                                 0, sprite->vertexPtr, DXTRUE);
     }
@@ -300,20 +300,20 @@ void LunaSprite::UpdateBuffer(LSPRITE lSpr) {
 void LunaSprite::Rendering(LSPRITE lSpr) {
     LunaSpriteData *sprite = (LunaSpriteData *)PL_Handle_GetData((int)lSpr, DXHANDLE_LUNASPRITE);
     if (sprite != NULL && sprite->vertexPtr > 0) {
-        PL_Render_SetUntransformedFlag(DXTRUE);
+        PLG.SetUntransformedFlag(DXTRUE);
 
         /* FIXME do not actually support multiple textures right now. */
-        PL_Render_SetTexturePresetMode(
+        PLG.SetTexturePresetMode(
             TEX_PRESET_MODULATE,
             sprite->textureIDs[0], g_lunaFilterMode);
         
-        PL_Render_DrawVertexIndexBuffer(
+        PLG.DrawVertexIndexBuffer(
             sprite->vertexInfo->def,
             sprite->vboHandle, 0, sprite->vertexPtr,
             sprite->iboHandle,
             PL_PRIM_TRIANGLES, 0, sprite->indexPtr);
         
-        PL_Render_ClearTextures();
+        PLG.ClearTextures();
     }
 }
 

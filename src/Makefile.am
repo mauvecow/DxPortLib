@@ -29,6 +29,7 @@ libDxPortLib_la_SOURCES =	\
 	PL/PLInternal.h \
 	PL/PLMath.c \
 	PL/PLRNG.c \
+	PL/GL/PLGL.c \
 	PL/GL/PLGLBuffers.c \
 	PL/GL/PLGLFixedFunction.c \
 	PL/GL/PLGLInternal.h \

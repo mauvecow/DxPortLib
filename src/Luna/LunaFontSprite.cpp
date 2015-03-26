@@ -182,7 +182,7 @@ void LunaFontSprite::Release(LFONTSPRITE lFontSpr) {
         int i;
         if (fontspr->sheetGraphs != NULL) {
             for (i = 0; i < fontspr->sheetCount; ++i) {
-                PL_Texture_Release(fontspr->sheetGraphs[i]);
+                PLG.Texture_Release(fontspr->sheetGraphs[i]);
             }
             DXFREE(fontspr->sheetGraphs);
         }

@@ -239,43 +239,145 @@ typedef struct _PLGLShaderInfo {
 extern int PL_drawScreenWidth;
 extern int PL_drawScreenHeight;
 
-extern int PL_Render_UpdateMatrices();
+// external
 
-extern int PL_Texture_Bind(int textureRefID, int drawMode);
-extern int PL_Texture_Unbind(int textureRefID);
-extern int PL_Texture_ClearAllData();
+extern void PLGL_SetBlendMode(
+                int blendEquation,
+                int srcBlend, int destBlend);
+extern void PLGL_SetBlendModeSeparate(
+                int blendEquation,
+                int srcRGBBlend, int destRGBBlend,
+                int srcAlphaBlend, int destAlphaBlend);
+extern void PLGL_DisableBlend();
+extern int PLGL_EnableAlphaTest();
+extern int PLGL_DisableAlphaTest();
 
-extern int PL_Framebuffer_GetSurface(const PLRect *rect, SDL_Surface **dSurface);
+extern int PLGL_SetScissor(int x, int y, int w, int h);
+extern int PLGL_SetScissorRect(const RECT *rect);
+extern int PLGL_DisableScissor();
 
-extern GLuint PL_VertexBuffer_GetGLID(int vertexBufferID);
-extern char *PL_VertexBuffer_GetFallback(int vboHandle);
-extern GLuint PL_IndexBuffer_GetGLID(int vertexBufferID);
-extern char *PL_IndexBuffer_GetFallback(int vboHandle);
+extern int PLGL_DisableCulling();
+extern int PLGL_DisableDepthTest();
+
+extern int PLGL_SetTextureStage(unsigned int stage,
+                                     int textureRefID, int textureDrawMode);
+extern int PLGL_SetTexturePresetMode(int preset,
+                                     int textureRefID, int textureDrawMode);
+extern int PLGL_ClearTextures();
+extern int PLGL_ClearTexturePresetMode();
+
+extern int PLGL_DrawVertexArray(const VertexDefinition *def,
+               const char *vertexData,
+               int primitiveType, int vertexStart, int vertexCount);
+extern int PLGL_DrawVertexIndexArray(const VertexDefinition *def,
+               const char *vertexData, int vertexStart, int vertexCount,
+               const unsigned short *indexData,
+               int primitiveType, int indexStart, int indexCount);
+
+extern int PLGL_DrawVertexBuffer(const VertexDefinition *def,
+               int vertexBufferHandle,
+               int primitiveType, int vertexStart, int vertexCount);
+extern int PLGL_DrawVertexIndexBuffer(const VertexDefinition *def,
+               int vertexBufferHandle, int vertexStart, int vertexCount,
+               int indexBufferHandle,
+               int primitiveType, int indexStart, int indexCount);
+
+extern int PLGL_SetViewport(int x, int y, int w, int h);
+extern int PLGL_SetZRange(float nearZ, float farZ);
+extern int PLGL_SetMatrices(const PLMatrix *projection, const PLMatrix *view);
+extern int PLGL_SetUntransformedFlag(int untransformedFlag);
+
+extern int PLGL_ClearColor(float r, float g, float b, float a);
+extern int PLGL_Clear();
+
+extern int PLGL_SetMatrices(const PLMatrix *projection, const PLMatrix *view);
+extern int PLGL_SetMatrixDirtyFlag();
+extern int PLGL_StartFrame();
+extern int PLGL_EndFrame();
+
+extern int PLGL_VertexBuffer_CreateBytes(int vertexByteSize,
+                                       const char *vertexData, int bufferSize,
+                                       int isStatic);
+extern int PLGL_VertexBuffer_Create(const VertexDefinition *def,
+                                  const char *vertexData, int vertexCount,
+                                  int isStatic);
+extern int PLGL_VertexBuffer_ResetBuffer(int vboHandle);
+extern int PLGL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices,
+                                        int start, int count, int resetBufferFlag);
+extern int PLGL_VertexBuffer_SetData(int vboHandle, const char *vertices,
+                                   int start, int count, int resetBufferFlag);
+extern char *PLGL_VertexBuffer_Lock(int vboHandle);
+extern int PLGL_VertexBuffer_Unlock(int vboHandle, char *buffer);
+extern int PLGL_VertexBuffer_Delete(int vboHandle);
+
+extern int PLGL_IndexBuffer_Create(const unsigned short *indexData,
+                                 int indexCount, int isStatic);
+extern int PLGL_IndexBuffer_ResetBuffer(int iboHandle);
+extern int PLGL_IndexBuffer_SetData(int iboHandle,
+                                  const unsigned short *indices,
+                                  int start, int count, int resetBufferFlag);
+extern unsigned short *PLGL_IndexBuffer_Lock(int iboHandle);
+extern int PLGL_IndexBuffer_Unlock(int iboHandle);
+extern int PLGL_IndexBuffer_Delete(int iboHandle);
+
+extern int PLGL_Texture_CreateFromSDLSurface(SDL_Surface *surface, int hasAlphaChannel);
+extern int PLGL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel);
+extern int PLGL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel);
+
+extern int PLGL_Texture_BlitSurface(int textureID, SDL_Surface *surface, const PLRect *rect);
+
+extern int PLGL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMult, float *yMult);
+
+extern int PLGL_Texture_SetWrap(int textureRefID, int wrapState);
+
+extern int PLGL_Texture_HasAlphaChannel(int textureRefID);
+
+extern int PLGL_Texture_BindFramebuffer(int textureRefID);
+
+extern int PLGL_Texture_AddRef(int textureID);
+extern int PLGL_Texture_Release(int textureID);
+
+// internal
+
+extern int PLGL_Render_Init();
+extern int PLGL_Render_End();
+extern int PLGL_Render_UpdateMatrices();
+
+extern int PLGL_Texture_Bind(int textureRefID, int drawMode);
+extern int PLGL_Texture_Unbind(int textureRefID);
+extern int PLGL_Texture_ClearAllData();
+
+extern int PLGL_Framebuffer_GetSurface(const PLRect *rect, SDL_Surface **dSurface);
+
+extern GLuint PLGL_VertexBuffer_GetGLID(int vertexBufferID);
+extern char *PLGL_VertexBuffer_GetFallback(int vboHandle);
+extern GLuint PLGL_IndexBuffer_GetGLID(int vertexBufferID);
+extern char *PLGL_IndexBuffer_GetFallback(int vboHandle);
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-extern int PL_GLFixedFunction_ClearTexturePresetMode();
-extern int PL_GLFixedFunction_SetTexturePresetMode(int preset,
+extern int PLGL_FixedFunction_ClearTexturePresetMode();
+extern int PLGL_FixedFunction_SetTexturePresetMode(int preset,
                                    int textureRefID, int textureDrawMode);
-extern int PL_GLFixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
+extern int PLGL_FixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
                                           const char *vertexData);
-extern int PL_GLFixedFunction_ClearVertexArrayData(const VertexDefinition *def);
-extern int PL_GLFixedFunction_ApplyVertexBufferData(const VertexDefinition *def);
-extern int PL_GLFixedFunction_ClearVertexBufferData(const VertexDefinition *def);
-extern int PL_GLFixedFunction_Init();
-extern int PL_GLFixedFunction_Cleanup();
+extern int PLGL_FixedFunction_ClearVertexArrayData(const VertexDefinition *def);
+extern int PLGL_FixedFunction_ApplyVertexBufferData(const VertexDefinition *def);
+extern int PLGL_FixedFunction_ClearVertexBufferData(const VertexDefinition *def);
+extern int PLGL_FixedFunction_Init();
+extern int PLGL_FixedFunction_Cleanup();
 #endif
 
-extern int PL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition);
-extern void PL_Shaders_DeleteShader(int shaderHandle);
-extern void PL_Shaders_ApplyProgram(int shaderHandle,
+extern int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition);
+extern void PLGL_Shaders_DeleteShader(int shaderHandle);
+extern void PLGL_Shaders_ApplyProgram(int shaderHandle,
                                     PLMatrix *projectionMatrix, PLMatrix *viewMatrix,
                                     const char *vertexData,
                                     const VertexDefinition *definition);
-extern void PL_Shaders_ClearProgram(int shaderHandle,
+extern void PLGL_Shaders_ClearProgram(int shaderHandle,
                                     const VertexDefinition *definition);
-extern int PL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType);
-extern void PL_Shaders_Init();
-extern void PL_Shaders_Cleanup();
+extern int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType);
+extern void PLGL_Shaders_Init();
+extern void PLGL_Shaders_Cleanup();
 
 #endif /* #ifdef DXPORTLIB_DRAW_OPENGL */
 

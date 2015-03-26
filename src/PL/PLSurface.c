@@ -347,7 +347,7 @@ int PL_Surface_ToTexture(int surfaceID) {
         return -1;
     }
     
-    return PL_Texture_CreateFromSDLSurface(
+    return PLG.Texture_CreateFromSDLSurface(
         surface->sdlSurface, surface->hasTransparencyFlag);
 }
 
