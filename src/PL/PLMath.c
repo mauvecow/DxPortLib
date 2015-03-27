@@ -250,7 +250,9 @@ PLMatrix *PL_Matrix_Invert(PLMatrix *o, float *dDeterminant, const PLMatrix *m) 
         }
     }
     
-    *dDeterminant = det;
+    if (dDeterminant != 0) {
+        *dDeterminant = det;
+    }
     
     return o;
 }
