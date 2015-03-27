@@ -206,7 +206,7 @@ PLMatrix *PL_Matrix_Multiply(PLMatrix *o, const PLMatrix *a, const PLMatrix *b) 
     
     return PL_Matrix_Copy(o, &n);
 }
-PLMatrix *PL_Matrix_Inverse(PLMatrix *o, float *dDeterminant, const PLMatrix *m) {
+PLMatrix *PL_Matrix_Invert(PLMatrix *o, float *dDeterminant, const PLMatrix *m) {
     PLMatrix inv;
     float det;
     int x, y;
