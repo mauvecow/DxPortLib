@@ -60,7 +60,7 @@ void CVector3D::TransformProjection(const CVector3D *v, const CMatrix *pM) {
 }
 
 void CMatrix::Inverse(const CMatrix *src) {
-    PL_Matrix_Inverse((PLMatrix *)this, NULL, (const PLMatrix *)src);
+    PL_Matrix_Invert((PLMatrix *)this, NULL, (const PLMatrix *)src);
 }
 void CMatrix::Normalize(const CMatrix *src) {
     const CMatrix &n = *src;

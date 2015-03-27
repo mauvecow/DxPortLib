@@ -255,34 +255,38 @@ typedef struct _PLVector3 {
 
 extern const PLMatrix g_matrixIdentity;
 
-PLVector3 *PL_Vector3_Set(PLVector3 *o, float x, float y, float z);
-PLVector3 *PL_Vector3_Copy(PLVector3 *o, const PLVector3 *v);
-float PL_Vector3_Dot(const PLVector3 *a, const PLVector3 *b);
-PLVector3 *PL_Vector3_Add(PLVector3 *o, const PLVector3 *a, const PLVector3 *b);
-PLVector3 *PL_Vector3_Sub(PLVector3 *o, const PLVector3 *a, const PLVector3 *b);
-PLVector3 *PL_Vector3_Mul(PLVector3 *o, const PLVector3 *a, const PLVector3 *b);
-PLVector3 *PL_Vector3_Cross(PLVector3 *o, const PLVector3 *a, const PLVector3 *b);
-PLVector3 *PL_Vector3_Normalize(PLVector3 *o, const PLVector3 *v);
+extern PLVector3 *PL_Vector3_Set(PLVector3 *o, float x, float y, float z);
+extern PLVector3 *PL_Vector3_Copy(PLVector3 *o, const PLVector3 *v);
+extern float PL_Vector3_Dot(const PLVector3 *a, const PLVector3 *b);
+extern PLVector3 *PL_Vector3_Add(PLVector3 *o, const PLVector3 *a, const PLVector3 *b);
+extern PLVector3 *PL_Vector3_Sub(PLVector3 *o, const PLVector3 *a, const PLVector3 *b);
+extern PLVector3 *PL_Vector3_Mul(PLVector3 *o, const PLVector3 *a, const PLVector3 *b);
+extern PLVector3 *PL_Vector3_Cross(PLVector3 *o, const PLVector3 *a, const PLVector3 *b);
+extern PLVector3 *PL_Vector3_Normalize(PLVector3 *o, const PLVector3 *v);
 
-PLMatrix *PL_Matrix_Copy(PLMatrix *o, const PLMatrix *m);
-PLMatrix *PL_Matrix_Transpose(PLMatrix *o, const PLMatrix *m);
-PLMatrix *PL_Matrix_Multiply(PLMatrix *o, const PLMatrix *a, const PLMatrix *b);
-PLMatrix *PL_Matrix_Inverse(PLMatrix *o, float *dDeterminant, const PLMatrix *m);
+extern PLMatrix *PL_Matrix_Copy(PLMatrix *o, const PLMatrix *m);
+extern PLMatrix *PL_Matrix_Transpose(PLMatrix *o, const PLMatrix *m);
+extern PLMatrix *PL_Matrix_Multiply(PLMatrix *o, const PLMatrix *a, const PLMatrix *b);
+extern PLMatrix *PL_Matrix_Invert(PLMatrix *o, float *dDeterminant, const PLMatrix *m);
 
-PLMatrix *PL_Matrix_CreateIdentity(PLMatrix *o);
-PLMatrix *PL_Matrix_CreateScale(PLMatrix *o, float x, float y, float z);
-PLMatrix *PL_Matrix_CreateTranslation(PLMatrix *o, float x, float y, float z);
+extern PLMatrix *PL_Matrix_CreateIdentity(PLMatrix *o);
+extern PLMatrix *PL_Matrix_CreateScale(PLMatrix *o, float x, float y, float z);
+extern PLMatrix *PL_Matrix_CreateTranslation(PLMatrix *o, float x, float y, float z);
+extern PLMatrix *PL_Matrix_CreateRotationX(PLMatrix *o, float x);
+extern PLMatrix *PL_Matrix_CreateRotationY(PLMatrix *o, float y);
+extern PLMatrix *PL_Matrix_CreateRotationZ(PLMatrix *o, float z);
+extern PLMatrix *PL_Matrix_CreateFromYawPitchRoll(PLMatrix *o, float yaw, float pitch, float roll);
 
-PLMatrix *PL_Matrix_CreateOrthoLH(PLMatrix *o, float w, float h, float zNear, float zFar);
-PLMatrix *PL_Matrix_CreateOrthoRH(PLMatrix *o, float w, float h, float zNear, float zFar);
-PLMatrix *PL_Matrix_CreateOrthoOffCenterLH(PLMatrix *o, float left, float right,
+extern PLMatrix *PL_Matrix_CreateOrthoLH(PLMatrix *o, float w, float h, float zNear, float zFar);
+extern PLMatrix *PL_Matrix_CreateOrthoRH(PLMatrix *o, float w, float h, float zNear, float zFar);
+extern PLMatrix *PL_Matrix_CreateOrthoOffCenterLH(PLMatrix *o, float left, float right,
                                         float bottom, float top, float zNear, float zFar);
-PLMatrix *PL_Matrix_CreateOrthoOffCenterRH(PLMatrix *o, float left, float right,
+extern PLMatrix *PL_Matrix_CreateOrthoOffCenterRH(PLMatrix *o, float left, float right,
                                         float bottom, float top, float zNear, float zFar);
-PLMatrix *PL_Matrix_CreatePerspectiveFovLH(PLMatrix *o, float fovY, float aspectRatio, float zNear, float zFar);
-PLMatrix *PL_Matrix_CreatePerspectiveFovRH(PLMatrix *o, float fovY, float aspectRatio, float zNear, float zFar);
-PLMatrix *PL_Matrix_CreateLookAtLH(PLMatrix *o, const PLVector3 *eye, const PLVector3 *at, const PLVector3 *up);
-PLMatrix *PL_Matrix_CreateLookAtRH(PLMatrix *o, const PLVector3 *eye, const PLVector3 *at, const PLVector3 *up);
+extern PLMatrix *PL_Matrix_CreatePerspectiveFovLH(PLMatrix *o, float fovY, float aspectRatio, float zNear, float zFar);
+extern PLMatrix *PL_Matrix_CreatePerspectiveFovRH(PLMatrix *o, float fovY, float aspectRatio, float zNear, float zFar);
+extern PLMatrix *PL_Matrix_CreateLookAtLH(PLMatrix *o, const PLVector3 *eye, const PLVector3 *at, const PLVector3 *up);
+extern PLMatrix *PL_Matrix_CreateLookAtRH(PLMatrix *o, const PLVector3 *eye, const PLVector3 *at, const PLVector3 *up);
 
 /* ------------------------------------------------------------ Render.c */
 

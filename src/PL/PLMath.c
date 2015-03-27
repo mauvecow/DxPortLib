@@ -129,6 +129,66 @@ PLMatrix *PL_Matrix_CreateTranslation(PLMatrix *o, float x, float y, float z) {
     o->m[3][0] = x; o->m[3][1] = y; o->m[3][2] = z; o->m[3][3] = 1;
     return o;
 }
+PLMatrix *PL_Matrix_CreateRotationX(PLMatrix *o, float x) {
+    PL_Matrix_CreateIdentity(o);
+    float cosx = cosf(x);
+    float sinx = sinf(x);
+    o->m22 = cosx;
+    o->m23 = -sinx;
+    o->m32 = sinx;
+    o->m33 = cosx;
+    return o;
+}
+PLMatrix *PL_Matrix_CreateRotationY(PLMatrix *o, float y) {
+    PL_Matrix_CreateIdentity(o);
+
+    float cosy = cosf(y);
+    float siny = sinf(y);
+    o->m11 = cosy;
+    o->m13 = -siny;
+    o->m31 = siny;
+    o->m33 = cosy;
+    return o;
+}
+PLMatrix *PL_Matrix_CreateRotationZ(PLMatrix *o, float z) {
+    PL_Matrix_CreateIdentity(o);
+
+    float cosz = cosf(z);
+    float sinz = sinf(z);
+    o->m11 = cosz;
+    o->m12 = -sinz;
+    o->m21 = sinz;
+    o->m22 = cosz;
+    return o;
+}
+
+PLMatrix *PL_Matrix_CreateFromYawPitchRoll(PLMatrix *o, float yaw, float pitch, float roll) {
+    float cosa = cosf(yaw);
+    float sina = sinf(yaw);
+    float cosb = cosf(pitch);
+    float sinb = sinf(pitch);
+    float cosc = cosf(roll);
+    float sinc = sinf(roll);
+    
+    o->m11 = cosa * cosb;
+    o->m12 = (cosa * sinb * sinc) - (sina * cosc);
+    o->m13 = (cosa * sinb * cosc) + (sina * sinc);
+    o->m14 = 0;
+    o->m21 = sina * cosb;
+    o->m22 = (sina * sinb * sinc) + (cosa * cosc);
+    o->m23 = (sina * sinb * cosc) - (cosa * sinc);
+    o->m24 = 0;
+    o->m31 = -sinb;
+    o->m32 = cosb * sinc;  
+    o->m33 = cosb * cosc;  
+    o->m34 = 0;
+    o->m41 = 0;
+    o->m42 = 0;
+    o->m43 = 0;
+    o->m44 = 1;
+
+    return o;
+}
 
 PLMatrix *PL_Matrix_Multiply(PLMatrix *o, const PLMatrix *a, const PLMatrix *b) {
     PLMatrix n;
@@ -147,8 +207,51 @@ PLMatrix *PL_Matrix_Multiply(PLMatrix *o, const PLMatrix *a, const PLMatrix *b) 
     return PL_Matrix_Copy(o, &n);
 }
 PLMatrix *PL_Matrix_Inverse(PLMatrix *o, float *dDeterminant, const PLMatrix *m) {
-    /* TO BE WRITTEN */
-    PL_Matrix_CreateIdentity(o);
+    PLMatrix inv;
+    float det;
+    int x, y;
+    
+#define INV(x0, x1, x2, y0, y1, y2) \
+    ((m->m[x0][y0] * ((m->m[x1][y1] * m->m[x2][y2]) - (m->m[x1][y2] * m->m[x2][y1]))) - \
+     (m->m[x1][y0] * ((m->m[x0][y1] * m->m[x2][y2]) - (m->m[x0][y2] * m->m[x2][y1]))) + \
+     (m->m[x2][y0] * ((m->m[x0][y1] * m->m[x1][y2]) - (m->m[x0][y2] * m->m[x1][y1]))))
+    
+    inv.m[0][0] = INV(1, 2, 3, 1, 2, 3);
+    inv.m[0][1] = -INV(0, 2, 3, 1, 2, 3);
+    inv.m[0][2] = INV(0, 1, 3, 1, 2, 3);
+    inv.m[0][3] = -INV(0, 1, 2, 1, 2, 3);
+    inv.m[1][0] = -INV(1, 2, 3, 0, 2, 3);
+    inv.m[1][1] = INV(0, 2, 3, 0, 2, 3);
+    inv.m[1][2] = -INV(0, 1, 3, 0, 2, 3);
+    inv.m[1][3] = INV(0, 1, 2, 0, 2, 3);
+    inv.m[2][0] = INV(1, 2, 3, 0, 1, 3);
+    inv.m[2][1] = -INV(0, 2, 3, 0, 1, 3);
+    inv.m[2][2] = INV(0, 1, 3, 0, 1, 3);
+    inv.m[2][3] = -INV(0, 1, 2, 0, 1, 3);
+    inv.m[3][0] = -INV(1, 2, 3, 0, 1, 2);
+    inv.m[3][1] = INV(0, 2, 3, 0, 1, 2);
+    inv.m[3][2] = -INV(0, 1, 3, 0, 1, 2);
+    inv.m[3][3] = INV(0, 1, 2, 0, 1, 2);
+    
+#undef INV
+    
+    det = (m->m[0][0] * inv.m[0][0]) + (m->m[0][1] * inv.m[1][0]) +
+          (m->m[0][2] * inv.m[2][0]) + (m->m[0][3] * inv.m[3][0]);
+    
+    if (det == 0.0f) {
+       PL_Matrix_CreateIdentity(o);
+    } else {
+        det = 1.0f / det;
+        
+        for (x = 0; x < 4; ++x) {
+            for (y = 0; y < 4; ++y) {
+                o->m[x][y] = inv.m[x][y] * det;
+            }
+        }
+    }
+    
+    *dDeterminant = det;
+    
     return o;
 }
 
