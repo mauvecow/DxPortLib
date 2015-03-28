@@ -59,8 +59,8 @@ int WaitKey() {
     return ::DxLib_WaitKey();
 }
 
-int GetNowCount() {
-    return ::DxLib_GetNowCount();
+int GetNowCount(int UseRDTSCFlag) {
+    return ::DxLib_GetNowCount(UseRDTSCFlag);
 }
 
 int GetRand(int maxValue) {
@@ -87,12 +87,12 @@ int EXT_FileRead_SetCharSet(int charset) {
     return ::DxLib_EXT_FileRead_SetCharSet(charset);
 }
 
-int FileRead_open(const DXCHAR *filename) {
-    return ::DxLib_FileRead_open(filename);
+int FileRead_open(const DXCHAR *filename, int ASync) {
+    return ::DxLib_FileRead_open(filename, ASync);
 }
 
-long long FileRead_size(int fileHandle) {
-    return ::DxLib_FileRead_size(fileHandle);
+long long FileRead_size(const DXCHAR *filename) {
+    return ::DxLib_FileRead_size(filename);
 }
 
 int FileRead_close(int fileHandle) {
@@ -133,7 +133,7 @@ int FileRead_scanf(int fileHandle, const DXCHAR *format, ...) {
 }
 
 // ---------------------------------------------------- DxArchive.cpp
-int SetUseDXArchiveFlag(bool flag) {
+int SetUseDXArchiveFlag(int flag) {
     return ::DxLib_SetUseDXArchiveFlag(flag);
 }
 int SetDXArchiveKeyString(const DXCHAR *keyString) {
@@ -142,8 +142,8 @@ int SetDXArchiveKeyString(const DXCHAR *keyString) {
 int SetDXArchiveExtension(const DXCHAR *extension) {
     return ::DxLib_SetDXArchiveExtension(extension);
 }
-int SetDXArchivePriority(int flag) {
-    return ::DxLib_SetDXArchivePriority(flag);
+int SetDXArchivePriority(int priority) {
+    return ::DxLib_SetDXArchivePriority(priority);
 }
 int DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
     return ::DxLib_DXArchivePreLoad(dxaFilename, async);
@@ -221,8 +221,8 @@ float GetMouseHWheelRotVolF(int clearFlag) {
 int SetGraphMode(int width, int height, int bitDepth, int FPS) {
     return ::DxLib_SetGraphMode(width, height, bitDepth, FPS);
 }
-int SetWindowSizeChangeEnableFlag(int windowResizeFlag) {
-    return ::DxLib_SetWindowSizeChangeEnableFlag(windowResizeFlag);
+int SetWindowSizeChangeEnableFlag(int windowResizeFlag, int fitScreen) {
+    return ::DxLib_SetWindowSizeChangeEnableFlag(windowResizeFlag, fitScreen);
 }
 
 // Windows can define SetWindowText to SetWindowTextA/W,
@@ -298,17 +298,17 @@ int EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
 int MakeScreen(int width, int height, int hasAlphaChannel) {
     return ::DxLib_MakeScreen(width, height, hasAlphaChannel);
 }
-int LoadGraph(const DXCHAR *name) {
-    return ::DxLib_LoadGraph(name);
+int LoadGraph(const DXCHAR *name, int notUse3DFlag) {
+    return ::DxLib_LoadGraph(name, notUse3DFlag);
 }
-int LoadReverseGraph(const DXCHAR *name) {
-    return ::DxLib_LoadReverseGraph(name);
+int LoadReverseGraph(const DXCHAR *name, int notUse3DFlag) {
+    return ::DxLib_LoadReverseGraph(name, notUse3DFlag);
 }
 int LoadDivGraph(const DXCHAR *filename, int graphCount,
                  int xCount, int yCount, int xSize, int ySize,
-                 int *handleBuf) {
+                 int *handleBuf, int notUse3DFlag) {
     return ::DxLib_LoadDivGraph(filename, graphCount, xCount, yCount,
-                                xSize, ySize, handleBuf);
+                                xSize, ySize, handleBuf, notUse3DFlag);
 }
 int LoadDivBmpGraph(const DXCHAR *filename, int graphCount,
                     int xCount, int yCount, int xSize, int ySize,
@@ -319,18 +319,18 @@ int LoadDivBmpGraph(const DXCHAR *filename, int graphCount,
 }
 int LoadReverseDivGraph(const DXCHAR *filename, int graphCount,
                               int xCount, int yCount, int xSize, int ySize,
-                              int *handleBuf) {
+                              int *handleBuf, int notUse3DFlag) {
     return ::DxLib_LoadReverseDivGraph(filename, graphCount, xCount, yCount,
-                                       xSize, ySize, handleBuf);
+                                       xSize, ySize, handleBuf, notUse3DFlag);
 }
-int DeleteGraph(int graphID) {
-    return ::DxLib_DeleteGraph(graphID);
+int DeleteGraph(int graphID, int LogOutFlag) {
+    return ::DxLib_DeleteGraph(graphID, LogOutFlag);
 }
 int DeleteSharingGraph(int graphID) {
     return ::DxLib_DeleteSharingGraph(graphID);
 }
-int InitGraph() {
-    return ::DxLib_InitGraph();
+int InitGraph(int LogOutFlag) {
+    return ::DxLib_InitGraph(LogOutFlag);
 }
 int DerivationGraph(int x, int y, int w, int h, int graphID) {
     return ::DxLib_DerivationGraph(x, y, w, h, graphID);
@@ -667,8 +667,10 @@ int EXT_InitFontMappings() {
 
 /* Handle font functions */
 int DrawStringToHandle(int x, int y, const DXCHAR *text,
-                       DXCOLOR color, int fontHandle, DXCOLOR edgeColor) {
-    return ::DxLib_DrawStringToHandle(x, y, text, color, fontHandle, edgeColor);
+                       DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
+                       int verticalFlag) {
+    return ::DxLib_DrawStringToHandle(x, y, text, color, fontHandle,
+                                      edgeColor, verticalFlag);
 }
 int DrawFormatStringToHandle(
     int x, int y, DXCOLOR color, int fontHandle,
@@ -683,9 +685,10 @@ int DrawFormatStringToHandle(
 }
 int DrawExtendStringToHandle(int x, int y, double ExRateX, double ExRateY,
                              const DXCHAR *text,
-                             DXCOLOR color, int fontHandle, DXCOLOR edgeColor
-                            ) {
-    return ::DxLib_DrawExtendStringToHandle(x, y, ExRateX, ExRateY, text, color, fontHandle, edgeColor);
+                             DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
+                             int VerticalFlag) {
+    return ::DxLib_DrawExtendStringToHandle(x, y, ExRateX, ExRateY, text, color, fontHandle,
+                                            edgeColor, VerticalFlag);
 }
 int DrawExtendFormatStringToHandle(
     int x, int y, double ExRateX, double ExRateY,
@@ -700,8 +703,9 @@ int DrawExtendFormatStringToHandle(
     return retval;
 }
 
-int GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fontHandle) {
-    return ::DxLib_GetDrawStringWidthToHandle(string, strLen, fontHandle);
+int GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fontHandle,
+                               int VerticalFlag) {
+    return ::DxLib_GetDrawStringWidthToHandle(string, strLen, fontHandle, VerticalFlag);
 }
 int GetDrawFormatStringWidthToHandle(
     int fontHandle, const DXCHAR *formatString, ...
@@ -713,8 +717,9 @@ int GetDrawFormatStringWidthToHandle(
     va_end(args);
     return retval;
 }
-int GetDrawExtendStringWidthToHandle(double ExRateX, const DXCHAR *string, int strLen, int fontHandle) {
-    return ::DxLib_GetDrawExtendStringWidthToHandle(ExRateX, string, strLen, fontHandle);
+int GetDrawExtendStringWidthToHandle(double ExRateX, const DXCHAR *string, int strLen,
+                                     int fontHandle, int VerticalFlag) {
+    return ::DxLib_GetDrawExtendStringWidthToHandle(ExRateX, string, strLen, fontHandle, VerticalFlag);
 }
 int GetDrawExtendFormatStringWidthToHandle(
     double ExRateX, int fontHandle, const DXCHAR *formatString, ...
@@ -741,10 +746,10 @@ int SetFontSpaceToHandle(int fontSpacing, int fontHandle) {
 
 int CreateFontToHandle(const DXCHAR *fontname,
                        int size, int thickness, int fontType, int charSet,
-                       int edgeSize, int Italic) {
+                       int edgeSize, int Italic, int handle) {
     return ::DxLib_CreateFontToHandle(
         fontname, size, thickness, fontType, charSet,
-        edgeSize, Italic
+        edgeSize, Italic, handle
     );
 }
 int DeleteFontToHandle(int fontHandle) {
@@ -792,8 +797,8 @@ int DrawExtendFormatString(
     va_end(args);
     return retval;
 }
-int GetDrawStringWidth(const DXCHAR *string, int strLen) {
-    return ::DxLib_GetDrawStringWidth(string, strLen);
+int GetDrawStringWidth(const DXCHAR *string, int strLen, int VerticalFlag) {
+    return ::DxLib_GetDrawStringWidth(string, strLen, VerticalFlag);
 }
 int GetDrawFormatStringWidth(
     const DXCHAR *formatString, ...
@@ -805,8 +810,8 @@ int GetDrawFormatStringWidth(
     va_end(args);
     return retval;
 }
-int GetDrawExtendStringWidth(double ExRateX, const DXCHAR *string, int strLen) {
-    return ::DxLib_GetDrawExtendStringWidth(ExRateX, string, strLen);
+int GetDrawExtendStringWidth(double ExRateX, const DXCHAR *string, int strLen, int VerticalFlag) {
+    return ::DxLib_GetDrawExtendStringWidth(ExRateX, string, strLen, VerticalFlag);
 }
 int GetDrawExtendFormatStringWidth(
     double ExRateX, const DXCHAR *formatString, ...
@@ -875,17 +880,17 @@ int SetUseOldVolumeCalcFlag(int volumeFlag) {
     return ::DxLib_SetUseOldVolumeCalcFlag(volumeFlag);
 }
 
-int LoadSoundMem(const DXCHAR *filename) {
-    return ::DxLib_LoadSoundMem(filename);
+int LoadSoundMem(const DXCHAR *filename, int bufferNum, int unionHandle) {
+    return ::DxLib_LoadSoundMem(filename, bufferNum, unionHandle);
 }
 int LoadSoundMem2(const DXCHAR *filename, const DXCHAR *filename2) {
     return ::DxLib_LoadSoundMem2(filename, filename2);
 }
-int DeleteSoundMem(int soundID) {
-    return ::DxLib_DeleteSoundMem(soundID);
+int DeleteSoundMem(int soundID, int LogOutFlag) {
+    return ::DxLib_DeleteSoundMem(soundID, LogOutFlag);
 }
-int InitSoundMem() {
-    return ::DxLib_InitSoundMem();
+int InitSoundMem(int LogOutFlag) {
+    return ::DxLib_InitSoundMem(LogOutFlag);
 }
 
 int SetCreateSoundDataType(int soundDataType) {

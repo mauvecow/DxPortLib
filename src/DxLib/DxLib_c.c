@@ -177,7 +177,8 @@ int DxLib_WaitKey() {
 #endif
 }
 
-int DxLib_GetNowCount() {
+int DxLib_GetNowCount(int UseRDTSCFlag) {
+    /* FIXME: UseRDTSCFlag is not supported. */
     return (int)SDL_GetTicks();
 }
 
@@ -205,12 +206,13 @@ int DxLib_EXT_FileRead_SetCharSet(int charset) {
     return PLEXT_FileRead_SetCharSet(charset);
 }
 
-int DxLib_FileRead_open(const DXCHAR *filename) {
+int DxLib_FileRead_open(const DXCHAR *filename, int ASync) {
+    /* FIXME: ASync not supported */
     return Dx_FileRead_open(filename);
 }
 
-long long DxLib_FileRead_size(int fileHandle) {
-    return Dx_FileRead_size(fileHandle);
+long long DxLib_FileRead_size(const DXCHAR *filename) {
+    return Dx_FileRead_size(filename);
 }
 
 int DxLib_FileRead_close(int fileHandle) {
@@ -262,10 +264,11 @@ int DxLib_SetDXArchiveKeyString(const DXCHAR *keyString) {
 int DxLib_SetDXArchiveExtension(const DXCHAR *extension) {
     return Dx_File_SetDXArchiveExtension(extension);
 }
-int DxLib_SetDXArchivePriority(int flag) {
-    return Dx_File_SetDXArchivePriority(flag);
+int DxLib_SetDXArchivePriority(int priority) {
+    return Dx_File_SetDXArchivePriority(priority);
 }
 int DxLib_DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
+    /* FIXME: async is unsupported */
     return Dx_File_DXArchivePreLoad(dxaFilename, async);
 }
 int DxLib_DXArchiveCheckIdle(const DXCHAR *dxaFilename) {
@@ -343,7 +346,8 @@ int DxLib_SetGraphMode(int width, int height, int bitDepth, int FPS) {
     PL_Window_SetDimensions(width, height, bitDepth, FPS);
     return 0;
 }
-int DxLib_SetWindowSizeChangeEnableFlag(int windowResizeFlag) {
+int DxLib_SetWindowSizeChangeEnableFlag(int windowResizeFlag, int fitScreen) {
+    /* FIXME: fitScreen is unsupported */
     PL_Window_SetWindowResizeFlag(windowResizeFlag);
     return 0;
 }
@@ -420,15 +424,18 @@ int DxLib_EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
 int DxLib_MakeScreen(int width, int height, int hasAlphaChannel) {
     return Dx_Graph_MakeScreen(width, height, hasAlphaChannel);
 }
-int DxLib_LoadGraph(const DXCHAR *name) {
+int DxLib_LoadGraph(const DXCHAR *name, int notUse3DFlag) {
+    /* FIXME: notUse3DFlag is unsupported */
     return Dx_Graph_Load(name, DXFALSE);
 }
-int DxLib_LoadReverseGraph(const DXCHAR *name) {
+int DxLib_LoadReverseGraph(const DXCHAR *name, int notUse3DFlag) {
+    /* FIXME: notUse3DFlag is unsupported */
     return Dx_Graph_Load(name, DXTRUE);
 }
 int DxLib_LoadDivGraph(const DXCHAR *filename, int graphCount,
                        int xCount, int yCount, int xSize, int ySize,
-                       int *handleBuf) {
+                       int *handleBuf, int notUse3DFlag) {
+    /* FIXME: notUse3DFlag is unsupported */
     return Dx_Graph_LoadDiv(filename, graphCount, xCount, yCount,
                             xSize, ySize, handleBuf,
                             DXFALSE, DXFALSE);
@@ -442,18 +449,21 @@ int DxLib_LoadDivBmpGraph(const DXCHAR *filename, int graphCount,
 }
 int DxLib_LoadReverseDivGraph(const DXCHAR *filename, int graphCount,
                               int xCount, int yCount, int xSize, int ySize,
-                              int *handleBuf) {
+                              int *handleBuf, int notUse3DFlag) {
+    /* FIXME: notUse3DFlag is unsupported */
     return Dx_Graph_LoadDiv(filename, graphCount, xCount, yCount,
                             xSize, ySize, handleBuf,
                             DXFALSE, DXTRUE);
 }
-int DxLib_DeleteGraph(int graphID) {
+int DxLib_DeleteGraph(int graphID, int LogOutFlag) {
+    /* FIXME: LogOutFlag is unsupported */
     return Dx_Graph_Delete(graphID);
 }
 int DxLib_DeleteSharingGraph(int graphID) {
     return Dx_Graph_DeleteSharingGraph(graphID);
 }
-int DxLib_InitGraph() {
+int DxLib_InitGraph(int LogOutFlag) {
+    /* FIXME: LogOutFlag is unsupported */
     return Dx_Graph_InitGraph();
 }
 int DxLib_DerivationGraph(int x, int y, int w, int h, int graphID) {
@@ -799,7 +809,9 @@ int DxLib_EXT_InitFontMappings() {
 
 /* Handle font functions */
 int DxLib_DrawStringToHandle(int x, int y, const DXCHAR *text,
-                             DXCOLOR color, int fontHandle, DXCOLOR edgeColor) {
+                             DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
+                             int VerticalFlag) {
+    /* FIXME: VerticalFlag unsupported */
     return PL_Font_DrawStringToHandle(x, y, text, color, fontHandle, edgeColor);
 }
 int DxLib_DrawFormatStringToHandle(
@@ -815,7 +827,9 @@ int DxLib_DrawFormatStringToHandle(
 }
 int DxLib_DrawExtendStringToHandle(int x, int y, double ExRateX, double ExRateY,
                                    const DXCHAR *text,
-                                   DXCOLOR color, int fontHandle, DXCOLOR edgeColor) {
+                                   DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
+                                   int VerticalFlag) {
+    /* FIXME: VerticalFlag unsupported */
     return PL_Font_DrawExtendStringToHandle(x, y, ExRateX, ExRateY, text, color, fontHandle, edgeColor);
 }
 int DxLib_DrawExtendFormatStringToHandle(
@@ -830,7 +844,9 @@ int DxLib_DrawExtendFormatStringToHandle(
     return retval;
 }
 
-int DxLib_GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fontHandle) {
+int DxLib_GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fontHandle,
+                                     int VerticalFlag) {
+    /* FIXME: VerticalFlag unsupported */
     return PL_Font_GetDrawStringWidthToHandle(string, strLen, fontHandle);
 }
 int DxLib_GetDrawFormatStringWidthToHandle(
@@ -843,7 +859,9 @@ int DxLib_GetDrawFormatStringWidthToHandle(
     va_end(args);
     return retval;
 }
-int DxLib_GetDrawExtendStringWidthToHandle(double ExRateX, const DXCHAR *string, int strLen, int fontHandle) {
+int DxLib_GetDrawExtendStringWidthToHandle(double ExRateX, const DXCHAR *string, int strLen,
+                                           int fontHandle, int VerticalFlag) {
+    /* FIXME: VerticalFlag unsupported */
     return PL_Font_GetDrawExtendStringWidthToHandle(ExRateX, string, strLen, fontHandle);
 }
 int DxLib_GetDrawExtendFormatStringWidthToHandle(
@@ -872,7 +890,8 @@ int DxLib_SetFontSpaceToHandle(int fontSpacing, int fontHandle) {
 
 int DxLib_CreateFontToHandle(const DXCHAR *fontname,
                        int size, int thickness, int fontType, int charSet,
-                       int edgeSize, int Italic) {
+                       int edgeSize, int Italic, int handle) {
+    /* FIXME: handle not supported */
     return PL_Font_CreateFontToHandle(
         fontname, size, thickness, fontType, charSet,
         edgeSize, Italic
@@ -924,7 +943,8 @@ int DxLib_DrawExtendFormatString(
     return retval;
 }
 
-int DxLib_GetDrawStringWidth(const DXCHAR *string, int strLen) {
+int DxLib_GetDrawStringWidth(const DXCHAR *string, int strLen, int VerticalFlag) {
+    /* FIXME: handle not supported */
     return PL_Font_GetDrawStringWidth(string, strLen);
 }
 int DxLib_GetDrawFormatStringWidth(
@@ -937,7 +957,9 @@ int DxLib_GetDrawFormatStringWidth(
     va_end(args);
     return retval;
 }
-int DxLib_GetDrawExtendStringWidth(double ExRateX, const DXCHAR *string, int strLen) {
+int DxLib_GetDrawExtendStringWidth(double ExRateX, const DXCHAR *string, int strLen,
+                                   int VerticalFlag) {
+    /* FIXME: handle not supported */
     return PL_Font_GetDrawExtendStringWidth(ExRateX, string, strLen);
 }
 int DxLib_GetDrawExtendFormatStringWidth(
@@ -1008,16 +1030,19 @@ int DxLib_SetUseOldVolumeCalcFlag(int volumeFlag) {
     return PL_SetUseOldVolumeCalcFlag(volumeFlag);
 }
 
-int DxLib_LoadSoundMem(const DXCHAR *filename) {
+int DxLib_LoadSoundMem(const DXCHAR *filename, int bufferNum, int unionHandle) {
+    /* FIXME: bufferNum and unionHandle are unsupported */
     return PL_LoadSoundMem(filename);
 }
 int DxLib_LoadSoundMem2(const DXCHAR *filename, const DXCHAR *filename2) {
     return PL_LoadSoundMem2(filename, filename2);
 }
-int DxLib_DeleteSoundMem(int soundID) {
+int DxLib_DeleteSoundMem(int soundID, int LogOutFlag) {
+    /* FIXME: LogOutFlag is unsupported */
     return PL_DeleteSoundMem(soundID);
 }
-int DxLib_InitSoundMem() {
+int DxLib_InitSoundMem(int LogOutFlag) {
+    /* FIXME: LogOutFlag is unsupported */
     return PL_InitSoundMem();
 }
 

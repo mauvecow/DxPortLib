@@ -558,6 +558,11 @@ int PL_Input_SetJoypadInputToKeyInput(int controllerIndex, int input,
     
     keybindTable = &s_keybinds[index];
     
+    if (key1 < 0) { key1 = 0; }
+    if (key2 < 0) { key2 = 0; }
+    if (key3 < 0) { key3 = 0; }
+    if (key4 < 0) { key4 = 0; }
+    
     for (i = 0; i < 32; ++i) {
         if ((input & (1 << i)) != 0) {
             keybindTable->keys[i].key1 = (unsigned char)key1;

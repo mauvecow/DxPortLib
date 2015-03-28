@@ -261,10 +261,13 @@ int Dx_File_ReadFile(const DXCHAR *filename, unsigned char **dData, unsigned int
 /* Sets the "encryption" key to use for the packfile. */
 int Dx_File_SetDXArchiveKeyString(const DXCHAR *keyString) {
     int n = 0;
-    unsigned int ch;
-    while ((ch = PL_Text_ReadDxChar(&keyString)) != 0 && n < DXA_KEY_LENGTH) {
-        s_defaultArchiveString[n] = (char)ch;
-        n += 1;
+    
+    if (keyString != 0) {
+        unsigned int ch;
+        while ((ch = PL_Text_ReadDxChar(&keyString)) != 0 && n < DXA_KEY_LENGTH) {
+            s_defaultArchiveString[n] = (char)ch;
+            n += 1;
+        }
     }
     
     s_defaultArchiveString[n] = '\0';
@@ -273,13 +276,17 @@ int Dx_File_SetDXArchiveKeyString(const DXCHAR *keyString) {
 }
 
 int Dx_File_SetDXArchiveExtension(const DXCHAR *extension) {
-    DXSTRNCPY(s_archiveExtension, extension, 64);
+    if (extension != 0) {
+        s_archiveExtension[0] = '\0';
+    } else {
+        memset(s_archiveExtension, 0, sizeof(s_archiveExtension));
+    }
     
     return 0;
 }
 
-int Dx_File_SetDXArchivePriority(int flag) {
-    s_filePriorityFlag = (flag == DXFALSE) ? DXFALSE : DXTRUE;
+int Dx_File_SetDXArchivePriority(int priority) {
+    s_filePriorityFlag = (priority == DXFALSE) ? DXFALSE : DXTRUE;
     
     return 0;
 }
@@ -305,6 +312,7 @@ int Dx_File_DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
         archive = s_GetArchive(buf);
         if (archive != NULL) {
+            /* FIXME async not supported */
             return DXA_PreloadArchive(archive);
         }
     }
@@ -365,11 +373,12 @@ int Dx_FileRead_open(const DXCHAR *filename) {
     
     return fileDataID;
 }
-long long Dx_FileRead_size(int fileHandle) {
-    FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
-    if (handle != NULL) {
-        SDL_RWops *rwops = handle->rwops;
-        return SDL_RWsize(rwops);
+long long Dx_FileRead_size(const DXCHAR *filename) {
+    SDL_RWops *rwops = Dx_File_OpenStream(filename);
+    if (rwops != NULL) {
+        long long size = rwops->size(rwops);
+        rwops->close(rwops);
+        return size;
     }
     return 0;
 }
