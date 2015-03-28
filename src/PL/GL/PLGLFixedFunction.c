@@ -62,10 +62,6 @@ static int s_pixelTexture = -1;
  */
 
 int PLGL_FixedFunction_ClearPresetProgram() {
-    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
-    PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    PL_GL.glDisable(GL_ALPHA_TEST);
-    
     return 0;
 }
 
@@ -78,10 +74,10 @@ int PLGL_FixedFunction_SetPresetProgram(int preset, int flags,
     int rgbScale = 1;
     
     PL_GL.glMatrixMode(GL_PROJECTION);
-    PL_GL.glLoadMatrixf((const float *)&projectionMatrix);
+    PL_GL.glLoadMatrixf((const float *)projectionMatrix);
     
     PL_GL.glMatrixMode(GL_MODELVIEW);
-    PL_GL.glLoadMatrixf((const float *)&viewMatrix);
+    PL_GL.glLoadMatrixf((const float *)viewMatrix);
     
     if ((flags & PL_PRESETFLAG_ALPHATEST_MASK) != 0) {
         PL_GL.glEnable(GL_ALPHA_TEST);
@@ -104,7 +100,13 @@ int PLGL_FixedFunction_SetPresetProgram(int preset, int flags,
             case PL_PRESETFLAG_ALPHATEST_GEQUAL:
                 PL_GL.glAlphaFunc(GL_GEQUAL, alphaTestValue);
                 break;
+            default:
+                /* Never mind. */
+                PL_GL.glDisable(GL_ALPHA_TEST);
+                break;
         }
+    } else {
+        PL_GL.glDisable(GL_ALPHA_TEST);
     }
     
     PL_GL.glActiveTexture(GL_TEXTURE0);

@@ -153,7 +153,7 @@ static int s_boundTextures[MAX_TEXTURE] = { -1 };
 static unsigned int s_boundTextureCount = 0;
 
 static int s_activeTexturePreset = -1;
-static int s_activeShaderProgram = 0;
+static int s_activeShaderProgram = -100;
 static int s_useFixedFunction = 0;
 
 int PLGL_SetTextureStage(unsigned int stage, int textureRefID, int textureDrawMode) {
@@ -483,8 +483,6 @@ int PLGL_DrawVertexBuffer(const VertexDefinition *def,
         PL_GL.glDrawArrays(PrimitiveToDrawType(primitiveType), vertexStart, vertexCount);
     }
     
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
     return 0;
 }
 
@@ -533,8 +531,6 @@ int PLGL_DrawVertexIndexBuffer(const VertexDefinition *def,
                             indexCount, GL_UNSIGNED_SHORT,
                             (void *)(indexStart * sizeof(unsigned short)));
     }
-    PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     
     return 0;
 }

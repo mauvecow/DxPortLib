@@ -77,7 +77,6 @@ int PLGL_VertexBuffer_CreateBytes(int vertexByteSize,
         PL_GL.glBufferData(GL_ARRAY_BUFFER,
                         vb->bufferSize,
                         vertexData, bufferUsage);
-        PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
     } else {
         vb->fallbackData = DXALLOC(vb->bufferSize);
     }
@@ -102,7 +101,6 @@ int PLGL_VertexBuffer_ResetBuffer(int vboHandle) {
         if (vb->vboID > 0) {
             PL_GL.glBindBuffer(GL_ARRAY_BUFFER, vb->vboID);
             PL_GL.glBufferData(GL_ARRAY_BUFFER, vb->bufferSize, NULL, vb->bufferUsage);
-            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
     }
     
@@ -121,7 +119,6 @@ int PLGL_VertexBuffer_SetDataBytes(int vboHandle, const char *vertices, int star
                 PL_GL.glBufferData(GL_ARRAY_BUFFER, vb->bufferSize, NULL, vb->bufferUsage);
             }
             PL_GL.glBufferSubData(GL_ARRAY_BUFFER, start, count, vertices);
-            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
         } else if (vb->fallbackData != NULL) {
             if ((start + count) <= vb->bufferSize) {
                 memcpy(vb->fallbackData + start, vertices, count);
@@ -147,7 +144,6 @@ int PLGL_VertexBuffer_SetData(int vboHandle, const char *vertices, int start, in
                                 vb->vertexByteSize * start,
                                 vb->vertexByteSize * count,
                                 vertices);
-            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
         } else if (vb->fallbackData != NULL) {
             int bufStart = vb->vertexByteSize * start;
             int bufSize = vb->vertexByteSize * count;
@@ -188,7 +184,6 @@ int PLGL_VertexBuffer_Unlock(int vboHandle, char *buffer) {
     if (vb != NULL) {
         if (PL_GL.hasVBOSupport == DXTRUE && PL_GL.glUnmapBuffer != NULL) {
             PL_GL.glUnmapBuffer(GL_ARRAY_BUFFER);
-            PL_GL.glBindBuffer(GL_ARRAY_BUFFER, 0);
             return 0;
         } else if (vb->fallbackData == buffer) {
             return 0;
@@ -275,7 +270,6 @@ int PLGL_IndexBuffer_Create(const unsigned short *indexData, int indexCount,
         PL_GL.glBufferData(GL_ELEMENT_ARRAY_BUFFER,
                         ib->bufferSize,
                         indexData, bufferUsage);
-        PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     } else {
         ib->fallbackData = DXALLOC(ib->bufferSize);
     }
@@ -293,7 +287,6 @@ int PLGL_IndexBuffer_ResetBuffer(int iboHandle) {
         if (ib->iboID > 0) {
             PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->iboID);
             PL_GL.glBufferData(GL_ELEMENT_ARRAY_BUFFER, ib->bufferSize, NULL, ib->bufferUsage);
-            PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
     }
     
@@ -314,7 +307,6 @@ int PLGL_IndexBuffer_SetData(int iboHandle, const unsigned short *indices, int s
                                     ib->indexByteSize * start,
                                     ib->indexByteSize * count,
                                     indices);
-            PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             return 0;
         } else if (ib->fallbackData != NULL) {
             int bufStart = ib->indexByteSize * start;
@@ -355,7 +347,6 @@ int PLGL_IndexBuffer_Unlock(int iboHandle) {
     if (ib != NULL) {
         if (PL_GL.hasVBOSupport == DXTRUE && PL_GL.glUnmapBuffer != NULL) {
             PL_GL.glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-            PL_GL.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             return 0;
         } else if (ib->fallbackData != NULL) {
             return 0;

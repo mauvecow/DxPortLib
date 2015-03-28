@@ -502,7 +502,7 @@ void PLGL_Shaders_ClearProgramVertexData(int shaderHandle, const VertexDefinitio
     }
 }
 
-static int s_stockShaderIDs[PLGL_SHADER_END] = { 0 };
+static int s_stockShaderIDs[PLGL_SHADER_END] = { -1 };
 
 int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType) {
     return s_stockShaderIDs[shaderType];
