@@ -231,6 +231,7 @@ extern int PLEXT_Window_MessageBoxError(const DXCHAR *title, const DXCHAR *text)
 extern int PLEXT_Window_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
                                         const DXCHAR *yes, const DXCHAR *no);
 
+extern int PL_Window_BindMainFramebuffer();
 extern int PL_Window_GetFramebuffer();
 
 /* -------------------------------------------------------------- Math.c */

@@ -39,8 +39,9 @@ RECT g_viewportRect;
 
 Bool Luna3D::BeginScene(void) {
     PLG.StartFrame();
+    
     PLG.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    PLG.Clear();
+    PL_Window_BindMainFramebuffer();
     return true;
 }
 void Luna3D::EndScene(void) {

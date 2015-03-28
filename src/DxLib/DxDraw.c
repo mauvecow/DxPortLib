@@ -1218,6 +1218,9 @@ static int s_drawGraphID = -1;
 
 int Dx_Draw_UpdateDrawScreen() {
     if (s_drawScreenID != s_currentScreenID) {
+        if (s_currentScreenID == -2) {
+            PLG.StartFrame();
+        }
         s_currentScreenID = s_drawScreenID;
         PLG.Texture_BindFramebuffer(s_drawScreenID);
         

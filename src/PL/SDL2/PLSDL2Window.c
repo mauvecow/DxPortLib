@@ -234,11 +234,14 @@ static void PL_Window_Refresh() {
         PLG.ClearPresetProgram();
         
         SDL_GL_SwapWindow(s_window);
-        
-        PLG.Texture_BindFramebuffer(s_screenFrameBufferA);
     } else {
         SDL_GL_SwapWindow(s_window);
     }
+}
+
+int PL_Window_BindMainFramebuffer() {
+    PLG.Texture_BindFramebuffer(s_screenFrameBufferA);
+    return 0;
 }
 
 int PL_Window_Init(void) {
