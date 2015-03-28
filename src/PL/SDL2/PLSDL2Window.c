@@ -222,10 +222,11 @@ static void PL_Window_Refresh() {
         PLG.ClearColor(0, 0, 0, 1);
         PLG.Clear();
         
-        PLG.SetMatrices(&s_projectionMatrix, &s_viewMatrix);
         PLG.DisableBlend();
         
-        PLG.SetPresetProgram(TEX_PRESET_MODULATE, 0, s_screenFrameBufferB, DX_DRAWMODE_BILINEAR, 0);
+        PLG.SetPresetProgram(TEX_PRESET_MODULATE, 0,
+                             &s_projectionMatrix, &s_viewMatrix,
+                             s_screenFrameBufferB, DX_DRAWMODE_BILINEAR, 0);
         
         PLG.DrawVertexBuffer(&s_RectVertexDefinition,
                                    s_offscreenVBO,
@@ -238,8 +239,6 @@ static void PL_Window_Refresh() {
     } else {
         SDL_GL_SwapWindow(s_window);
     }
-    
-    PLG.SetMatrixDirtyFlag();
 }
 
 int PL_Window_Init(void) {

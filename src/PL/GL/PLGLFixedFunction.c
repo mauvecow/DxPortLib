@@ -70,10 +70,18 @@ int PLGL_FixedFunction_ClearPresetProgram() {
 }
 
 int PLGL_FixedFunction_SetPresetProgram(int preset, int flags,
+                                        const PLMatrix *projectionMatrix,
+                                        const PLMatrix *viewMatrix,
                                         int textureRefID, int textureDrawMode,
                                         float alphaTestValue) {
     unsigned int mainTexSlot = 0;
     int rgbScale = 1;
+    
+    PL_GL.glMatrixMode(GL_PROJECTION);
+    PL_GL.glLoadMatrixf((const float *)&projectionMatrix);
+    
+    PL_GL.glMatrixMode(GL_MODELVIEW);
+    PL_GL.glLoadMatrixf((const float *)&viewMatrix);
     
     if ((flags & PL_PRESETFLAG_ALPHATEST_MASK) != 0) {
         PL_GL.glEnable(GL_ALPHA_TEST);

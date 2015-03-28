@@ -316,12 +316,8 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PLG.DrawVertexIndexBuffer = PLGL_DrawVertexIndexBuffer;
     PLG.SetViewport = PLGL_SetViewport;
     PLG.SetZRange = PLGL_SetZRange;
-    PLG.SetMatrices = PLGL_SetMatrices;
-    PLG.SetMatrixDirtyFlag = PLGL_SetMatrixDirtyFlag;
-    PLG.SetUntransformedFlag = PLGL_SetUntransformedFlag;
     PLG.ClearColor = PLGL_ClearColor;
     PLG.Clear = PLGL_Clear;
-    PLG.SetMatrices = PLGL_SetMatrices;
     PLG.StartFrame = PLGL_StartFrame;
     PLG.EndFrame = PLGL_EndFrame;
     

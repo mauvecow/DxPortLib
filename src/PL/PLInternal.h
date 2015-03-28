@@ -386,6 +386,7 @@ typedef struct _PLIGraphics {
     int (*DisableDepthTest)();
 
     int (*SetPresetProgram)(int preset, int flags,
+                            const PLMatrix *projection, const PLMatrix *view,
                             int textureRefID, int textureDrawMode,
                             float alphaTestValue);
     int (*ClearPresetProgram)();
@@ -455,8 +456,6 @@ typedef struct _PLIGraphics {
     int (*ClearColor)(float r, float g, float b, float a);
     int (*Clear)();
 
-    int (*SetMatrices)(const PLMatrix *projection, const PLMatrix *view);
-    int (*SetMatrixDirtyFlag)();
     int (*StartFrame)();
     int (*EndFrame)();
 

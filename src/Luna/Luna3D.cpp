@@ -32,10 +32,15 @@ int g_luna3DCamera = INVALID_CAMERA;
 int g_lunaAlphaTestPreset = PL_PRESETFLAG_ALPHATEST_GREATER;
 float g_lunaAlphaTestValue = 0.0f;
 
+PLMatrix g_lunaUntransformedProjectionMatrix;
+PLMatrix g_lunaUntransformedViewMatrix;
+
 RECT g_viewportRect;
 
 Bool Luna3D::BeginScene(void) {
     PLG.StartFrame();
+    PLG.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    PLG.Clear();
     return true;
 }
 void Luna3D::EndScene(void) {
@@ -66,6 +71,12 @@ void Luna3D::SetViewport(const RECT *rect) {
     PLG.SetZRange(0.0f, 1.0f);
     
     g_viewportRect = *rect;
+    
+    PL_Matrix_CreateOrthoOffCenterLH(&g_lunaUntransformedProjectionMatrix,
+                      (float)rect->left, (float)rect->right,
+                      (float)rect->bottom, (float)rect->top,
+                      0.0f, 1.0f);
+    PL_Matrix_CreateTranslation(&g_lunaUntransformedViewMatrix, 0.5f, 0.5f, 0.0f);
 }
 
 void Luna3D::GetViewport(RECT *rect) {

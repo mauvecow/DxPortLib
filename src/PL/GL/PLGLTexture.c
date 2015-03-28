@@ -70,8 +70,6 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
         
         PL_GL.glViewport(0, 0, info->width, info->height);
         PL_GL.glClear(GL_COLOR_BUFFER_BIT);
-        
-        PLGL_SetMatrixDirtyFlag();
     }
     
     return 0;

@@ -386,8 +386,34 @@ static GLenum VertexElementSizeToGL(int value) {
     }
 }
 
-void PLGL_Shaders_ApplyProgram(int shaderHandle,
-                             PLMatrix *projectionMatrix, PLMatrix *viewMatrix,
+void PLGL_Shaders_UseProgram(int shaderHandle) {
+    if (shaderHandle < 0) {
+        PL_GL.glUseProgram(0);
+    } else {
+        PLGLShaderInfo *info = (PLGLShaderInfo *)PL_Handle_GetData(shaderHandle, DXHANDLE_SHADER);
+        
+        if (info == NULL) {
+            PL_GL.glUseProgram(0);
+            return;
+        }
+        
+        PL_GL.glUseProgram(info->glProgramID);
+    }
+}
+
+void PLGL_Shaders_ApplyProgramMatrices(int shaderHandle,
+                               const PLMatrix *projectionMatrix, const PLMatrix *viewMatrix) {
+    PLGLShaderInfo *info = (PLGLShaderInfo *)PL_Handle_GetData(shaderHandle, DXHANDLE_SHADER);
+    
+    if (info == NULL) {
+        return;
+    }
+    
+    PL_GL.glUniformMatrix4fv(info->glProjectionUniformID, 1, GL_FALSE, (GLfloat *)projectionMatrix);
+    PL_GL.glUniformMatrix4fv(info->glModelViewUniformID, 1, GL_FALSE, (GLfloat *)viewMatrix);
+}
+
+void PLGL_Shaders_ApplyProgramVertexData(int shaderHandle,
                              const char *vertexData, const VertexDefinition *definition)
 {
     PLGLShaderInfo *info = (PLGLShaderInfo *)PL_Handle_GetData(shaderHandle, DXHANDLE_SHADER);
@@ -396,11 +422,6 @@ void PLGL_Shaders_ApplyProgram(int shaderHandle,
     if (info == NULL) {
         return;
     }
-    
-    PL_GL.glUseProgram(info->glProgramID);
-    
-    PL_GL.glUniformMatrix4fv(info->glProjectionUniformID, 1, GL_FALSE, (GLfloat *)projectionMatrix);
-    PL_GL.glUniformMatrix4fv(info->glModelViewUniformID, 1, GL_FALSE, (GLfloat *)viewMatrix);
     
     if (definition != NULL) {
         const VertexElement *e = definition->elements;
@@ -444,7 +465,7 @@ void PLGL_Shaders_ApplyProgram(int shaderHandle,
     }
 }
 
-void PLGL_Shaders_ClearProgram(int shaderHandle, const VertexDefinition *definition) {
+void PLGL_Shaders_ClearProgramVertexData(int shaderHandle, const VertexDefinition *definition) {
     PLGLShaderInfo *info = (PLGLShaderInfo *)PL_Handle_GetData(shaderHandle, DXHANDLE_SHADER);
     int i;
     
@@ -479,8 +500,6 @@ void PLGL_Shaders_ClearProgram(int shaderHandle, const VertexDefinition *definit
             }
         }
     }
-    
-    PL_GL.glUseProgram(0);
 }
 
 static int s_stockShaderIDs[PLGL_SHADER_END] = { 0 };

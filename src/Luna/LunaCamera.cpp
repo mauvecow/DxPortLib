@@ -26,6 +26,9 @@
 #include "LunaInternal.h"
 #include "PL/PLInternal.h"
 
+PLMatrix g_lunaProjectionMatrix;
+PLMatrix g_lunaViewMatrix;
+
 struct CameraData {
     PLMatrix projection;
     PLMatrix view;
@@ -110,7 +113,8 @@ void LunaCamera::LookAt(LCAMERA lCam, CVector3D *pEye,
 void LunaCamera_SetDevice(LCAMERA lCam) {
     CameraData *camera = (CameraData *)PL_Handle_GetData((int)lCam, DXHANDLE_LUNACAMERA);
     if (camera != NULL) {
-        PLG.SetMatrices(&camera->projection, &camera->view);
+        PL_Matrix_Copy(&g_lunaProjectionMatrix, &camera->projection);
+        PL_Matrix_Copy(&g_lunaViewMatrix, &camera->view);
     }
 }
 

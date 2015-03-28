@@ -210,6 +210,10 @@ extern float g_lunaVirtualYmult;
 
 extern int g_lunaAlphaTestPreset;
 extern float g_lunaAlphaTestValue;
+extern PLMatrix g_lunaUntransformedProjectionMatrix;
+extern PLMatrix g_lunaUntransformedViewMatrix;
+extern PLMatrix g_lunaProjectionMatrix;
+extern PLMatrix g_lunaViewMatrix;
 
 extern RECT g_viewportRect;
 

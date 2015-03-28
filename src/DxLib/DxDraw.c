@@ -41,6 +41,9 @@ static Uint32 s_bgColorR = 0x00;
 static Uint32 s_bgColorG = 0x00;
 static Uint32 s_bgColorB = 0x00;
 
+static PLMatrix s_projectionMatrix;
+static PLMatrix s_viewMatrix;
+
 int Dx_Draw_ResetSettings() {
     s_blendMode = DX_BLENDMODE_NOBLEND;
     s_drawMode = DX_DRAWMODE_NEAREST;
@@ -145,7 +148,9 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
         blend->srcRGBBlend, blend->destRGBBlend,
         blend->srcAlphaBlend, blend->destAlphaBlend);
     PLG.SetPresetProgram(
-        blend->texturePreset, 0, textureRefID, s_drawMode, 0.0f);
+        blend->texturePreset, 0,
+        &s_projectionMatrix, &s_viewMatrix,
+        textureRefID, s_drawMode, 0.0f);
     
     return 0;
 }
@@ -1213,8 +1218,6 @@ static int s_drawGraphID = -1;
 
 int Dx_Draw_UpdateDrawScreen() {
     if (s_drawScreenID != s_currentScreenID) {
-        PLMatrix projection, view;
-        
         s_currentScreenID = s_drawScreenID;
         PLG.Texture_BindFramebuffer(s_drawScreenID);
         
@@ -1228,11 +1231,9 @@ int Dx_Draw_UpdateDrawScreen() {
             s_drawScreenHeight = PL_windowHeight;
         }
         
-        PL_Matrix_CreateOrthoOffCenterLH(&projection,
+        PL_Matrix_CreateOrthoOffCenterLH(&s_projectionMatrix,
             0, (float)s_drawScreenWidth, (float)s_drawScreenHeight, 0, -32768, 32767);
-        PL_Matrix_CreateIdentity(&view);
-        
-        PLG.SetMatrices(&projection, &view);
+        PL_Matrix_CreateIdentity(&s_viewMatrix);
     }
     return 0;
 }

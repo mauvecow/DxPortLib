@@ -262,6 +262,8 @@ extern int PLGL_DisableDepthTest();
 extern int PLGL_SetTextureStage(unsigned int stage,
                                      int textureRefID, int textureDrawMode);
 extern int PLGL_SetPresetProgram(int preset, int flags,
+                                 const PLMatrix *projectionMatrix,
+                                 const PLMatrix *viewMatrix,
                                  int textureRefID, int textureDrawMode,
                                  float alphaTestValue);
 extern int PLGL_ClearTextures();
@@ -285,14 +287,10 @@ extern int PLGL_DrawVertexIndexBuffer(const VertexDefinition *def,
 
 extern int PLGL_SetViewport(int x, int y, int w, int h);
 extern int PLGL_SetZRange(float nearZ, float farZ);
-extern int PLGL_SetMatrices(const PLMatrix *projection, const PLMatrix *view);
-extern int PLGL_SetUntransformedFlag(int untransformedFlag);
 
 extern int PLGL_ClearColor(float r, float g, float b, float a);
 extern int PLGL_Clear();
 
-extern int PLGL_SetMatrices(const PLMatrix *projection, const PLMatrix *view);
-extern int PLGL_SetMatrixDirtyFlag();
 extern int PLGL_StartFrame();
 extern int PLGL_EndFrame();
 
@@ -358,6 +356,8 @@ extern char *PLGL_IndexBuffer_GetFallback(int vboHandle);
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
 extern int PLGL_FixedFunction_ClearPresetProgram();
 extern int PLGL_FixedFunction_SetPresetProgram(int preset, int flags,
+                                   const PLMatrix *projectionMatrix,
+                                   const PLMatrix *viewMatrix,
                                    int textureRefID, int textureDrawMode,
                                    float alphaTestValue);
 extern int PLGL_FixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
@@ -371,11 +371,15 @@ extern int PLGL_FixedFunction_Cleanup();
 
 extern int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition);
 extern void PLGL_Shaders_DeleteShader(int shaderHandle);
-extern void PLGL_Shaders_ApplyProgram(int shaderHandle,
-                                    PLMatrix *projectionMatrix, PLMatrix *viewMatrix,
+extern void PLGL_Shaders_UseProgram(int shaderHandle);
+/* This doesn't make sense outside of presets. */
+extern void PLGL_Shaders_ApplyProgramMatrices(int shaderHandle,
+                                      const PLMatrix *projectionMatrix,
+                                      const PLMatrix *viewMatrix);
+extern void PLGL_Shaders_ApplyProgramVertexData(int shaderHandle,
                                     const char *vertexData,
                                     const VertexDefinition *definition);
-extern void PLGL_Shaders_ClearProgram(int shaderHandle,
+extern void PLGL_Shaders_ClearProgramVertexData(int shaderHandle,
                                     const VertexDefinition *definition);
 extern int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType);
 extern void PLGL_Shaders_Init();
