@@ -292,32 +292,32 @@ int Dx_Draw_FlushCache() {
 }
 
 int Dx_Draw_InitCache() {
-    SDL_memset(&s_cache, 0, sizeof(s_cache));
+    memset(&s_cache, 0, sizeof(s_cache));
     
     /* 256kb should be enough for anybody */
     s_cache.vertexDataPosition = 0;
     s_cache.vertexDataSize = 256 * 1024;
-    s_cache.vertexData = SDL_malloc((size_t)s_cache.vertexDataSize);
+    s_cache.vertexData = DXALLOC((size_t)s_cache.vertexDataSize);
     
     return 0;
 }
 
 int Dx_Draw_DestroyCache() {
     if (s_cache.vertexData != NULL) {
-        SDL_free(s_cache.vertexData);
+        DXFREE(s_cache.vertexData);
     }
     
-    SDL_memset(&s_cache, 0, sizeof(s_cache));
+    memset(&s_cache, 0, sizeof(s_cache));
     
     return 0;
 }
 
 /* --------------------------------------------------------- DRAWING CODE */
 
-static SDL_INLINE Uint32 s_GetColor() {
+static DXINLINE Uint32 s_GetColor() {
     return (s_drawColorR) | (s_drawColorG << 8) | (s_drawColorB << 16) | s_drawColorA;
 }
-static SDL_INLINE Uint32 s_ModulateColor(DXCOLOR color) {
+static DXINLINE Uint32 s_ModulateColor(DXCOLOR color) {
     Uint32 r = ((color & 0xff) * s_drawColorR) / 0xff;
     Uint32 g = (((color & 0xff00) * s_drawColorG) / 0xff) & 0x0000ff00;
     Uint32 b = (((color & 0xff0000) * s_drawColorB) / 0xff) & 0x00ff0000;

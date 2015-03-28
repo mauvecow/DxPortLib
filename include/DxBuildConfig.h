@@ -47,8 +47,8 @@
 /* #define DXPORTLIB_NO_SJIS */
 
 /* DxPortLib extension - Sets the drawing backend.
- * Currently only OpenGL is supported.
  */
+#define DXPORTLIB_DRAW_DIRECT3D9
 #define DXPORTLIB_DRAW_OPENGL
 
 /* For OpenGL, define this to use the OpenGL ES 2.0 support.
@@ -187,6 +187,13 @@
 #if defined(ANDROID) || defined(__ANDROID__) || defined(TARGET_OS_IPHONE) || defined(EMSCRIPTEN)
 #  ifndef DXPORTLIB_DRAW_OPENGL_ES2
 #    define DXPORTLIB_DRAW_OPENGL_ES2
+#  endif
+#endif
+
+/* D3D9 not available on non-Windows platforms */
+#if !defined(WIN32)
+#  ifdef DXPORTLIB_DRAW_DIRECT3D9
+#    undef DXPORTLIB_DRAW_DIRECT3D9
 #  endif
 #endif
 

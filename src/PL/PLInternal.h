@@ -469,6 +469,7 @@ typedef struct _PLIGraphics {
 
 extern PLIGraphics PLG;
 
+#ifdef DXPORTLIB_DRAW_OPENGL
 typedef void *(*PLGLGetGLFunction)(const char *name);
 typedef int (*PLGLIsGLExtSupported)(const char *name);
 
@@ -476,6 +477,11 @@ extern int PLGL_Init(PLGLGetGLFunction GetGLFunction,
                      PLGLIsGLExtSupported IsGLExtSupported,
                      int majorVersion, int minorVersion
                     );
+#endif
+
+#ifdef DXPORTLIB_DRAW_DIRECT3D9
+extern int PLD3D9_Init();
+#endif
 
 /* ----------------------------------------------------------- Surface.c */
 extern int PL_Surface_ApplyTransparentColor(int surfaceID,

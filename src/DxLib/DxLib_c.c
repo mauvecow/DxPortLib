@@ -28,9 +28,6 @@
 #include "PL/PLInternal.h"
 #include "DxInternal.h"
 
-#include "SDL.h"
-#include "SDL_opengl.h"
-
 /* DxLib_c.c is C bindings to the core internal library. */
 
 static int s_calledMainReady = DXFALSE;
@@ -39,7 +36,7 @@ static int s_initialized = DXFALSE;
 /* For setting the floating precision to the system value.
  * There is no real architecture agnostic answer here, so
  * add more of these as needed. */
-static SDL_INLINE void s_SetFPUState() {
+static DXINLINE void s_SetFPUState() {
 #if defined(__GNUC__) && defined(i386)
     unsigned int mode;
     
@@ -59,22 +56,12 @@ int DxLib_DxLib_Init(void) {
     
     if (s_calledMainReady == DXFALSE) {
         s_calledMainReady = DXTRUE;
-        SDL_SetMainReady();
+        PL_Platform_Boot();
     }
     
     s_SetFPUState();
     
-    SDL_Init(
-        SDL_INIT_VIDEO
-        | SDL_INIT_TIMER
-#ifndef DX_NON_INPUT
-        | SDL_INIT_JOYSTICK
-        | SDL_INIT_GAMECONTROLLER
-#endif  /* #ifndef DX_NON_INPUT */
-#ifndef DX_NON_SOUND
-        | SDL_INIT_AUDIO
-#endif  /* #ifndef DX_NON_SOUND */
-    );
+    PL_Platform_Init();
     
     PL_Handle_Init();
     PL_File_Init();
@@ -117,7 +104,7 @@ int DxLib_DxLib_End(void) {
     Dx_File_End();
     PL_Handle_End();
     
-    SDL_Quit();
+    PL_Platform_Finish();
     
     s_initialized = DXFALSE;
     
@@ -179,7 +166,7 @@ int DxLib_WaitKey() {
 
 int DxLib_GetNowCount(int UseRDTSCFlag) {
     /* FIXME: UseRDTSCFlag is not supported. */
-    return (int)SDL_GetTicks();
+    return (int)PL_Platform_GetTicks();
 }
 
 int DxLib_GetRand(int maxValue) {

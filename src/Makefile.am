@@ -29,6 +29,13 @@ libDxPortLib_la_SOURCES =	\
 	PL/PLInternal.h \
 	PL/PLMath.c \
 	PL/PLRNG.c \
+	PL/D3D9/PLD3D9.c \
+	PL/D3D9/PLD3D9Buffers.c \
+	PL/D3D9/PLD3D9FixedFunction.c \
+	PL/D3D9/PLD3D9Internal.h \
+	PL/D3D9/PLD3D9Render.c \
+	PL/D3D9/PLD3D9Texture.c \
+	PL/D3D9/PLD3D9Shaders.c \
 	PL/GL/PLGL.c \
 	PL/GL/PLGLBuffers.c \
 	PL/GL/PLGLFixedFunction.c \

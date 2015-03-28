@@ -28,6 +28,14 @@
 #include <wchar.h>
 #endif
 
+#if defined(__GNUC__)
+#  define DXINLINE __inline__
+#elif defined(_MSC_VER) || defined(__BORLANDC__)
+#  define DXINLINE __inline__
+#else
+#  define DXINLINE inline
+#endif
+
 #if defined _WIN32
 #  define _WIN32_WINNT 0x0400
 #  define WIN32_LEAN_AND_MEAN
