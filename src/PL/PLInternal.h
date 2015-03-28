@@ -356,6 +356,18 @@ typedef enum _PrimitiveType {
     PL_PRIM_TRIANGLESTRIP
 } PrimitiveType;
 
+typedef enum _PresetProgramFlags {
+    PL_PRESETFLAG_ALPHATEST_NONE = 0,
+    PL_PRESETFLAG_ALPHATEST_EQUAL = (1 << 0),
+    PL_PRESETFLAG_ALPHATEST_NOTEQUAL = (2 << 0),
+    PL_PRESETFLAG_ALPHATEST_LESS = (3 << 0),
+    PL_PRESETFLAG_ALPHATEST_LEQUAL = (4 << 0),
+    PL_PRESETFLAG_ALPHATEST_GREATER = (5 << 0),
+    PL_PRESETFLAG_ALPHATEST_GEQUAL = (6 << 0),
+    
+    PL_PRESETFLAG_ALPHATEST_MASK = (7 << 0),
+} PresetProgramFlags;
+
 typedef struct _PLIGraphics {
     void (*SetBlendMode)(
                 int blendEquation,
@@ -365,8 +377,6 @@ typedef struct _PLIGraphics {
                 int srcRGBBlend, int destRGBBlend,
                 int srcAlphaBlend, int destAlphaBlend);
     void (*DisableBlend)();
-    int (*EnableAlphaTest)();
-    int (*DisableAlphaTest)();
 
     int (*SetScissor)(int x, int y, int w, int h);
     int (*SetScissorRect)(const RECT *rect);
@@ -375,24 +385,22 @@ typedef struct _PLIGraphics {
     int (*DisableCulling)();
     int (*DisableDepthTest)();
 
-    int (*SetTextureStage)(unsigned int stage,
-                                     int textureRefID, int textureDrawMode);
-    int (*SetTexturePresetMode)(int preset,
-                                     int textureRefID, int textureDrawMode);
-    int (*ClearTextures)();
-    int (*ClearTexturePresetMode)();
+    int (*SetPresetProgram)(int preset, int flags,
+                            int textureRefID, int textureDrawMode,
+                            float alphaTestValue);
+    int (*ClearPresetProgram)();
 
     int (*VertexBuffer_CreateBytes)(int vertexByteSize,
-                                       const char *vertexData, int bufferSize,
-                                       int isStatic);
+                                    const char *vertexData, int bufferSize,
+                                    int isStatic);
     int (*VertexBuffer_Create)(const VertexDefinition *def,
-                                  const char *vertexData, int vertexCount,
-                                  int isStatic);
+                               const char *vertexData, int vertexCount,
+                               int isStatic);
     int (*VertexBuffer_ResetBuffer)(int vboHandle);
     int (*VertexBuffer_SetDataBytes)(int vboHandle, const char *vertices,
-                                        int start, int count, int resetBufferFlag);
+                                     int start, int count, int resetBufferFlag);
     int (*VertexBuffer_SetData)(int vboHandle, const char *vertices,
-                                   int start, int count, int resetBufferFlag);
+                                int start, int count, int resetBufferFlag);
     char *(*VertexBuffer_Lock)(int vboHandle);
     int (*VertexBuffer_Unlock)(int vboHandle, char *buffer);
     int (*VertexBuffer_Delete)(int vboHandle);

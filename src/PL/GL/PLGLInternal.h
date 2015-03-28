@@ -251,8 +251,6 @@ extern void PLGL_SetBlendModeSeparate(
                 int srcRGBBlend, int destRGBBlend,
                 int srcAlphaBlend, int destAlphaBlend);
 extern void PLGL_DisableBlend();
-extern int PLGL_EnableAlphaTest();
-extern int PLGL_DisableAlphaTest();
 
 extern int PLGL_SetScissor(int x, int y, int w, int h);
 extern int PLGL_SetScissorRect(const RECT *rect);
@@ -263,10 +261,11 @@ extern int PLGL_DisableDepthTest();
 
 extern int PLGL_SetTextureStage(unsigned int stage,
                                      int textureRefID, int textureDrawMode);
-extern int PLGL_SetTexturePresetMode(int preset,
-                                     int textureRefID, int textureDrawMode);
+extern int PLGL_SetPresetProgram(int preset, int flags,
+                                 int textureRefID, int textureDrawMode,
+                                 float alphaTestValue);
 extern int PLGL_ClearTextures();
-extern int PLGL_ClearTexturePresetMode();
+extern int PLGL_ClearPresetProgram();
 
 extern int PLGL_DrawVertexArray(const VertexDefinition *def,
                const char *vertexData,
@@ -357,9 +356,10 @@ extern GLuint PLGL_IndexBuffer_GetGLID(int vertexBufferID);
 extern char *PLGL_IndexBuffer_GetFallback(int vboHandle);
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-extern int PLGL_FixedFunction_ClearTexturePresetMode();
-extern int PLGL_FixedFunction_SetTexturePresetMode(int preset,
-                                   int textureRefID, int textureDrawMode);
+extern int PLGL_FixedFunction_ClearPresetProgram();
+extern int PLGL_FixedFunction_SetPresetProgram(int preset, int flags,
+                                   int textureRefID, int textureDrawMode,
+                                   float alphaTestValue);
 extern int PLGL_FixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
                                           const char *vertexData);
 extern int PLGL_FixedFunction_ClearVertexArrayData(const VertexDefinition *def);

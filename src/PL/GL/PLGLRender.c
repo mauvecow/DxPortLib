@@ -182,18 +182,6 @@ void PLGL_DisableBlend() {
     PL_GL.glDisable(GL_BLEND);
 }
 
-/* ---------------------------------------------------------- ALPHA TEST */
-static int s_alphaTestEnable = DXFALSE;
-
-int PLGL_EnableAlphaTest() {
-    s_alphaTestEnable = DXTRUE;
-    return 0;
-}
-int PLGL_DisableAlphaTest() {
-    s_alphaTestEnable = DXFALSE;
-    return 0;
-}
-
 /* ----------------------------------------------------- SCISSOR/CULLING */
 
 int PLGL_SetScissor(int x, int y, int w, int h) {
@@ -265,10 +253,10 @@ int PLGL_ClearTextures() {
     return 0;
 }
 
-int PLGL_ClearTexturePresetMode() {
+int PLGL_ClearPresetProgram() {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (s_useFixedFunction == DXTRUE) {
-        PLGL_FixedFunction_ClearTexturePresetMode();
+        PLGL_FixedFunction_ClearPresetProgram();
     }
 #endif
     PLGL_ClearTextures();
@@ -295,8 +283,9 @@ static int s_stockShaderPresetLookupTex1[TEX_PRESET_END] = {
     PLGL_SHADER_DX_PMA_X4_COLOR_TEX1
 };
 
-int PLGL_SetTexturePresetMode(int preset,
-                                   int textureRefID, int textureDrawMode) {
+int PLGL_SetPresetProgram(int preset, int flags,
+                          int textureRefID, int textureDrawMode,
+                          float alphaTestValue) {
     int presetID;
     
     s_activeTexturePreset = preset;
@@ -316,7 +305,9 @@ int PLGL_SetTexturePresetMode(int preset,
         /* Fixed function fallback */
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
         s_useFixedFunction = DXTRUE;
-        return PLGL_FixedFunction_SetTexturePresetMode(preset, textureRefID, textureDrawMode);
+        return PLGL_FixedFunction_SetPresetProgram(preset, flags,
+                                                   textureRefID, textureDrawMode,
+                                                   alphaTestValue);
 #else
         return -1;
 #endif
@@ -428,13 +419,6 @@ static void s_InitFixedFunctionState() {
     
     PL_GL.glMatrixMode(GL_MODELVIEW);
     PL_GL.glLoadMatrixf((const float *)&s_currentMatrixView);
-
-    if (s_alphaTestEnable) {
-        PL_GL.glEnable(GL_ALPHA_TEST);
-        PL_GL.glAlphaFunc(GL_GREATER, 0);
-    } else {
-        PL_GL.glDisable(GL_ALPHA_TEST);
-    }
 }
 static void s_ClearFixedFunctionState() {
 }
@@ -691,7 +675,7 @@ int PLGL_Render_Init() {
 #endif
     PLGL_Shaders_Init();
     
-    PLGL_SetTexturePresetMode(PLGL_SHADER_BASIC_COLOR_NOTEX, -1, 0);
+    PLGL_SetPresetProgram(PLGL_SHADER_BASIC_COLOR_NOTEX, 0, -1, 0, 0);
     
     s_emulateBuffersInit();
     

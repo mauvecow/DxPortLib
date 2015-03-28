@@ -29,6 +29,8 @@
 float g_lunaFilterOffset = 0.5f;
 int g_lunaFilterMode = DX_DRAWMODE_BILINEAR;
 int g_luna3DCamera = INVALID_CAMERA;
+int g_lunaAlphaTestPreset = PL_PRESETFLAG_ALPHATEST_GREATER;
+float g_lunaAlphaTestValue = 0.0f;
 
 RECT g_viewportRect;
 
@@ -81,9 +83,10 @@ void Luna3D::SetFilterEnable(Bool Flag) {
 }
 void Luna3D::SetColorkeyEnable(Bool Flag) {
     if (Flag) {
-        PLG.EnableAlphaTest();
+        g_lunaAlphaTestPreset = PL_PRESETFLAG_ALPHATEST_GREATER;
+        g_lunaAlphaTestValue = 0.0f;
     } else {
-        PLG.DisableAlphaTest();
+        g_lunaAlphaTestPreset = 0;
     }
 }
 void Luna3D::SetBlendingType(eBlendType BlendType) {

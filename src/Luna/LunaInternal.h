@@ -208,6 +208,9 @@ extern int g_luna3DCamera;
 extern float g_lunaVirtualXmult;
 extern float g_lunaVirtualYmult;
 
+extern int g_lunaAlphaTestPreset;
+extern float g_lunaAlphaTestValue;
+
 extern RECT g_viewportRect;
 
 extern void LunaCamera_SetDevice(LCAMERA lCam);

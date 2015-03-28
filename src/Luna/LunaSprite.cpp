@@ -302,10 +302,10 @@ void LunaSprite::Rendering(LSPRITE lSpr) {
     if (sprite != NULL && sprite->vertexPtr > 0) {
         PLG.SetUntransformedFlag(DXTRUE);
 
-        /* FIXME do not actually support multiple textures right now. */
-        PLG.SetTexturePresetMode(
-            TEX_PRESET_MODULATE,
-            sprite->textureIDs[0], g_lunaFilterMode);
+        PLG.SetPresetProgram(
+            TEX_PRESET_MODULATE, g_lunaAlphaTestPreset,
+            sprite->textureIDs[0], g_lunaFilterMode,
+            g_lunaAlphaTestValue);
         
         PLG.DrawVertexIndexBuffer(
             sprite->vertexInfo->def,
@@ -313,7 +313,7 @@ void LunaSprite::Rendering(LSPRITE lSpr) {
             sprite->iboHandle,
             PL_PRIM_TRIANGLES, 0, sprite->indexPtr);
         
-        PLG.ClearTextures();
+        PLG.ClearPresetProgram();
     }
 }
 

@@ -61,17 +61,43 @@ static int s_pixelTexture = -1;
  * you don't need it.
  */
 
-int PLGL_FixedFunction_ClearTexturePresetMode() {
+int PLGL_FixedFunction_ClearPresetProgram() {
     PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE, 1);
     PL_GL.glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    PL_GL.glDisable(GL_ALPHA_TEST);
     
     return 0;
 }
 
-int PLGL_FixedFunction_SetTexturePresetMode(int preset,
-                                   int textureRefID, int textureDrawMode) {
+int PLGL_FixedFunction_SetPresetProgram(int preset, int flags,
+                                        int textureRefID, int textureDrawMode,
+                                        float alphaTestValue) {
     unsigned int mainTexSlot = 0;
     int rgbScale = 1;
+    
+    if ((flags & PL_PRESETFLAG_ALPHATEST_MASK) != 0) {
+        PL_GL.glEnable(GL_ALPHA_TEST);
+        switch(flags & PL_PRESETFLAG_ALPHATEST_MASK) {
+            case PL_PRESETFLAG_ALPHATEST_EQUAL:
+                PL_GL.glAlphaFunc(GL_EQUAL, alphaTestValue);
+                break;
+            case PL_PRESETFLAG_ALPHATEST_NOTEQUAL:
+                PL_GL.glAlphaFunc(GL_NOTEQUAL, alphaTestValue);
+                break;
+            case PL_PRESETFLAG_ALPHATEST_LESS:
+                PL_GL.glAlphaFunc(GL_LESS, alphaTestValue);
+                break;
+            case PL_PRESETFLAG_ALPHATEST_LEQUAL:
+                PL_GL.glAlphaFunc(GL_LEQUAL, alphaTestValue);
+                break;
+            case PL_PRESETFLAG_ALPHATEST_GREATER:
+                PL_GL.glAlphaFunc(GL_GREATER, alphaTestValue);
+                break;
+            case PL_PRESETFLAG_ALPHATEST_GEQUAL:
+                PL_GL.glAlphaFunc(GL_GEQUAL, alphaTestValue);
+                break;
+        }
+    }
     
     PL_GL.glActiveTexture(GL_TEXTURE0);
     

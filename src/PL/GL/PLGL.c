@@ -274,17 +274,14 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PLG.SetBlendMode = PLGL_SetBlendMode;
     PLG.SetBlendModeSeparate = PLGL_SetBlendModeSeparate;
     PLG.DisableBlend = PLGL_DisableBlend;
-    PLG.EnableAlphaTest = PLGL_EnableAlphaTest;
-    PLG.DisableAlphaTest = PLGL_DisableAlphaTest;
     PLG.SetScissor = PLGL_SetScissor;
     PLG.SetScissorRect = PLGL_SetScissorRect;
     PLG.DisableScissor = PLGL_DisableScissor;
     PLG.DisableCulling = PLGL_DisableCulling;
     PLG.DisableDepthTest = PLGL_DisableDepthTest;
-    PLG.SetTextureStage = PLGL_SetTextureStage;
-    PLG.SetTexturePresetMode = PLGL_SetTexturePresetMode;
-    PLG.ClearTextures = PLGL_ClearTextures;
-    PLG.ClearTexturePresetMode = PLGL_ClearTexturePresetMode;
+    
+    PLG.SetPresetProgram = PLGL_SetPresetProgram;
+    PLG.ClearPresetProgram = PLGL_ClearPresetProgram;
     
     PLG.VertexBuffer_CreateBytes = PLGL_VertexBuffer_CreateBytes;
     PLG.VertexBuffer_Create = PLGL_VertexBuffer_Create;

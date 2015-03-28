@@ -144,14 +144,14 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
         blend->blendEquation,
         blend->srcRGBBlend, blend->destRGBBlend,
         blend->srcAlphaBlend, blend->destAlphaBlend);
-    PLG.SetTexturePresetMode(
-        blend->texturePreset, textureRefID, s_drawMode);
+    PLG.SetPresetProgram(
+        blend->texturePreset, 0, textureRefID, s_drawMode, 0.0f);
     
     return 0;
 }
 
 static void s_FinishDrawMode() {
-    PLG.ClearTexturePresetMode();
+    PLG.ClearPresetProgram();
 }
 
 /* --------------------------------------------------------- VERTEX CACHE */
