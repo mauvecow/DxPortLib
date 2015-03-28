@@ -115,6 +115,8 @@ typedef struct GLInfo_t {
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     void (APIENTRY *glAlphaFunc)( GLenum func, GLclampf ref );
 #endif
+    void (APIENTRY *glDepthRange)( GLclampf nearVal, GLclampf farVal );
+    void (APIENTRY *glDepthRangef)( GLfloat nearVal, GLfloat farVal );
     
     void (APIENTRY *glViewport)( GLint x, GLint y, GLsizei width, GLsizei height );
     void (APIENTRY *glScissor)( GLint x, GLint y, GLsizei width, GLsizei height );

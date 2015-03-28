@@ -71,11 +71,10 @@ int PLGL_SetViewport(int x, int y, int w, int h) {
 }
 
 int PLGL_SetZRange(float nearZ, float farZ) {
-    s_nearZ = nearZ;
-    s_farZ = farZ;
-    
-    if (s_displayUntransformed == DXTRUE) {
-        s_matrixDirty = DXTRUE;
+    if (PL_GL.glDepthRangef != 0) {
+        PL_GL.glDepthRangef(nearZ, farZ);
+    } else if (PL_GL.glDepthRange != 0) {
+        PL_GL.glDepthRange(nearZ, farZ);
     }
     
     return 0;
