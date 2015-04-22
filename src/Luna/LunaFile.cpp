@@ -311,7 +311,7 @@ FILEDATA * LunaFile::FileOpen(const DXCHAR *pFile, Bool ReadOnly) {
         filedata->dxPortLibFileHandle = handle;
         filedata->IsPack = isPacked;
         filedata->Start = 0;
-        filedata->Size = PL_File_GetSize(handle);
+        filedata->Size = (Uint32)PL_File_GetSize(handle);
         
         if (len >= MAX_PATH) {
             len = MAX_PATH - 1;
@@ -329,19 +329,19 @@ Uint32 LunaFile::FileGetSize(FILEDATA *pFile) {
     if (pFile == NULL) {
         return 0;
     }
-    return PL_File_GetSize(pFile->dxPortLibFileHandle);
+    return (Uint32)PL_File_GetSize(pFile->dxPortLibFileHandle);
 }
 Uint32 LunaFile::FileGetPosition(FILEDATA *pFile) {
     if (pFile == NULL) {
         return 0;
     }
-    return PL_File_Tell(pFile->dxPortLibFileHandle);
+    return (Uint32)PL_File_Tell(pFile->dxPortLibFileHandle);
 }
 Uint32 LunaFile::FileRead(FILEDATA *pFile, Uint32 Size, void *pData) {
     if (pFile == NULL) {
         return 0;
     }
-    return PL_File_Read(pFile->dxPortLibFileHandle, pData, Size);
+    return (Uint32)PL_File_Read(pFile->dxPortLibFileHandle, pData, Size);
 }
 
 void LunaFile::FileClose(FILEDATA *pFile) {

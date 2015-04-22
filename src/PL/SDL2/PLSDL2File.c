@@ -83,7 +83,7 @@ static Sint64 SDLCALL PLSDL2_NestedFile_Seek(SDL_RWops *context, Sint64 offset, 
 
 static size_t SDLCALL PLSDL2_NestedFile_Read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum) {
     NestedRWops *nested = (NestedRWops *)context;
-    return PL_File_Read(nested->fileHandle, ptr, size * maxnum) / size;
+    return (int)PL_File_Read(nested->fileHandle, ptr, size * maxnum) / size;
 } 
 
 static size_t SDLCALL PLSDL2_NestedFile_DisableWrite(SDL_RWops *context, const void *ptr, size_t size, size_t num) {

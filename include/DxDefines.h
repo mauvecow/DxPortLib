@@ -31,7 +31,7 @@
 #if defined(__GNUC__)
 #  define DXINLINE __inline__
 #elif defined(_MSC_VER) || defined(__BORLANDC__)
-#  define DXINLINE __inline__
+#  define DXINLINE __inline
 #else
 #  define DXINLINE inline
 #endif

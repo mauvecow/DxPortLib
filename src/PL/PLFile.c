@@ -62,7 +62,7 @@ static int MemoryHandle_Seek(void *userdata, long long position, int origin) {
     if (position > mem->length) {
         position = mem->length;
     }
-    mem->pos = position;
+    mem->pos = (int)position;
     
     return 0;
 }
@@ -161,7 +161,7 @@ static int SubsectionHandle_Read(void *userdata, void *data, int size) {
         return 0;
     }
     
-    return PL_File_Read(sub->srcHandle, data, amount);
+    return (int)PL_File_Read(sub->srcHandle, data, amount);
 }
 
 static int SubsectionHandle_Close(void *userdata) {

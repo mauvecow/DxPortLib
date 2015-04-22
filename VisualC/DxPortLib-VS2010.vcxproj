@@ -67,7 +67,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;DXPORTLIB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>external\include;external\include\vorbis;external\include\SDL2;..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>external\include;external\include\vorbis;external\include\SDL2;..\include;..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,50 +90,60 @@
     <ClInclude Include="..\include\Luna.h" />
     <ClInclude Include="..\include\LunaDx8.h" />
     <ClInclude Include="..\include\LunaMain.h" />
-    <ClInclude Include="..\src\DxInternal.h" />
-    <ClInclude Include="..\src\LunaInternal.h" />
-    <ClInclude Include="..\src\PLGLInternal.h" />
-    <ClInclude Include="..\src\PLInternal.h" />
-    <ClInclude Include="..\src\PLSDL2Internal.h" />
+    <ClInclude Include="..\src\DxLib\DxInternal.h" />
+    <ClInclude Include="..\src\Luna\LunaInternal.h" />
+    <ClInclude Include="..\src\PL\D3D9\PLD3D9Internal.h" />
+    <ClInclude Include="..\src\PL\GL\PLGLInternal.h" />
+    <ClInclude Include="..\src\PL\PLInternal.h" />
+    <ClInclude Include="..\src\PL\SDL2\PLSDL2Internal.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\DxDraw.c" />
-    <ClCompile Include="..\src\DxDXA.c" />
-    <ClCompile Include="..\src\DxFile.c" />
-    <ClCompile Include="..\src\DxFont.c" />
-    <ClCompile Include="..\src\DxGraph.c" />
-    <ClCompile Include="..\src\DxLib.cpp" />
-    <ClCompile Include="..\src\DxLib_c.c" />
-    <ClCompile Include="..\src\Luna.cpp" />
-    <ClCompile Include="..\src\Luna3D.cpp" />
-    <ClCompile Include="..\src\LunaCamera.cpp" />
-    <ClCompile Include="..\src\LunaFile.cpp" />
-    <ClCompile Include="..\src\LunaFontSprite.cpp" />
-    <ClCompile Include="..\src\LunaInput.cpp" />
-    <ClCompile Include="..\src\LunaMath.cpp" />
-    <ClCompile Include="..\src\LunaRand.cpp" />
-    <ClCompile Include="..\src\LunaSound.cpp" />
-    <ClCompile Include="..\src\LunaSprite.cpp" />
-    <ClCompile Include="..\src\LunaTexture.cpp" />
-    <ClCompile Include="..\src\LunaVecMath.cpp" />
-    <ClCompile Include="..\src\PLAudio.c" />
-    <ClCompile Include="..\src\PLFile.c" />
-    <ClCompile Include="..\src\PLGLBuffers.c" />
-    <ClCompile Include="..\src\PLGLRender.c" />
-    <ClCompile Include="..\src\PLGLTexture.c" />
-    <ClCompile Include="..\src\PLHandle.c" />
-    <ClCompile Include="..\src\PLInput.c" />
-    <ClCompile Include="..\src\PLMath.c" />
-    <ClCompile Include="..\src\PLRNG.c" />
-    <ClCompile Include="..\src\PLSDL2File.c" />
-    <ClCompile Include="..\src\PLSDL2GL.c" />
-    <ClCompile Include="..\src\PLSDL2Main.c" />
-    <ClCompile Include="..\src\PLSDL2Memory.c" />
-    <ClCompile Include="..\src\PLSDL2SaveScreen.c" />
-    <ClCompile Include="..\src\PLSDL2Window.c" />
-    <ClCompile Include="..\src\PLSurface.c" />
-    <ClCompile Include="..\src\PLText.c" />
-    <ClCompile Include="..\src\PLText_CP932.c" />
+    <ClCompile Include="..\src\DxLib\DxDraw.c" />
+    <ClCompile Include="..\src\DxLib\DxDXA.c" />
+    <ClCompile Include="..\src\DxLib\DxFile.c" />
+    <ClCompile Include="..\src\DxLib\DxFont.c" />
+    <ClCompile Include="..\src\DxLib\DxGraph.c" />
+    <ClCompile Include="..\src\DxLib\DxLib.cpp" />
+    <ClCompile Include="..\src\DxLib\DxLib_c.c" />
+    <ClCompile Include="..\src\Luna\Luna.cpp" />
+    <ClCompile Include="..\src\Luna\Luna3D.cpp" />
+    <ClCompile Include="..\src\Luna\LunaCamera.cpp" />
+    <ClCompile Include="..\src\Luna\LunaFile.cpp" />
+    <ClCompile Include="..\src\Luna\LunaFontSprite.cpp" />
+    <ClCompile Include="..\src\Luna\LunaInput.cpp" />
+    <ClCompile Include="..\src\Luna\LunaMath.cpp" />
+    <ClCompile Include="..\src\Luna\LunaRand.cpp" />
+    <ClCompile Include="..\src\Luna\LunaSound.cpp" />
+    <ClCompile Include="..\src\Luna\LunaSprite.cpp" />
+    <ClCompile Include="..\src\Luna\LunaTexture.cpp" />
+    <ClCompile Include="..\src\Luna\LunaVecMath.cpp" />
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9.c" />
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9Buffers.c" />
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9FixedFunction.c" />
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9Render.c" />
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9Shaders.c" />
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9Texture.c" />
+    <ClCompile Include="..\src\PL\GL\PLGL.c" />
+    <ClCompile Include="..\src\PL\GL\PLGLBuffers.c" />
+    <ClCompile Include="..\src\PL\GL\PLGLFixedFunction.c" />
+    <ClCompile Include="..\src\PL\GL\PLGLRender.c" />
+    <ClCompile Include="..\src\PL\GL\PLGLShaders.c" />
+    <ClCompile Include="..\src\PL\GL\PLGLTexture.c" />
+    <ClCompile Include="..\src\PL\PLAudio.c" />
+    <ClCompile Include="..\src\PL\PLFile.c" />
+    <ClCompile Include="..\src\PL\PLHandle.c" />
+    <ClCompile Include="..\src\PL\PLInput.c" />
+    <ClCompile Include="..\src\PL\PLMath.c" />
+    <ClCompile Include="..\src\PL\PLRNG.c" />
+    <ClCompile Include="..\src\PL\PLSurface.c" />
+    <ClCompile Include="..\src\PL\PLText.c" />
+    <ClCompile Include="..\src\PL\PLText_CP932.c" />
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2File.c" />
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2GL.c" />
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2Main.c" />
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2Memory.c" />
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2SaveScreen.c" />
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2Window.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

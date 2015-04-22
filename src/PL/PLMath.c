@@ -130,9 +130,10 @@ PLMatrix *PL_Matrix_CreateTranslation(PLMatrix *o, float x, float y, float z) {
     return o;
 }
 PLMatrix *PL_Matrix_CreateRotationX(PLMatrix *o, float x) {
-    PL_Matrix_CreateIdentity(o);
     float cosx = cosf(x);
     float sinx = sinf(x);
+
+    PL_Matrix_CreateIdentity(o);
     o->m22 = cosx;
     o->m23 = -sinx;
     o->m32 = sinx;
@@ -140,10 +141,11 @@ PLMatrix *PL_Matrix_CreateRotationX(PLMatrix *o, float x) {
     return o;
 }
 PLMatrix *PL_Matrix_CreateRotationY(PLMatrix *o, float y) {
-    PL_Matrix_CreateIdentity(o);
-
     float cosy = cosf(y);
     float siny = sinf(y);
+
+    PL_Matrix_CreateIdentity(o);
+
     o->m11 = cosy;
     o->m13 = -siny;
     o->m31 = siny;
@@ -151,10 +153,11 @@ PLMatrix *PL_Matrix_CreateRotationY(PLMatrix *o, float y) {
     return o;
 }
 PLMatrix *PL_Matrix_CreateRotationZ(PLMatrix *o, float z) {
-    PL_Matrix_CreateIdentity(o);
-
     float cosz = cosf(z);
     float sinz = sinf(z);
+
+    PL_Matrix_CreateIdentity(o);
+
     o->m11 = cosz;
     o->m12 = -sinz;
     o->m21 = sinz;

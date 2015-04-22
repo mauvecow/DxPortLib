@@ -127,6 +127,7 @@ int PLD3D9_SetPresetProgram(int preset, int flags,
                           const PLMatrix *projectionMatrix, const PLMatrix *viewMatrix,
                           int textureRefID, int textureDrawMode,
                           float alphaTestValue) {
+    return 0;
 }
 
 int PLD3D9_ClearPresetProgram() {
