@@ -199,7 +199,7 @@ void LunaFontSprite::Release(LFONTSPRITE lFontSpr) {
 }
 
 static unsigned int s_CharToLookup(unsigned int ch) {
-#ifndef DXPORTLIB_NON_SJIS
+#ifndef DXPORTLIB_NO_SJIS
     unsigned int s = PL_Text_ToSJIS(ch);
     
     if (s <= CODE_ASCII_END) {

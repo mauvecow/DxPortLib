@@ -13,6 +13,17 @@
 
 #include "DxLib.h"
 
+#ifdef DX_NON_FONT
+
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    printf("DxPortLib was compiled without font support.\n");
+    return -1;
+}
+
+#else /* #ifndef DX_NON_FONT */
+
 #ifndef DXLIB_VERSION
 
 #include <stdio.h>
@@ -125,3 +136,5 @@ int main(int argc, char **argv) {
 }
 
 #endif /* #ifdef DXLIB_VERSION */
+
+#endif /* #ifndef DX_NON_FONT */

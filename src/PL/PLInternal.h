@@ -204,11 +204,12 @@ extern int PL_Window_End(void);
 extern int PL_Window_SwapBuffers();
 extern int PL_Window_ProcessMessages();
 
-extern int PL_Window_SetFullscreen(int isFullscreen);
+extern int PL_Window_SetFullscreen(int isFullscreen, int fullscreenDesktop);
 extern int PL_Window_SetDimensions(int width, int height, int colorDepth, int refreshRate);
 extern int PL_Window_SetTitle(const DXCHAR *titleString);
 
 extern int PL_Window_SetWindowResizeFlag(int flag);
+extern int PL_Window_ChangeOnlyWindowSize(int width, int height);
 
 extern int PL_Window_SetMouseDispFlag(int flag);
 extern int PL_Window_GetMouseDispFlag();

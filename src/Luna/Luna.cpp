@@ -45,8 +45,13 @@ static int s_timerLastTicks = 0;
 static int s_drawTitleInfo = 0;
 static int s_lunaUseFlags = 0;
 
+static bool s_lunaDrawMouse = false;
+static int s_lunaFullscreenDesktopFlag = DXTRUE;
+
+static int s_screenWidth = 640;
+static int s_screenHeight = 640;
 static int s_virtualWidth = 640;
-static int s_virtualHeight = 640;
+static int s_virtualHeight = 480;
 static float s_lunaBaseVirtualXmult = 1.0f;
 static float s_lunaBaseVirtualYmult = 1.0f;
 float g_lunaVirtualXmult = 1.0f;
@@ -98,6 +103,10 @@ Bool Luna::Start() {
         PL_Input_Init();
     }
 #endif  /* #ifndef DX_NON_INPUT */
+    
+    PL_Window_SetMouseDispFlag(s_lunaDrawMouse ? DXTRUE : DXFALSE);
+    PL_Window_SetWindowResizeFlag(DXFALSE);
+    
     PL_Window_Init();
 #ifndef DX_NON_SOUND
     if ((s_lunaUseFlags & OPTION_DIRECTSOUND) != 0) {
@@ -165,13 +174,13 @@ Bool Luna::WaitForMsgLoop(Bool isFullActive) {
     int alwaysRunFlag = (isFullActive == true) ? DXTRUE : DXFALSE;
     PL_Window_SetAlwaysRunFlag(alwaysRunFlag);
     
+    LunaInput_Refresh();
+    
     if (PL_Window_ProcessMessages() < 0) {
         return false;
     }
     
     Luna::SyncFrame();
-    
-    LunaInput_Refresh();
     
     s_handleAltEnter();
     
@@ -237,12 +246,19 @@ Float Luna::Virtual2RealY(Float Pos) {
 }
 
 void Luna::SetScreenInfo(Sint32 width, Sint32 height, Bool isWindow) {
+    s_screenWidth = width;
+    s_screenHeight = height;
+    
     PL_Window_SetDimensions(width, height, 32, 60);
-    PL_Window_SetFullscreen((isWindow == true) ? DXFALSE : DXTRUE);
+    PL_Window_SetFullscreen((isWindow == true) ? DXFALSE : DXTRUE,
+            s_lunaFullscreenDesktopFlag);
     
     SetVirtualScreenSize(width, height, width, height);
 }
 void Luna::ChangeScreenSize(Sint32 width, Sint32 height, Bool IsChange) {
+    s_screenWidth = width;
+    s_screenHeight = height;
+    
     PL_Window_SetDimensions(width, height, 32, 60);
     
     s_lunaBaseVirtualXmult = toF(width) / toF(s_virtualWidth);
@@ -252,9 +268,11 @@ void Luna::ChangeScreenSize(Sint32 width, Sint32 height, Bool IsChange) {
     
     if (IsChange == true) {
         if (PL_Window_GetWindowModeFlag() == DXTRUE) {
-            PL_Window_SetFullscreen(DXTRUE);
+            PL_Window_SetFullscreen(DXTRUE,
+                                    s_lunaFullscreenDesktopFlag);
         } else {
-            PL_Window_SetFullscreen(DXFALSE);
+            PL_Window_SetFullscreen(DXFALSE,
+                                    s_lunaFullscreenDesktopFlag);
         }
     }
 }
@@ -269,6 +287,7 @@ void Luna::SetDrawTitleInfo(void) {
     s_drawTitleInfo = DXTRUE;
 }
 void Luna::SetDrawMouse(void) {
+    s_lunaDrawMouse = true;
     PL_Window_SetMouseDispFlag(DXTRUE);
 }
 void Luna::SetUseOption(Uint32 flags) {
@@ -312,6 +331,42 @@ int Luna::EXTConvertText(DXCHAR *buffer, int bufferLength,
     
     return pos;
 #endif
+}
+
+void Luna::EXTSetFullscreenDesktop(bool flag) {
+    int newState;
+    if (flag) {
+        newState = DXTRUE;
+    } else {
+        newState = DXFALSE;
+    }
+    if (newState == s_lunaFullscreenDesktopFlag) {
+        return;
+    }
+    s_lunaFullscreenDesktopFlag = newState;
+    
+    if (PL_Window_GetWindowModeFlag() == DXFALSE) {
+        PL_Window_SetFullscreen(DXTRUE, s_lunaFullscreenDesktopFlag);
+    }
+}
+
+void Luna::EXTSetOnlyWindowSize(int width, int height, bool isFullscreen, bool isFullscreenDesktop) {
+    if (isFullscreenDesktop) {
+        s_lunaFullscreenDesktopFlag = DXTRUE;
+    } else {
+        s_lunaFullscreenDesktopFlag = DXFALSE;
+    }
+    if (isFullscreen) {
+        PL_Window_ChangeOnlyWindowSize(s_screenWidth, s_screenHeight);
+        PL_Window_SetFullscreen(DXTRUE, s_lunaFullscreenDesktopFlag);
+    } else {
+        PL_Window_ChangeOnlyWindowSize(width, height);
+        PL_Window_SetFullscreen(DXFALSE, s_lunaFullscreenDesktopFlag);
+    }
+}
+
+void Luna::EXTSetWindowIconFromFile(const DXCHAR *filename) {
+    PLEXT_Window_SetIconImageFile(filename);
 }
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

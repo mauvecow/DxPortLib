@@ -57,6 +57,8 @@ int PL_drawOffscreen = DXFALSE;
 
 static int s_offscreenVBO = -1;
 
+static int s_forceWindowCentered = DXFALSE;
+
 typedef struct RectVertex {
     float x, y;
     float tcx, tcy;
@@ -249,6 +251,11 @@ int PL_Window_Init(void) {
     if (windowTitle == NULL) {
         windowTitle = "DxPortLib App";
     }
+    
+    /* When running in fullscreen mode, sometimes we'll lose focus
+     * for no good reason. This deals with that. */
+    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+    
     s_windowFlags |= 
         SDL_WINDOW_OPENGL |
         SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
@@ -324,11 +331,15 @@ int PL_Window_SwapBuffers() {
     return 0;
 }
 
-int PL_Window_SetFullscreen(int isFullscreen) {
+int PL_Window_SetFullscreen(int isFullscreen, int fullscreenDesktop) {
     Uint32 newFlags = s_windowFlags;
-    newFlags &= (Uint32)~SDL_WINDOW_FULLSCREEN_DESKTOP;
+    newFlags &= (Uint32)~(SDL_WINDOW_FULLSCREEN_DESKTOP|SDL_WINDOW_FULLSCREEN);
     if (isFullscreen != 0) {
-        newFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        if (fullscreenDesktop == DXTRUE) {
+            newFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+        } else {
+            newFlags |= SDL_WINDOW_FULLSCREEN;
+        }
     }
     
     if (newFlags != s_windowFlags) {
@@ -337,6 +348,16 @@ int PL_Window_SetFullscreen(int isFullscreen) {
             SDL_SetWindowFullscreen(s_window, newFlags);
         }
     }
+    
+    return 0;
+}
+
+int PL_Window_ChangeOnlyWindowSize(int width, int height) {
+    if (s_window == NULL) {
+        return -1;
+    }
+    SDL_SetWindowSize(s_window, width, height);
+    s_forceWindowCentered = DXTRUE;
     
     return 0;
 }
@@ -357,6 +378,7 @@ int PL_Window_SetDimensions(int width, int height, int colorDepth, int refreshRa
             /* Remember that we are changing the backbuffer size here, not the
              * window size. (unless it's smaller?) */
             SDL_SetWindowSize(s_window, width, height);
+            s_forceWindowCentered = DXTRUE;
             
             PL_Window_ResizeBuffer(PL_windowWidth, PL_windowHeight);
         }
@@ -465,6 +487,16 @@ int PL_Window_ProcessMessages() {
         }
 #endif
     } while (s_lacksFocus);
+    
+    if (s_forceWindowCentered) {
+        /* Don't recenter the window if it's fullscreen, as this forces a minimize. */
+        if ((s_windowFlags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP)) == 0) {
+            SDL_SetWindowPosition(s_window,
+                              SDL_WINDOWPOS_CENTERED,
+                              SDL_WINDOWPOS_CENTERED);
+        }
+        s_forceWindowCentered = DXFALSE;
+    }
     
     return 0;
 }

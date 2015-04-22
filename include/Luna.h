@@ -587,6 +587,14 @@ public:
                             const DXCHAR *string,
                             int destEncoding, int srcEncoding);
     
+    static LUNACALL void EXTSetFullscreenDesktop(bool flag);
+
+    static LUNACALL void EXTSetOnlyWindowSize(int width, int height,
+                                              bool isFullscreen,
+                                              bool isFullscreenDesktop);
+    
+    static LUNACALL void EXTSetWindowIconFromFile(const DXCHAR *filename);
+    
     // Supplied by the application.
     //static LUNACALL Bool Init();
     //static LUNACALL void Main(Sint32 argc, char *argv[]);

@@ -66,7 +66,8 @@ int main(int argc, char **argv) {
     ChangeWindowMode(TRUE);
     
     DxLib_Init();
-    
+
+#ifndef DX_NON_FONT
     /* - DxPortLib requires fonts be "mapped" before they can be used.
      *   System fonts are not accessible, so you must include a font
      *   and use EXT_MapFontFileToName.
@@ -93,7 +94,7 @@ int main(int argc, char **argv) {
     
     /* Creates a handle to the NotAnArialClone font. */
     int fontHandle = CreateFontToHandle("Arial", 22, -1);
-    
+
     /* - DxPortLib does not have a "default" font.
      *   If you use the default font, you must set it manually.
      *
@@ -108,11 +109,14 @@ int main(int argc, char **argv) {
     /* - Note: DxPortLib will not actually create the default font
      *   until it is used. */
     
+#endif /* #ifndef DX_NON_FONT */
+    
     SRand(0);
     /* Run a main loop. */
     while (ProcessMessage() == 0) {
         DrawFillBox(0, 0, 640, 480, GetColor(0x10, 0x20, 0x30));
-        
+
+#ifndef DX_NON_FONT        
         DrawString(
             20, 20,
             _T("This is the BoldArialClone font."),
@@ -124,6 +128,7 @@ int main(int argc, char **argv) {
             GetColor(0xff, 0xff, 0x80),
             fontHandle
         );
+#endif
         
         ScreenFlip();
         
