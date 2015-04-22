@@ -357,7 +357,7 @@ int DxLib_ScreenFlip() {
     return 0;
 }
 int DxLib_ChangeWindowMode(int fullscreenFlag) {
-    PL_Window_SetFullscreen(fullscreenFlag ? 0 : 1);
+    PL_Window_SetFullscreen(fullscreenFlag ? 0 : 1, DXTRUE);
     return 0;
 }
 int DxLib_GetWindowModeFlag() {
