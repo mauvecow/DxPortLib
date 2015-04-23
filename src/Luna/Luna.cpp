@@ -48,6 +48,8 @@ static int s_lunaUseFlags = 0;
 static bool s_lunaDrawMouse = false;
 static int s_lunaFullscreenDesktopFlag = DXTRUE;
 
+static int s_realWidth = 640;
+static int s_realHeight = 480;
 static int s_screenWidth = 640;
 static int s_screenHeight = 640;
 static int s_virtualWidth = 640;
@@ -248,6 +250,8 @@ Float Luna::Virtual2RealY(Float Pos) {
 void Luna::SetScreenInfo(Sint32 width, Sint32 height, Bool isWindow) {
     s_screenWidth = width;
     s_screenHeight = height;
+    s_realWidth = width;
+    s_realHeight = height;
     
     PL_Window_SetDimensions(width, height, 32, 60);
     PL_Window_SetFullscreen((isWindow == true) ? DXFALSE : DXTRUE,
@@ -258,6 +262,8 @@ void Luna::SetScreenInfo(Sint32 width, Sint32 height, Bool isWindow) {
 void Luna::ChangeScreenSize(Sint32 width, Sint32 height, Bool IsChange) {
     s_screenWidth = width;
     s_screenHeight = height;
+    s_realWidth = width;
+    s_realHeight = height;
     
     PL_Window_SetDimensions(width, height, 32, 60);
     
@@ -277,7 +283,9 @@ void Luna::ChangeScreenSize(Sint32 width, Sint32 height, Bool IsChange) {
     }
 }
 void Luna::ChangeScreenMode() {
-    ChangeScreenSize(PL_windowWidth, PL_windowHeight, DXTRUE);
+    EXTSetOnlyWindowSize(s_realWidth, s_realHeight,
+        PL_Window_GetWindowModeFlag() == DXTRUE ? true : false,
+        s_lunaFullscreenDesktopFlag == DXTRUE ? true : false);
 }
 
 void Luna::SetFrameRate(Sint32 frameRate) {
@@ -351,18 +359,31 @@ void Luna::EXTSetFullscreenDesktop(bool flag) {
 }
 
 void Luna::EXTSetOnlyWindowSize(int width, int height, bool isFullscreen, bool isFullscreenDesktop) {
+    int newDesktopFlag;
     if (isFullscreenDesktop) {
-        s_lunaFullscreenDesktopFlag = DXTRUE;
+        newDesktopFlag = DXTRUE;
     } else {
-        s_lunaFullscreenDesktopFlag = DXFALSE;
+        newDesktopFlag = DXFALSE;
     }
+
+    s_realWidth = width;
+    s_realHeight = height;
+
     if (isFullscreen) {
+        if (s_lunaFullscreenDesktopFlag != newDesktopFlag
+            && PL_Window_GetWindowModeFlag() == DXFALSE)
+        {
+            // Momentarily go to windowed mode.
+            PL_Window_SetFullscreen(DXFALSE, s_lunaFullscreenDesktopFlag);
+        }
+
         PL_Window_ChangeOnlyWindowSize(s_screenWidth, s_screenHeight);
-        PL_Window_SetFullscreen(DXTRUE, s_lunaFullscreenDesktopFlag);
+        PL_Window_SetFullscreen(DXTRUE, newDesktopFlag);
     } else {
+        PL_Window_SetFullscreen(DXFALSE, newDesktopFlag);
         PL_Window_ChangeOnlyWindowSize(width, height);
-        PL_Window_SetFullscreen(DXFALSE, s_lunaFullscreenDesktopFlag);
     }
+    s_lunaFullscreenDesktopFlag = newDesktopFlag;
 }
 
 void Luna::EXTSetWindowIconFromFile(const DXCHAR *filename) {
