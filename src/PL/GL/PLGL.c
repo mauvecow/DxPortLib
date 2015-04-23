@@ -101,7 +101,7 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     PL_GL.glAlphaFunc = GetGLFunction("glAlphaFunc");
 #endif
-    PL_GL.glDepthRange = GetGLFunction("glDepthRangef");
+    PL_GL.glDepthRange = GetGLFunction("glDepthRange");
     PL_GL.glDepthRangef = GetGLFunction("glDepthRangef");
     
     PL_GL.glViewport = GetGLFunction("glViewport");

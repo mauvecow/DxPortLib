@@ -443,7 +443,7 @@ void PLGL_Shaders_ApplyProgramVertexData(int shaderHandle,
                 case VERTEX_TEXCOORD3: {
                         int slot = e->vertexType - VERTEX_TEXCOORD0;
                         GLint attribID = info->glTexcoordAttribID[slot];
-                        if (attribID > 0) {
+                        if (attribID >= 0) {
                             PL_GL.glVertexAttribPointer(attribID,
                                                         e->size, vertexType, GL_FALSE,
                                                         vertexDataSize, vertexData + e->offset);
@@ -453,7 +453,7 @@ void PLGL_Shaders_ApplyProgramVertexData(int shaderHandle,
                         break;
                     }
                 case VERTEX_COLOR:
-                    if (info->glColorAttribID > 0) {
+                    if (info->glColorAttribID >= 0) {
                         PL_GL.glVertexAttribPointer(info->glColorAttribID,
                                                     e->size, vertexType, GL_TRUE,
                                                     vertexDataSize, vertexData + e->offset);
@@ -487,13 +487,13 @@ void PLGL_Shaders_ClearProgramVertexData(int shaderHandle, const VertexDefinitio
                 case VERTEX_TEXCOORD2:
                 case VERTEX_TEXCOORD3: {
                         GLint attribID = info->glTexcoordAttribID[e->vertexType - VERTEX_TEXCOORD0];
-                        if (attribID > 0) {
+                        if (attribID >= 0) {
                             PL_GL.glDisableVertexAttribArray(attribID);
                         }
                         break;
                     }
                 case VERTEX_COLOR:
-                    if (info->glColorAttribID > 0) {
+                    if (info->glColorAttribID >= 0) {
                         PL_GL.glDisableVertexAttribArray(info->glColorAttribID);
                     }
                     break;
