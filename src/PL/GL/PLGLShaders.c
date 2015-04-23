@@ -502,7 +502,7 @@ void PLGL_Shaders_ClearProgramVertexData(int shaderHandle, const VertexDefinitio
     }
 }
 
-static int s_stockShaderIDs[PLGL_SHADER_END] = { -1 };
+static int s_stockShaderIDs[PLGL_SHADER_END];
 
 int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType) {
     return s_stockShaderIDs[shaderType];
@@ -510,6 +510,10 @@ int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType) {
 
 void PLGL_Shaders_Init() {
     int i;
+
+    if (PL_GL.hasShaderSupport == DXFALSE) {
+        return;
+    }
     
     for (i = 0; i < PLGL_SHADER_END; ++i) {
         s_stockShaderIDs[i] = PLGL_Shaders_CompileDefinition(&s_stockShaderDefinitions[i]);
@@ -518,6 +522,10 @@ void PLGL_Shaders_Init() {
 
 void PLGL_Shaders_Cleanup() {
     int i;
+    
+    if (PL_GL.hasShaderSupport == DXFALSE) {
+        return;
+    }
     
     for (i = 0; i < PLGL_SHADER_END; ++i) {
         PLGL_Shaders_DeleteShader(s_stockShaderIDs[i]);

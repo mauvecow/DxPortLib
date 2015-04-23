@@ -224,7 +224,7 @@ int PLGL_SetPresetProgram(int preset, int flags,
     }
     
     s_activeShaderProgram = newShaderProgram;
-    if (newShaderProgram >= 0) {
+    if (newShaderProgram > 0) {
         s_useFixedFunction = DXFALSE;
         PLGL_SetTextureStage(0, textureRefID, textureDrawMode);
         
@@ -264,8 +264,8 @@ int PLGL_ClearPresetProgram() {
  * glDrawArrays/glDrawElements.
  */
 #define MAX_EMULATED_BUFFERS    24
-static int s_emulatedVBOs[MAX_EMULATED_BUFFERS] = { -1 };
-static int s_emulatedIBOs[MAX_EMULATED_BUFFERS] = { -1 };
+static int s_emulatedVBOs[MAX_EMULATED_BUFFERS];
+static int s_emulatedIBOs[MAX_EMULATED_BUFFERS];
 
 /* Returns valid VBO/IBOs for the given inputs. */
 static int s_emulateVertexBuffer(const VertexDefinition *def,
