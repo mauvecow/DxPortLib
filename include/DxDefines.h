@@ -24,8 +24,10 @@
 
 #include "DxBuildConfig.h"
 
+#include <stdint.h>
+
 #ifdef UNICODE
-#include <wchar.h>
+#  include <wchar.h>
 #endif
 
 #if defined(__GNUC__)

@@ -70,14 +70,14 @@ extern DXCALL int DxLib_EXT_FileRead_SetCharSet(int charset);
 
 extern DXCALL int DxLib_FileRead_open(const DXCHAR *filename, int ASync);
 
-extern DXCALL long long DxLib_FileRead_size(const DXCHAR *filename);
+extern DXCALL int64_t DxLib_FileRead_size(const DXCHAR *filename);
 
 extern DXCALL int DxLib_FileRead_close(int fileHandle);
 
-extern DXCALL long long DxLib_FileRead_tell(int fileHandle);
+extern DXCALL int64_t DxLib_FileRead_tell(int fileHandle);
 
 extern DXCALL int DxLib_FileRead_seek(int fileHandle,
-                                      long long position, int origin);
+                                      int64_t position, int origin);
 
 extern DXCALL int DxLib_FileRead_read(void *data, int size, int fileHandle);
 

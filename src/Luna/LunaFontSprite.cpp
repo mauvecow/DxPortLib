@@ -94,7 +94,7 @@ LFONTSPRITE LunaFontSprite::CreateFromFile(const DXCHAR *pFileName,
     unsigned char *lfdData = NULL;
     
     do {
-        long long fileSize = PL_File_GetSize(file);
+        int64_t fileSize = PL_File_GetSize(file);
         const LFDHeader *lfdHeader;
         LunaFontSprData *fontspr;
         int fontSprHandle;

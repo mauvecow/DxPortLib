@@ -870,8 +870,8 @@ int PL_CheckSoundMem(int soundID) {
 }
 
 int PL_Audio_SetLoopSamples(int soundID,
-                            unsigned long long loopTarget,
-                            unsigned long long loopPoint) {
+                            uint64_t loopTarget,
+                            uint64_t loopPoint) {
     Sound *sound;
     int retval = -1;
     

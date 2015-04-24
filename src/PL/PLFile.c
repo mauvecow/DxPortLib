@@ -41,15 +41,15 @@ typedef struct _MemoryHandleData {
     int freeOnClose;
 } MemoryHandleData;
 
-static long long MemoryHandle_GetSize(void *userdata) {
+static int64_t MemoryHandle_GetSize(void *userdata) {
     MemoryHandleData *mem = (MemoryHandleData *)userdata;
     return mem->length;
 }
-static long long MemoryHandle_Tell(void *userdata) {
+static int64_t MemoryHandle_Tell(void *userdata) {
     MemoryHandleData *mem = (MemoryHandleData *)userdata;
     return mem->pos;
 }
-static int MemoryHandle_Seek(void *userdata, long long position, int origin) {
+static int MemoryHandle_Seek(void *userdata, int64_t position, int origin) {
     MemoryHandleData *mem = (MemoryHandleData *)userdata;
     switch(origin) {
         case 0: break;
@@ -118,21 +118,21 @@ int PL_File_CreateHandleFromMemory(void *data, int length, int freeOnClose) {
 typedef struct _SubsectionHandleData {
     int srcHandle;
     
-    long long start;
-    long long end;
+    int64_t start;
+    int64_t end;
     
     int closeOnClose;
 } SubsectionHandleData;
 
-static long long SubsectionHandle_GetSize(void *userdata) {
+static int64_t SubsectionHandle_GetSize(void *userdata) {
     SubsectionHandleData *sub = (SubsectionHandleData *)userdata;
     return sub->end - sub->start;
 }
-static long long SubsectionHandle_Tell(void *userdata) {
+static int64_t SubsectionHandle_Tell(void *userdata) {
     SubsectionHandleData *sub = (SubsectionHandleData *)userdata;
     return PL_File_Tell(sub->srcHandle) - sub->start;
 }
-static int SubsectionHandle_Seek(void *userdata, long long position, int origin) {
+static int SubsectionHandle_Seek(void *userdata, int64_t position, int origin) {
     SubsectionHandleData *sub = (SubsectionHandleData *)userdata;
     switch(origin) {
         case 0: position += sub->start; break;
@@ -151,8 +151,8 @@ static int SubsectionHandle_Seek(void *userdata, long long position, int origin)
 }
 static int SubsectionHandle_Read(void *userdata, void *data, int size) {
     SubsectionHandleData *sub = (SubsectionHandleData *)userdata;
-    long long pos = PL_File_Tell(sub->srcHandle);
-    long long max = sub->end - pos;
+    int64_t pos = PL_File_Tell(sub->srcHandle);
+    int64_t max = sub->end - pos;
     int amount = size;
     if (amount > max) {
         amount = (int)max;
@@ -183,7 +183,7 @@ static const PL_FileFunctions SubsectionHandleFuncs = {
     SubsectionHandle_Close
 };
 
-int PL_File_CreateHandleSubsection(int srcFileHandle, long long start, long long size, int closeOnClose) {
+int PL_File_CreateHandleSubsection(int srcFileHandle, int64_t start, int64_t size, int closeOnClose) {
     SubsectionHandleData *sub = DXALLOC(sizeof(SubsectionHandleData));
     sub->srcHandle = srcFileHandle;
     sub->start = start;
@@ -196,7 +196,7 @@ int PL_File_CreateHandleSubsection(int srcFileHandle, long long start, long long
 }
 
 /* ------------------------------------------------------ Main I/O funcs */
-long long PL_File_GetSize(int fileHandle) {
+int64_t PL_File_GetSize(int fileHandle) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_PLFILE);
     if (handle != NULL && handle->functions->getSize != NULL) {
         return handle->functions->getSize(handle->userdata);
@@ -204,7 +204,7 @@ long long PL_File_GetSize(int fileHandle) {
     return -1;
 }
 
-long long PL_File_Tell(int fileHandle) {
+int64_t PL_File_Tell(int fileHandle) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_PLFILE);
     if (handle != NULL && handle->functions->tell != NULL) {
         return handle->functions->tell(handle->userdata);
@@ -212,7 +212,7 @@ long long PL_File_Tell(int fileHandle) {
     return -1;
 }
 
-long long PL_File_Seek(int fileHandle, long long position, int origin) {
+int64_t PL_File_Seek(int fileHandle, int64_t position, int origin) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_PLFILE);
     if (handle != NULL && handle->functions->seek != NULL) {
         return handle->functions->seek(handle->userdata, position, origin);
@@ -220,7 +220,7 @@ long long PL_File_Seek(int fileHandle, long long position, int origin) {
     return -1;
 }
 
-long long PL_File_Read(int fileHandle, void *data, int size) {
+int64_t PL_File_Read(int fileHandle, void *data, int size) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_PLFILE);
     if (handle != NULL && handle->functions->read != NULL) {
         return handle->functions->read(handle->userdata, data, size);

@@ -52,7 +52,7 @@ struct DXArchive {
     
     char *utf8Filename;
     
-    unsigned long long DataAddress;
+    uint64_t DataAddress;
     
     unsigned int CharSet;
     
@@ -76,12 +76,12 @@ typedef struct DXArchiveHeader {
 } DXArchiveHeader;
 
 typedef struct DXArchiveInfo {
-    unsigned long long          DataAddress;
-    unsigned long long          FileNameTableAddress;
-    unsigned long long          FileTableAddress;
-    unsigned long long          DirectoryTableAddress;
+    uint64_t          DataAddress;
+    uint64_t          FileNameTableAddress;
+    uint64_t          FileTableAddress;
+    uint64_t          DirectoryTableAddress;
     
-    unsigned long long          CodePage;
+    uint64_t          CodePage;
 } DXArchiveInfo;
 
 typedef struct DXArchiveInfoV5 {
@@ -99,26 +99,26 @@ typedef struct DXArchiveFileNameInfo {
 } DXArchiveFileNameInfo;
 
 typedef struct DXArchiveFileInfo {
-    unsigned long long          NameAddress;
-    unsigned long long          Attributes;
+    uint64_t          NameAddress;
+    uint64_t          Attributes;
 
-    unsigned long long          CreationTime;
-    unsigned long long          LastAccessTime;
-    unsigned long long          LastWriteTime;
+    uint64_t          CreationTime;
+    uint64_t          LastAccessTime;
+    uint64_t          LastWriteTime;
     
-    unsigned long long          DataAddress;
+    uint64_t          DataAddress;
     
-    unsigned long long          DataSize;
-    unsigned long long          CompressedDataSize;
+    uint64_t          DataSize;
+    uint64_t          CompressedDataSize;
 } DXArchiveFileInfo;
 
 typedef struct DXArchiveFileInfoV5 {
     unsigned int                NameAddress;
     unsigned int                Attributes;
 
-    unsigned long long          CreationTime;
-    unsigned long long          LastAccessTime;
-    unsigned long long          LastWriteTime;
+    uint64_t          CreationTime;
+    uint64_t          LastAccessTime;
+    uint64_t          LastWriteTime;
     
     unsigned int                DataAddress;
     
@@ -129,9 +129,9 @@ typedef struct DXArchiveFileInfoV1 {
     unsigned int                NameAddress;
     unsigned int                Attributes;
 
-    unsigned long long          CreationTime;
-    unsigned long long          LastAccessTime;
-    unsigned long long          LastWriteTime;
+    uint64_t          CreationTime;
+    uint64_t          LastAccessTime;
+    uint64_t          LastWriteTime;
     
     unsigned int                DataAddress;
     
@@ -139,10 +139,10 @@ typedef struct DXArchiveFileInfoV1 {
 } DXArchiveFileInfoV1;
 
 typedef struct DXArchiveDirectoryInfo {
-    unsigned long long          DirectoryAddress;
-    unsigned long long          ParentDirectoryAddress;
-    unsigned long long          FileInfoCount;
-    unsigned long long          FileInfoAddress;
+    uint64_t          DirectoryAddress;
+    uint64_t          ParentDirectoryAddress;
+    uint64_t          FileInfoCount;
+    uint64_t          FileInfoAddress;
 } DXArchiveDirectoryInfo;
 
 typedef struct DXArchiveDirectoryInfoV5 {
@@ -159,21 +159,21 @@ typedef struct DXArchiveSearchInfo {
 } DXArchiveSearchInfo;
 
 /* ------------------------------------------------------------ DXARCHIVE FUNCTIONS */
-static int DXA_ReadAndDecode(DXArchive *archive, unsigned long long position, void *dest, unsigned long long length);
-static void DXA_Decode(DXArchive *archive, const void *src, void *dest, unsigned long long length, unsigned long long offset);
+static int DXA_ReadAndDecode(DXArchive *archive, uint64_t position, void *dest, uint64_t length);
+static void DXA_Decode(DXArchive *archive, const void *src, void *dest, uint64_t length, uint64_t offset);
 
-static int DXA_Decompress(const void *src, void *dest, unsigned long long dest_len);
+static int DXA_Decompress(const void *src, void *dest, uint64_t dest_len);
 
-static unsigned long long DXA_GetFileAddress(DXArchive *archive, const DXCHAR *filename);
+static uint64_t DXA_GetFileAddress(DXArchive *archive, const DXCHAR *filename);
 
-static void DXA_GetFileInfo(DXArchive *archive, unsigned long long address, DXArchiveFileInfo *info);
-static void DXA_GetDirectoryInfo(DXArchive *archive, unsigned long long address, DXArchiveDirectoryInfo *info);
-static void DXA_GetFileNameInfo(DXArchive *archive, unsigned long long address, DXArchiveFileNameInfo *info, const char **dName);
+static void DXA_GetFileInfo(DXArchive *archive, uint64_t address, DXArchiveFileInfo *info);
+static void DXA_GetDirectoryInfo(DXArchive *archive, uint64_t address, DXArchiveDirectoryInfo *info);
+static void DXA_GetFileNameInfo(DXArchive *archive, uint64_t address, DXArchiveFileNameInfo *info, const char **dName);
 
 static int DXA_InitializeArchive(DXArchive *archive);
 
 /* ------------------------------------------------------------ DXARCHIVE IMPLEMENTATION */
-static unsigned long long DXA_GetFileAddress(DXArchive *archive, const DXCHAR *filename) {
+static uint64_t DXA_GetFileAddress(DXArchive *archive, const DXCHAR *filename) {
     /* So here we have to break up the filename into pieces.
      * 
      * The rules here are:
@@ -183,7 +183,7 @@ static unsigned long long DXA_GetFileAddress(DXArchive *archive, const DXCHAR *f
     char utf8Buf[2048];
     char fileBuf[2048];
     const char *src = utf8Buf;
-    unsigned long long directoryAddress = 0;
+    uint64_t directoryAddress = 0;
     int charSet = (int)archive->CharSet;
     
     if (PL_Text_DxStringToString(filename, utf8Buf, 2048, charSet) <= 0) {
@@ -194,10 +194,10 @@ static unsigned long long DXA_GetFileAddress(DXArchive *archive, const DXCHAR *f
         DXArchiveDirectoryInfo dirInfo;
         int index = 0;
         unsigned int dirAttrib = 0;
-        unsigned long long fileAddress;
+        uint64_t fileAddress;
         unsigned int ch;
         int foundDir;
-        unsigned long long i;
+        uint64_t i;
         unsigned int parity = 0;
         
         while ((ch = PL_Text_ReadChar(&src, charSet)) != '\0') {
@@ -265,7 +265,7 @@ static int DXA_ReadCompressedFile(
 ) {
     unsigned char *data = (unsigned char *)DXALLOC((size_t)fileInfo->CompressedDataSize);
     unsigned char *decompressed;
-    unsigned long long address = archive->DataAddress + fileInfo->DataAddress;
+    uint64_t address = archive->DataAddress + fileInfo->DataAddress;
     
     if (archive->PreloadData != NULL) {
         if ((address + fileInfo->CompressedDataSize) > archive->PreloadSize) {
@@ -294,7 +294,7 @@ static int DXA_ReadCompressedFile(
 }
 
 int DXA_ReadFile(DXArchive *archive, const DXCHAR *filename, unsigned char **dData, unsigned int *dSize) {
-    unsigned long long index = DXA_GetFileAddress(archive, filename);
+    uint64_t index = DXA_GetFileAddress(archive, filename);
     DXArchiveFileInfo fileInfo;
     if (index == 0) {
         return -1;
@@ -304,7 +304,7 @@ int DXA_ReadFile(DXArchive *archive, const DXCHAR *filename, unsigned char **dDa
     
     if (fileInfo.CompressedDataSize == 0xffffffff) {
         unsigned char *data = (unsigned char *)DXALLOC((size_t)fileInfo.DataSize);
-        unsigned long long address = archive->DataAddress + fileInfo.DataAddress;
+        uint64_t address = archive->DataAddress + fileInfo.DataAddress;
         
         if (archive->PreloadData != NULL) {
             if ((address + fileInfo.DataSize) > archive->PreloadSize) {
@@ -327,7 +327,7 @@ int DXA_ReadFile(DXArchive *archive, const DXCHAR *filename, unsigned char **dDa
 }
 
 int DXA_TestFile(DXArchive *archive, const DXCHAR *filename) {
-    unsigned long long index = DXA_GetFileAddress(archive, filename);
+    uint64_t index = DXA_GetFileAddress(archive, filename);
     if (index == 0) {
         return -1;
     }
@@ -422,7 +422,7 @@ static int DXA_InitializeArchive(DXArchive *archive) {
      */
     DXArchiveHeader archiveHeader;
     int version;
-    unsigned long long infoPosition;
+    uint64_t infoPosition;
     unsigned char *data;
     unsigned int codepage;
     
@@ -486,7 +486,7 @@ static int DXA_InitializeArchive(DXArchive *archive) {
     return 0;
 }
 
-static void DXA_GetFileInfo(DXArchive *archive, unsigned long long address, DXArchiveFileInfo *info) {
+static void DXA_GetFileInfo(DXArchive *archive, uint64_t address, DXArchiveFileInfo *info) {
     if (archive->Version >= 6) {
         DXArchiveFileInfo *src = (DXArchiveFileInfo *)(archive->FileInfoTable + address);
         
@@ -520,7 +520,7 @@ static void DXA_GetFileInfo(DXArchive *archive, unsigned long long address, DXAr
     }
 }
 
-static void DXA_GetDirectoryInfo(DXArchive *archive, unsigned long long address, DXArchiveDirectoryInfo *info) {
+static void DXA_GetDirectoryInfo(DXArchive *archive, uint64_t address, DXArchiveDirectoryInfo *info) {
     if (archive->Version >= 6) {
         DXArchiveDirectoryInfo *src = (DXArchiveDirectoryInfo *)(archive->DirectoryInfoTable + address);
         
@@ -534,7 +534,7 @@ static void DXA_GetDirectoryInfo(DXArchive *archive, unsigned long long address,
     }
 }
 
-static void DXA_GetFileNameInfo(DXArchive *archive, unsigned long long address, DXArchiveFileNameInfo *info, const char **dName) {
+static void DXA_GetFileNameInfo(DXArchive *archive, uint64_t address, DXArchiveFileNameInfo *info, const char **dName) {
     DXArchiveFileNameInfo *src = (DXArchiveFileNameInfo *)(archive->FileNameInfoTable + address);
     
     if (info != NULL) {
@@ -546,7 +546,7 @@ static void DXA_GetFileNameInfo(DXArchive *archive, unsigned long long address, 
     }
 }
     
-static int DXA_ReadAndDecode(DXArchive *archive, unsigned long long position, void *dest, unsigned long long length) {
+static int DXA_ReadAndDecode(DXArchive *archive, uint64_t position, void *dest, uint64_t length) {
     SDL_RWops *rwops = archive->File;
     SDL_RWseek(rwops, (Sint64)position, RW_SEEK_SET);
     if (SDL_RWread(rwops, dest, (size_t)length, 1) < 1) {
@@ -557,16 +557,16 @@ static int DXA_ReadAndDecode(DXArchive *archive, unsigned long long position, vo
     return 0;
 }
 
-static void DXA_Decode(DXArchive *archive, const void *vSrc, void *vDest, unsigned long long length, unsigned long long position) {
+static void DXA_Decode(DXArchive *archive, const void *vSrc, void *vDest, uint64_t length, uint64_t position) {
     unsigned char key[DXA_KEY_LENGTH];
     unsigned int *iKey = (unsigned int *)key;
     const unsigned char *src = (const unsigned char *)vSrc;
     unsigned char *dest = (unsigned char *)vDest;
     const unsigned int *iSrc = (const unsigned int *)src;
     unsigned int *iDest = (unsigned int *)dest;
-    unsigned long long count = length / 12;
+    uint64_t count = length / 12;
     unsigned int offset = (unsigned int)(position % DXA_KEY_LENGTH);
-    unsigned long long i;
+    uint64_t i;
     unsigned char *srcKey = archive->Key;
     
     if (offset == 0) {
@@ -633,7 +633,7 @@ void DXA_SetArchiveKeyRaw(DXArchive *archive, const unsigned char *key) {
     }
 }
 
-static int DXA_Decompress(const void *vSrc, void *vDest, unsigned long long dest_len) {
+static int DXA_Decompress(const void *vSrc, void *vDest, uint64_t dest_len) {
     /* DXA LZ decompression. */
     const unsigned char *src = (const unsigned char *)vSrc;
     unsigned int src_len = *(unsigned int *)(src + 4);
@@ -796,7 +796,7 @@ static size_t SDLCALL DXA_Stream_Read(SDL_RWops *context, void *ptr, size_t size
     num = SDL_RWread(dxaops->src, ptr, size, maxnum);
     
     if (num > 0) {
-        DXA_Decode(dxaops->archive, ptr, ptr, num * size, (unsigned long long)position);
+        DXA_Decode(dxaops->archive, ptr, ptr, num * size, (uint64_t)position);
     }
     dxaops->currentPosition += num * size;
     
@@ -947,7 +947,7 @@ static SDL_RWops *DXA_MemStream_Open(unsigned char *data, size_t length, int fre
 }
 
 SDL_RWops *DXA_OpenStream(DXArchive *archive, const DXCHAR *filename) {
-    unsigned long long fileAddress = DXA_GetFileAddress(archive, filename);
+    uint64_t fileAddress = DXA_GetFileAddress(archive, filename);
     DXArchiveFileInfo fileInfo;
     
     if (fileAddress == 0) {
@@ -957,7 +957,7 @@ SDL_RWops *DXA_OpenStream(DXArchive *archive, const DXCHAR *filename) {
     DXA_GetFileInfo(archive, fileAddress, &fileInfo);
     if (fileInfo.CompressedDataSize == 0xffffffff) {
         if (archive->PreloadData != NULL) {
-            unsigned long long address = archive->DataAddress + fileInfo.DataAddress;
+            uint64_t address = archive->DataAddress + fileInfo.DataAddress;
             if ((address + fileInfo.DataSize) > archive->PreloadSize) {
                 return NULL;
             }

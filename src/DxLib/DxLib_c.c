@@ -198,7 +198,7 @@ int DxLib_FileRead_open(const DXCHAR *filename, int ASync) {
     return Dx_FileRead_open(filename);
 }
 
-long long DxLib_FileRead_size(const DXCHAR *filename) {
+int64_t DxLib_FileRead_size(const DXCHAR *filename) {
     return Dx_FileRead_size(filename);
 }
 
@@ -206,11 +206,11 @@ int DxLib_FileRead_close(int fileHandle) {
     return Dx_FileRead_close(fileHandle);
 }
 
-long long DxLib_FileRead_tell(int fileHandle) {
+int64_t DxLib_FileRead_tell(int fileHandle) {
     return Dx_FileRead_tell(fileHandle);
 }
 
-int DxLib_FileRead_seek(int fileHandle, long long position, int origin) {
+int DxLib_FileRead_seek(int fileHandle, int64_t position, int origin) {
     return Dx_FileRead_seek(fileHandle, position, origin);
 }
 

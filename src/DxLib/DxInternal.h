@@ -54,10 +54,10 @@ extern int Dx_File_DXArchiveCheckFile(const DXCHAR *dxaFilename, const DXCHAR *f
 extern int PLEXT_FileRead_SetCharSet(int charset);
 
 extern int Dx_FileRead_open(const DXCHAR *filename);
-extern long long Dx_FileRead_size(const DXCHAR *filename);
+extern int64_t Dx_FileRead_size(const DXCHAR *filename);
 extern int Dx_FileRead_close(int fileHandle);
-extern long long Dx_FileRead_tell(int fileHandle);
-extern int Dx_FileRead_seek(int fileHandle, long long position, int origin);
+extern int64_t Dx_FileRead_tell(int fileHandle);
+extern int Dx_FileRead_seek(int fileHandle, int64_t position, int origin);
 extern int Dx_FileRead_read(void *data, int size, int fileHandle);
 extern int Dx_FileRead_eof(int fileHandle);
 

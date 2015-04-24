@@ -373,10 +373,10 @@ int Dx_FileRead_open(const DXCHAR *filename) {
     
     return fileDataID;
 }
-long long Dx_FileRead_size(const DXCHAR *filename) {
+int64_t Dx_FileRead_size(const DXCHAR *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     if (rwops != NULL) {
-        long long size = rwops->size(rwops);
+        int64_t size = rwops->size(rwops);
         rwops->close(rwops);
         return size;
     }
@@ -394,7 +394,7 @@ int Dx_FileRead_close(int fileHandle) {
     }
     return -1;
 }
-long long Dx_FileRead_tell(int fileHandle) {
+int64_t Dx_FileRead_tell(int fileHandle) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
     if (handle != NULL) {
         SDL_RWops *rwops = handle->rwops;
@@ -402,7 +402,7 @@ long long Dx_FileRead_tell(int fileHandle) {
     }
     return 0;
 }
-int Dx_FileRead_seek(int fileHandle, long long position, int origin) {
+int Dx_FileRead_seek(int fileHandle, int64_t position, int origin) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
     if (handle != NULL) {
         SDL_RWops *rwops = handle->rwops;

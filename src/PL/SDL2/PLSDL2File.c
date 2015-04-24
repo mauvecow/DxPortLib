@@ -25,15 +25,15 @@
 
 #include "SDL.h"
 
-static long long SDLCALL PLSDL2_RWops_GetSize(void *userdata) {
+static int64_t SDLCALL PLSDL2_RWops_GetSize(void *userdata) {
     SDL_RWops *rwops = (SDL_RWops *)userdata;
     return SDL_RWsize(rwops);
 }
-static long long SDLCALL PLSDL2_RWops_Tell(void *userdata) {
+static int64_t SDLCALL PLSDL2_RWops_Tell(void *userdata) {
     SDL_RWops *rwops = (SDL_RWops *)userdata;
     return SDL_RWtell(rwops);
 }
-static int SDLCALL PLSDL2_RWops_Seek(void *userdata, long long position, int origin) {
+static int SDLCALL PLSDL2_RWops_Seek(void *userdata, int64_t position, int origin) {
     SDL_RWops *rwops = (SDL_RWops *)userdata;
     switch(origin) {
         case 0: SDL_RWseek(rwops, position, RW_SEEK_SET); break;

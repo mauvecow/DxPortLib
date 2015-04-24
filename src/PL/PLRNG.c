@@ -116,7 +116,7 @@ int PL_Random_Get(int maxValue) {
     
     maxValue += 1;
     
-    return (int)(((long long)s_GetNextLong() * maxValue) >> 32);
+    return (int)(((int64_t)s_GetNextLong() * maxValue) >> 32);
 }
 
 int PL_Random_SeedDx(int randomSeed) {

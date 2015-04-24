@@ -171,9 +171,9 @@ extern int PL_Handle_SetDeleteFlag(int handleID, int *deleteFlag);
 typedef int (*PLFileOpenFileFunction)(const DXCHAR *filename);
 
 typedef struct _PL_FileFunctions {
-    long long (*getSize)(void *userdata);
-    long long (*tell)(void *userdata);
-    int (*seek)(void *userdata, long long position, int origin);
+    int64_t (*getSize)(void *userdata);
+    int64_t (*tell)(void *userdata);
+    int (*seek)(void *userdata, int64_t position, int origin);
     int (*read)(void *userdata, void *data, int size);
     int (*close)(void *userdata);
 } PL_FileFunctions;
@@ -183,12 +183,12 @@ extern int PL_File_OpenRead(const DXCHAR *filename);
 extern int PL_File_CreateHandle(const PL_FileFunctions *funcs, void *userdata);
 extern int PL_File_CreateHandleFromMemory(void *data, int length, int freeOnClose);
 extern int PL_File_CreateHandleSubsection(int srcFileHandle,
-                                          long long start, long long size,
+                                          int64_t start, int64_t size,
                                           int closeOnClose);
-extern long long PL_File_GetSize(int fileHandle);
-extern long long PL_File_Tell(int fileHandle);
-extern long long PL_File_Seek(int fileHandle, long long position, int origin);
-extern long long PL_File_Read(int fileHandle, void *data, int size);
+extern int64_t PL_File_GetSize(int fileHandle);
+extern int64_t PL_File_Tell(int fileHandle);
+extern int64_t PL_File_Seek(int fileHandle, int64_t position, int origin);
+extern int64_t PL_File_Read(int fileHandle, void *data, int size);
 extern int PL_File_IsEOF(int fileHandle);
 extern int PL_File_Close(int fileHandle);
 extern int PL_File_Init();
@@ -643,8 +643,8 @@ extern int PL_InitSoundMem();
 extern int PL_SetCreateSoundDataType(int soundDataType);
 extern int PL_GetCreateSoundDataType();
 extern int PL_Audio_SetLoopSamples(int soundID,
-                                   unsigned long long loopTarget,
-                                   unsigned long long loopPoint);
+                                   uint64_t loopTarget,
+                                   uint64_t loopPoint);
 extern int PL_Audio_SetLoopTimes(int soundID,
                                  double loopTarget,
                                  double loopPoint);

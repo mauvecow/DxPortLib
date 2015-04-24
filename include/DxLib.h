@@ -97,13 +97,13 @@ extern DXCALL int EXT_FileRead_SetCharSet(int charset);
 extern DXCALL int FileRead_open(const DXCHAR *filename, int ASync = FALSE);
 
 // - Returns the size of the file.
-extern DXCALL long long FileRead_size(const DXCHAR *filename);
+extern DXCALL int64_t FileRead_size(const DXCHAR *filename);
 
 // - Closes the file stream handle.
 extern DXCALL int FileRead_close(int fileHandle);
 
 // - Returns the current position within the file stream.
-extern DXCALL long long FileRead_tell(int fileHandle);
+extern DXCALL int64_t FileRead_tell(int fileHandle);
 
 // - Seeks to a given position within the file.
 // Origin may have the following values:
@@ -112,7 +112,7 @@ extern DXCALL long long FileRead_tell(int fileHandle);
 // SEEK_END: Seek to an offset from the end of the file.
 // Returns the new position within the file.
 extern DXCALL int FileRead_seek(int fileHandle,
-                                long long position, int origin);
+                                int64_t position, int origin);
 
 // - Reads size bytes from the file, storing in the data pointer.
 // Returns the number of bytes read.
