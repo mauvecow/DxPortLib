@@ -825,7 +825,7 @@ extern DXCALL void * DxRealloc(void *memory, size_t allocationSize,
 // - Frees a block of memory.
 extern DXCALL void DxFree(void *memory);
 
-};
+}
 
 #endif // #ifdef DXPORTLIB_DXLIB_INTERFACE
 

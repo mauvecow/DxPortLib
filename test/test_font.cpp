@@ -13,6 +13,10 @@
 
 #include "DxLib.h"
 
+#ifdef DXPORTLIB
+#  include "SDL_main.h"
+#endif
+
 #ifdef DX_NON_FONT
 
 #include <stdio.h>
@@ -34,10 +38,6 @@ int main(int argc, char **argv) {
 }
 
 #else
-
-#ifdef DXPORTLIB
-#  include "SDL_main.h"
-#endif
 
 #include <stdlib.h>
 #include <stdio.h>

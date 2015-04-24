@@ -241,7 +241,7 @@ typedef struct _PLGLShaderInfo {
 extern int PL_drawScreenWidth;
 extern int PL_drawScreenHeight;
 
-// external
+/* external */
 
 extern void PLGL_SetBlendMode(
                 int blendEquation,
@@ -336,7 +336,7 @@ extern int PLGL_Texture_BindFramebuffer(int textureRefID);
 extern int PLGL_Texture_AddRef(int textureID);
 extern int PLGL_Texture_Release(int textureID);
 
-// internal
+/* internal */
 
 extern int PLGL_Render_Init();
 extern int PLGL_Render_End();

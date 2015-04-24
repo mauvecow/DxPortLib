@@ -547,9 +547,9 @@ extern DXCALL void *DxLib_DxRealloc(void *memory, size_t allocationSize,
 extern DXCALL void DxLib_DxFree(void *memory);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
-#endif // #ifdef DXPORTLIB_DXLIB_INTERFACE
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */
 
 #endif

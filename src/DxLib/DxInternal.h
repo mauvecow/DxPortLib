@@ -258,9 +258,9 @@ extern int Dx_Graph_GetTextureInfo(int graphID, int *dTextureRefID,
                                    PLRect *rect, float *xMult, float *yMult);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
-#endif // #ifdef DXPORTLIB_DXLIB_INTERFACE
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */
 
 #endif

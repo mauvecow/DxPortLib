@@ -239,16 +239,14 @@ extern int PL_Window_GetFramebuffer();
 typedef struct _PLRect {
     int x, y, w, h;
 } PLRect;
-typedef struct _PLMatrix {
-    union {
-        struct {
-            float m11, m12, m13, m14;
-            float m21, m22, m23, m24;
-            float m31, m32, m33, m34;
-            float m41, m42, m43, m44;
-        };
-        float m[4][4];
-    };
+typedef union _PLMatrix {
+    struct {
+        float m11, m12, m13, m14;
+        float m21, m22, m23, m24;
+        float m31, m32, m33, m34;
+        float m41, m42, m43, m44;
+    } v;
+    float m[4][4];
 } PLMatrix;
 
 typedef struct _PLVector3 {
@@ -307,7 +305,7 @@ enum PL_BlendType {
 enum PL_BlendFunctions {
     PL_BLENDFUNC_DISABLE,
     PL_BLENDFUNC_ADD,
-    PL_BLENDFUNC_RSUB,
+    PL_BLENDFUNC_RSUB
 };
 enum VertexElementType {
     VERTEX_POSITION,
@@ -370,7 +368,7 @@ typedef enum _PresetProgramFlags {
     PL_PRESETFLAG_ALPHATEST_GREATER = (5 << PL_PRESETFLAG_ALPHATEST_SHIFT),
     PL_PRESETFLAG_ALPHATEST_GEQUAL = (6 << PL_PRESETFLAG_ALPHATEST_SHIFT),
     
-    PL_PRESETFLAG_ALPHATEST_MASK = (7 << PL_PRESETFLAG_ALPHATEST_SHIFT),
+    PL_PRESETFLAG_ALPHATEST_MASK = (7 << PL_PRESETFLAG_ALPHATEST_SHIFT)
 } PresetProgramFlags;
 
 typedef struct _PLIGraphics {
@@ -659,7 +657,7 @@ extern int PL_Audio_End();
 #endif /* #ifndef DX_NON_SOUND */
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif

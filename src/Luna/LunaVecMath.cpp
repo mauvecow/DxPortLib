@@ -331,9 +331,9 @@ void CStyle::LookAt(const CVector3D *eye, const CVector3D *at, const CVector3D *
                      (const PLVector3 *)at,
                      &up);
     
-    m_vFront.Set(matrix.m13, matrix.m23, matrix.m33);
-    m_vRight.Set(-matrix.m11, -matrix.m21, -matrix.m31);
-    m_vUp.Set(matrix.m12, matrix.m22, matrix.m32);
+    m_vFront.Set(matrix.v.m13, matrix.v.m23, matrix.v.m33);
+    m_vRight.Set(-matrix.v.m11, -matrix.v.m21, -matrix.v.m31);
+    m_vUp.Set(matrix.v.m12, matrix.v.m22, matrix.v.m32);
     
     m_vPosition = *eye;
 }

@@ -49,7 +49,7 @@ static const VertexElement s_LunaVertex2DTex0Elements[] = {
     { VERTEX_POSITION, 4, VERTEXSIZE_FLOAT, offsetof(LunaVertex2DTex0, x) },
     { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(LunaVertex2DTex0, color) },
 };
-VERTEX_DEFINITION(LunaVertex2DTex0);
+VERTEX_DEFINITION(LunaVertex2DTex0)
 
 typedef struct _LunaVertex2DTex1 {
     float x, y, z, w;
@@ -61,7 +61,7 @@ static const VertexElement s_LunaVertex2DTex1Elements[] = {
     { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(LunaVertex2DTex1, color) },
     { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex2DTex1, t[0]) },
 };
-VERTEX_DEFINITION(LunaVertex2DTex1);
+VERTEX_DEFINITION(LunaVertex2DTex1)
 
 typedef struct _LunaVertex2DTex2 {
     float x, y, z, w;
@@ -74,7 +74,7 @@ static const VertexElement s_LunaVertex2DTex2Elements[] = {
     { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex2DTex2, t[0]) },
     { VERTEX_TEXCOORD1, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex2DTex2, t[1]) },
 };
-VERTEX_DEFINITION(LunaVertex2DTex2);
+VERTEX_DEFINITION(LunaVertex2DTex2)
 
 typedef struct _LunaVertex2DTex3 {
     float x, y, z, w;
@@ -88,7 +88,7 @@ static const VertexElement s_LunaVertex2DTex3Elements[] = {
     { VERTEX_TEXCOORD1, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex2DTex3, t[1]) },
     { VERTEX_TEXCOORD2, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex2DTex3, t[2]) },
 };
-VERTEX_DEFINITION(LunaVertex2DTex3);
+VERTEX_DEFINITION(LunaVertex2DTex3)
 
 typedef struct _LunaVertex2DTex4 {
     float x, y, z, w;
@@ -103,7 +103,7 @@ static const VertexElement s_LunaVertex2DTex4Elements[] = {
     { VERTEX_TEXCOORD2, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex2DTex4, t[2]) },
     { VERTEX_TEXCOORD3, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex2DTex4, t[3]) },
 };
-VERTEX_DEFINITION(LunaVertex2DTex4);
+VERTEX_DEFINITION(LunaVertex2DTex4)
 
 typedef struct _LunaVertex3DTex0 {
     float x, y, z;
@@ -113,7 +113,7 @@ static const VertexElement s_LunaVertex3DTex0Elements[] = {
     { VERTEX_POSITION, 3, VERTEXSIZE_FLOAT, offsetof(LunaVertex3DTex0, x) },
     { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(LunaVertex3DTex0, color) },
 };
-VERTEX_DEFINITION(LunaVertex3DTex0);
+VERTEX_DEFINITION(LunaVertex3DTex0)
 
 typedef struct _LunaVertex3DTex1 {
     float x, y, z;
@@ -125,7 +125,7 @@ static const VertexElement s_LunaVertex3DTex1Elements[] = {
     { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(LunaVertex3DTex1, color) },
     { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex3DTex1, t[0]) },
 };
-VERTEX_DEFINITION(LunaVertex3DTex1);
+VERTEX_DEFINITION(LunaVertex3DTex1)
 
 typedef struct _LunaVertex3DTex2 {
     float x, y, z;
@@ -138,7 +138,7 @@ static const VertexElement s_LunaVertex3DTex2Elements[] = {
     { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex3DTex2, t[0]) },
     { VERTEX_TEXCOORD1, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex3DTex2, t[1]) },
 };
-VERTEX_DEFINITION(LunaVertex3DTex2);
+VERTEX_DEFINITION(LunaVertex3DTex2)
 
 typedef struct _LunaVertex3DTex3 {
     float x, y, z;
@@ -152,7 +152,7 @@ static const VertexElement s_LunaVertex3DTex3Elements[] = {
     { VERTEX_TEXCOORD1, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex3DTex3, t[1]) },
     { VERTEX_TEXCOORD2, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex3DTex3, t[2]) },
 };
-VERTEX_DEFINITION(LunaVertex3DTex3);
+VERTEX_DEFINITION(LunaVertex3DTex3)
 
 typedef struct _LunaVertex3DTex4 {
     float x, y, z;
@@ -167,7 +167,7 @@ static const VertexElement s_LunaVertex3DTex4Elements[] = {
     { VERTEX_TEXCOORD2, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex3DTex4, t[2]) },
     { VERTEX_TEXCOORD3, 2, VERTEXSIZE_FLOAT, offsetof(LunaVertex3DTex4, t[3]) },
 };
-VERTEX_DEFINITION(LunaVertex3DTex4);
+VERTEX_DEFINITION(LunaVertex3DTex4)
 
 typedef struct _LunaVertexInfo {
     const VertexDefinition *def;

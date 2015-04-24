@@ -27,12 +27,10 @@
 
 const PLMatrix g_matrixIdentity = {
     {
-        {
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        }
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
     }
 };
 
@@ -109,10 +107,10 @@ PLMatrix *PL_Matrix_Transpose(PLMatrix *o, const PLMatrix *m) {
 }
 
 PLMatrix *PL_Matrix_CreateIdentity(PLMatrix *o) {
-    o->m11 = 1; o->m12 = 0; o->m13 = 0; o->m14 = 0;
-    o->m21 = 0; o->m22 = 1; o->m23 = 0; o->m24 = 0;
-    o->m31 = 0; o->m32 = 0; o->m33 = 1; o->m34 = 0;
-    o->m41 = 0; o->m42 = 0; o->m43 = 0; o->m44 = 1;
+    o->v.m11 = 1; o->v.m12 = 0; o->v.m13 = 0; o->v.m14 = 0;
+    o->v.m21 = 0; o->v.m22 = 1; o->v.m23 = 0; o->v.m24 = 0;
+    o->v.m31 = 0; o->v.m32 = 0; o->v.m33 = 1; o->v.m34 = 0;
+    o->v.m41 = 0; o->v.m42 = 0; o->v.m43 = 0; o->v.m44 = 1;
     return o;
 }
 PLMatrix *PL_Matrix_CreateScale(PLMatrix *o, float x, float y, float z) {
@@ -134,10 +132,10 @@ PLMatrix *PL_Matrix_CreateRotationX(PLMatrix *o, float x) {
     float sinx = sinf(x);
 
     PL_Matrix_CreateIdentity(o);
-    o->m22 = cosx;
-    o->m23 = -sinx;
-    o->m32 = sinx;
-    o->m33 = cosx;
+    o->v.m22 = cosx;
+    o->v.m23 = -sinx;
+    o->v.m32 = sinx;
+    o->v.m33 = cosx;
     return o;
 }
 PLMatrix *PL_Matrix_CreateRotationY(PLMatrix *o, float y) {
@@ -146,10 +144,10 @@ PLMatrix *PL_Matrix_CreateRotationY(PLMatrix *o, float y) {
 
     PL_Matrix_CreateIdentity(o);
 
-    o->m11 = cosy;
-    o->m13 = -siny;
-    o->m31 = siny;
-    o->m33 = cosy;
+    o->v.m11 = cosy;
+    o->v.m13 = -siny;
+    o->v.m31 = siny;
+    o->v.m33 = cosy;
     return o;
 }
 PLMatrix *PL_Matrix_CreateRotationZ(PLMatrix *o, float z) {
@@ -158,10 +156,10 @@ PLMatrix *PL_Matrix_CreateRotationZ(PLMatrix *o, float z) {
 
     PL_Matrix_CreateIdentity(o);
 
-    o->m11 = cosz;
-    o->m12 = -sinz;
-    o->m21 = sinz;
-    o->m22 = cosz;
+    o->v.m11 = cosz;
+    o->v.m12 = -sinz;
+    o->v.m21 = sinz;
+    o->v.m22 = cosz;
     return o;
 }
 
@@ -173,22 +171,22 @@ PLMatrix *PL_Matrix_CreateFromYawPitchRoll(PLMatrix *o, float yaw, float pitch, 
     float cosc = cosf(roll);
     float sinc = sinf(roll);
     
-    o->m11 = cosa * cosb;
-    o->m12 = (cosa * sinb * sinc) - (sina * cosc);
-    o->m13 = (cosa * sinb * cosc) + (sina * sinc);
-    o->m14 = 0;
-    o->m21 = sina * cosb;
-    o->m22 = (sina * sinb * sinc) + (cosa * cosc);
-    o->m23 = (sina * sinb * cosc) - (cosa * sinc);
-    o->m24 = 0;
-    o->m31 = -sinb;
-    o->m32 = cosb * sinc;  
-    o->m33 = cosb * cosc;  
-    o->m34 = 0;
-    o->m41 = 0;
-    o->m42 = 0;
-    o->m43 = 0;
-    o->m44 = 1;
+    o->v.m11 = cosa * cosb;
+    o->v.m12 = (cosa * sinb * sinc) - (sina * cosc);
+    o->v.m13 = (cosa * sinb * cosc) + (sina * sinc);
+    o->v.m14 = 0;
+    o->v.m21 = sina * cosb;
+    o->v.m22 = (sina * sinb * sinc) + (cosa * cosc);
+    o->v.m23 = (sina * sinb * cosc) - (cosa * sinc);
+    o->v.m24 = 0;
+    o->v.m31 = -sinb;
+    o->v.m32 = cosb * sinc;  
+    o->v.m33 = cosb * cosc;  
+    o->v.m34 = 0;
+    o->v.m41 = 0;
+    o->v.m42 = 0;
+    o->v.m43 = 0;
+    o->v.m44 = 1;
 
     return o;
 }
@@ -265,11 +263,11 @@ PLMatrix *PL_Matrix_CreateOrthoOffCenterLH(PLMatrix *o, float left, float right,
     float w = right - left;
     float h = top - bottom;
     
-    o->m11 = 2.0f/w; o->m12 = 0; o->m13 = 0; o->m14 = 0;
-    o->m21 = 0; o->m22 = 2.0f/h; o->m23 = 0; o->m24 = 0;
-    o->m31 = 0; o->m32 = 0; o->m33 = 1.0f/(zFar - zNear); o->m34 = 0;
-    o->m41 = -(left + right) / w; o->m42 = -(top + bottom) / h;
-    o->m43 = zNear/(zNear - zFar); o->m44 = 1;
+    o->v.m11 = 2.0f/w; o->v.m12 = 0; o->v.m13 = 0; o->v.m14 = 0;
+    o->v.m21 = 0; o->v.m22 = 2.0f/h; o->v.m23 = 0; o->v.m24 = 0;
+    o->v.m31 = 0; o->v.m32 = 0; o->v.m33 = 1.0f/(zFar - zNear); o->v.m34 = 0;
+    o->v.m41 = -(left + right) / w; o->v.m42 = -(top + bottom) / h;
+    o->v.m43 = zNear/(zNear - zFar); o->v.m44 = 1;
     
     return o;
 }
@@ -279,53 +277,53 @@ PLMatrix *PL_Matrix_CreateOrthoOffCenterRH(PLMatrix *o, float left, float right,
     float w = right - left;
     float h = top - bottom;
     
-    o->m11 = 2.0f/w; o->m12 = 0; o->m13 = 0; o->m14 = 0;
-    o->m21 = 0; o->m22 = 2.0f/h; o->m23 = 0; o->m24 = 0;
-    o->m31 = 0; o->m32 = 0; o->m33 = 1.0f/(zNear - zFar); o->m34 = 0;
-    o->m41 = -(left + right) / w; o->m42 = -(top + bottom) / h;
-    o->m43 = zNear/(zNear - zFar); o->m44 = 1;
+    o->v.m11 = 2.0f/w; o->v.m12 = 0; o->v.m13 = 0; o->v.m14 = 0;
+    o->v.m21 = 0; o->v.m22 = 2.0f/h; o->v.m23 = 0; o->v.m24 = 0;
+    o->v.m31 = 0; o->v.m32 = 0; o->v.m33 = 1.0f/(zNear - zFar); o->v.m34 = 0;
+    o->v.m41 = -(left + right) / w; o->v.m42 = -(top + bottom) / h;
+    o->v.m43 = zNear/(zNear - zFar); o->v.m44 = 1;
     
     return o;
 }
 
 PLMatrix *PL_Matrix_CreateOrthoLH(PLMatrix *o, float w, float h, float zNear, float zFar) {
-    o->m11 = 2.0f/w; o->m12 = 0; o->m13 = 0; o->m14 = 0;
-    o->m21 = 0; o->m22 = 2.0f/h; o->m23 = 0; o->m24 = 0;
-    o->m31 = 0; o->m32 = 0; o->m33 = 1.0f/(zFar - zNear); o->m34 = 0;
-    o->m41 = 0; o->m42 = 0; o->m43 = zNear/(zNear - zFar); o->m44 = 1;
+    o->v.m11 = 2.0f/w; o->v.m12 = 0; o->v.m13 = 0; o->v.m14 = 0;
+    o->v.m21 = 0; o->v.m22 = 2.0f/h; o->v.m23 = 0; o->v.m24 = 0;
+    o->v.m31 = 0; o->v.m32 = 0; o->v.m33 = 1.0f/(zFar - zNear); o->v.m34 = 0;
+    o->v.m41 = 0; o->v.m42 = 0; o->v.m43 = zNear/(zNear - zFar); o->v.m44 = 1;
     return o;
 }
 
 PLMatrix *PL_Matrix_CreateOrthoRH(PLMatrix *o, float w, float h, float zNear, float zFar) {
-    o->m11 = 2.0f/w; o->m12 = 0; o->m13 = 0; o->m14 = 0;
-    o->m21 = 0; o->m22 = 2.0f/h; o->m23 = 0; o->m24 = 0;
-    o->m31 = 0; o->m32 = 0; o->m33 = 1.0f/(zNear - zFar); o->m34 = 0;
-    o->m41 = 0; o->m42 = 0; o->m43 = zNear/(zNear - zFar); o->m44 = 1;
+    o->v.m11 = 2.0f/w; o->v.m12 = 0; o->v.m13 = 0; o->v.m14 = 0;
+    o->v.m21 = 0; o->v.m22 = 2.0f/h; o->v.m23 = 0; o->v.m24 = 0;
+    o->v.m31 = 0; o->v.m32 = 0; o->v.m33 = 1.0f/(zNear - zFar); o->v.m34 = 0;
+    o->v.m41 = 0; o->v.m42 = 0; o->v.m43 = zNear/(zNear - zFar); o->v.m44 = 1;
     return o;
 }
 
 PLMatrix *PL_Matrix_CreatePerspectiveFovLH(PLMatrix *o, float fovY, float aspectRatio, float zNear, float zFar) {
     float cotan = 1.0f / (float)tan(fovY / 2.0f);
     float zDelta = zFar - zNear;
-    o->m11 = cotan / aspectRatio;
-    o->m12 = 0;
-    o->m13 = 0;
-    o->m14 = 0;
+    o->v.m11 = cotan / aspectRatio;
+    o->v.m12 = 0;
+    o->v.m13 = 0;
+    o->v.m14 = 0;
     
-    o->m21 = 0;
-    o->m22 = cotan;
-    o->m23 = 0;
-    o->m24 = 0;
+    o->v.m21 = 0;
+    o->v.m22 = cotan;
+    o->v.m23 = 0;
+    o->v.m24 = 0;
     
-    o->m31 = 0;
-    o->m32 = 0;
-    o->m33 = zFar / zDelta;
-    o->m34 = 1.0f;
+    o->v.m31 = 0;
+    o->v.m32 = 0;
+    o->v.m33 = zFar / zDelta;
+    o->v.m34 = 1.0f;
     
-    o->m41 = 0;
-    o->m42 = 0;
-    o->m43 = (zNear * zFar) / zDelta;
-    o->m44 = 0;
+    o->v.m41 = 0;
+    o->v.m42 = 0;
+    o->v.m43 = (zNear * zFar) / zDelta;
+    o->v.m44 = 0;
     
     return o;
 }
@@ -334,25 +332,25 @@ PLMatrix *PL_Matrix_CreatePerspectiveFovRH(PLMatrix *o, float fovY, float aspect
     float cotan = 1.0f / (float)tan(fovY / 2.0f);
     float zDelta = zFar - zNear;
 
-    o->m11 = cotan / aspectRatio;
-    o->m12 = 0;
-    o->m13 = 0;
-    o->m14 = 0;
+    o->v.m11 = cotan / aspectRatio;
+    o->v.m12 = 0;
+    o->v.m13 = 0;
+    o->v.m14 = 0;
     
-    o->m21 = 0;
-    o->m22 = cotan;
-    o->m23 = 0;
-    o->m24 = 0;
+    o->v.m21 = 0;
+    o->v.m22 = cotan;
+    o->v.m23 = 0;
+    o->v.m24 = 0;
     
-    o->m31 = 0;
-    o->m32 = 0;
-    o->m33 = zFar / -zDelta;
-    o->m34 = -1.0f;
+    o->v.m31 = 0;
+    o->v.m32 = 0;
+    o->v.m33 = zFar / -zDelta;
+    o->v.m34 = -1.0f;
     
-    o->m41 = 0;
-    o->m42 = 0;
-    o->m43 = (zNear * zFar) / -zDelta;
-    o->m44 = 0;
+    o->v.m41 = 0;
+    o->v.m42 = 0;
+    o->v.m43 = (zNear * zFar) / -zDelta;
+    o->v.m44 = 0;
     return o;
 }
 
@@ -366,13 +364,13 @@ PLMatrix *PL_Matrix_CreateLookAtLH(PLMatrix *o, const PLVector3 *eye, const PLVe
     /* y = cross(z, x); */
     PL_Vector3_Cross(&y, &z, &x);
     
-    o->m11 = x.x; o->m12 = y.x; o->m13 = z.x; o->m14 = 0;
-    o->m21 = x.y; o->m22 = y.y; o->m23 = z.y; o->m14 = 0;
-    o->m31 = x.z; o->m32 = y.z; o->m33 = z.z; o->m14 = 0;
-    o->m41 = -PL_Vector3_Dot(&x, eye);
-    o->m42 = -PL_Vector3_Dot(&y, eye);
-    o->m43 = -PL_Vector3_Dot(&z, eye);
-    o->m44 = 1;
+    o->v.m11 = x.x; o->v.m12 = y.x; o->v.m13 = z.x; o->v.m14 = 0;
+    o->v.m21 = x.y; o->v.m22 = y.y; o->v.m23 = z.y; o->v.m14 = 0;
+    o->v.m31 = x.z; o->v.m32 = y.z; o->v.m33 = z.z; o->v.m14 = 0;
+    o->v.m41 = -PL_Vector3_Dot(&x, eye);
+    o->v.m42 = -PL_Vector3_Dot(&y, eye);
+    o->v.m43 = -PL_Vector3_Dot(&z, eye);
+    o->v.m44 = 1;
     return o;
 }
 
@@ -386,13 +384,13 @@ PLMatrix *PL_Matrix_CreateLookAtRH(PLMatrix *o, const PLVector3 *eye, const PLVe
     /* y = cross(z, x); */
     PL_Vector3_Cross(&y, &z, &x);
     
-    o->m11 = x.x; o->m12 = y.x; o->m13 = z.x; o->m14 = 0;
-    o->m21 = x.y; o->m22 = y.y; o->m23 = z.y; o->m14 = 0;
-    o->m31 = x.z; o->m32 = y.z; o->m33 = z.z; o->m14 = 0;
-    o->m41 = PL_Vector3_Dot(&x, eye);
-    o->m42 = PL_Vector3_Dot(&y, eye);
-    o->m43 = PL_Vector3_Dot(&z, eye);
-    o->m44 = 1;
+    o->v.m11 = x.x; o->v.m12 = y.x; o->v.m13 = z.x; o->v.m14 = 0;
+    o->v.m21 = x.y; o->v.m22 = y.y; o->v.m23 = z.y; o->v.m14 = 0;
+    o->v.m31 = x.z; o->v.m32 = y.z; o->v.m33 = z.z; o->v.m14 = 0;
+    o->v.m41 = PL_Vector3_Dot(&x, eye);
+    o->v.m42 = PL_Vector3_Dot(&y, eye);
+    o->v.m43 = PL_Vector3_Dot(&z, eye);
+    o->v.m44 = 1;
     return o;
 }
 

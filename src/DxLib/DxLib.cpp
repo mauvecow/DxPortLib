@@ -917,6 +917,6 @@ void DxFree(void *memory) {
     return ::DxLib_DxFree(memory);
 }
 
-};
+}
 
 #endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */

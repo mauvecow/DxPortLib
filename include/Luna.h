@@ -120,13 +120,13 @@ typedef enum _D3DRENDERSTATETYPE {
     D3DRS_ZENABLE = 7,
     D3DRS_FILLMODE = 8,
     D3DRS_ZWRITEENABLE = 14,
-    D3DRS_CULLMODE = 22,
+    D3DRS_CULLMODE = 22
 } D3DRENDERSTATETYPE;
 
 typedef enum _D3DCULL {
     D3DCULL_NONE = 1,
     D3DCULL_CW = 2,
-    D3DCULL_CCW = 3,
+    D3DCULL_CCW = 3
 } D3DCULL;
 
 typedef Uint32 D3DCOLOR;
@@ -362,7 +362,7 @@ typedef enum {
     FORMAT_TEXTURE32,
     FORMAT_TEXTURE16,
     FORMAT_TEXTURE_2D,
-    FORMAT_TEXTURE_3D,
+    FORMAT_TEXTURE_3D
 } eSurfaceFormat;
 
 typedef enum {
@@ -370,7 +370,7 @@ typedef enum {
     PRIM_VERTEX_UV1,
     PRIM_VERTEX_UV2,
     PRIM_VERTEX_UV3,
-    PRIM_VERTEX_UV4,
+    PRIM_VERTEX_UV4
 } eVertexPrimitiveType;
 
 typedef enum {
@@ -381,7 +381,7 @@ typedef enum {
     BLEND_SUB,
     BLEND_SUB_NOALPHA,
     BLEND_MUL,
-    BLEND_REVERSE,
+    BLEND_REVERSE
 } eBlendType;
 
 typedef enum {
@@ -443,7 +443,7 @@ typedef enum {
     PAD_SORT_NONE,
     
     // This is in the Luna headers, but isn't this off by one?
-    PAD_BUTTON_MAX = (PAD_BUTTON_48 - PAD_BUTTON_01),
+    PAD_BUTTON_MAX = (PAD_BUTTON_48 - PAD_BUTTON_01)
 } ePadSort;
 
 typedef struct CLunaPoint {

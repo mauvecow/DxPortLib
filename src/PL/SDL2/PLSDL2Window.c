@@ -69,7 +69,7 @@ static const VertexElement s_RectVertexElements[] = {
     { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(RectVertex, tcx) },
     { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(RectVertex, color) },
 };
-VERTEX_DEFINITION(RectVertex);
+VERTEX_DEFINITION(RectVertex)
 
 static PLMatrix s_projectionMatrix;
 static PLMatrix s_viewMatrix;

@@ -487,10 +487,10 @@ typedef struct _XINPUT_STATE {
 #define DX_SOUNDDATATYPE_FILE                   (3)
 
 #ifdef __cplusplus   
-} // namespace
+} /* namespace */
 
-// ------------------------------------------------------------------
-// Set DxLib as a default namespace, like the original library.
+/* ------------------------------------------------------------------
+ * Set DxLib as a default namespace, like the original library. */
 
 using namespace DxLib;
 #endif

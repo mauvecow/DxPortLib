@@ -176,7 +176,7 @@ static const VertexElement s_VertexPosition2ColorElements[] = {
     { VERTEX_POSITION, 2, VERTEXSIZE_FLOAT, offsetof(VertexPosition2Color, x) },
     { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(VertexPosition2Color, color) },
 };
-VERTEX_DEFINITION(VertexPosition2Color);
+VERTEX_DEFINITION(VertexPosition2Color)
 
 typedef struct _VertexPosition2Tex2Color {
     float x, y;
@@ -188,7 +188,7 @@ static const VertexElement s_VertexPosition2Tex2ColorElements[] = {
     { VERTEX_TEXCOORD0, 2, VERTEXSIZE_FLOAT, offsetof(VertexPosition2Tex2Color, tcx) },
     { VERTEX_COLOR, 4, VERTEXSIZE_UNSIGNED_BYTE, offsetof(VertexPosition2Tex2Color, color) },
 };
-VERTEX_DEFINITION(VertexPosition2Tex2Color);
+VERTEX_DEFINITION(VertexPosition2Tex2Color)
 
 typedef struct VertexCache {
     const VertexDefinition *definition;

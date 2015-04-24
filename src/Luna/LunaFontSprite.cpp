@@ -43,7 +43,7 @@ enum {
         (CODE_ASCII_END - CODE_ASCII_START) +
         (CODE_SJIS_A_END - CODE_SJIS_A_START) +
         (CODE_SJIS_B_END - CODE_SJIS_B_START) +
-        (CODE_SJIS_C_END - CODE_SJIS_C_START),
+        (CODE_SJIS_C_END - CODE_SJIS_C_START)
 };
 
 typedef struct _LFDHeader {

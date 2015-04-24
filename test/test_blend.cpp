@@ -13,6 +13,10 @@
 
 #include "DxLib.h"
 
+#ifdef DXPORTLIB
+#  include "SDL_main.h"
+#endif
+
 #ifndef DXLIB_VERSION
 
 #include <stdio.h>
@@ -23,8 +27,6 @@ int main(int argc, char **argv) {
 }
 
 #else
-
-#include "SDL_main.h"
 
 int main(int argc, char **argv) {
     SetUseCharSet(DX_CHARSET_EXT_UTF8);
