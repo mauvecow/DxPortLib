@@ -78,7 +78,8 @@ void PL_Platform_Wait(int ticks) {
 }
 
 int PL_Platform_GetSaveFolder(DXCHAR *buffer, int bufferLength,
-                              const DXCHAR *org, const DXCHAR *app) {
+                              const DXCHAR *org, const DXCHAR *app,
+                              int destEncoding) {
     char *prefPath;
     
     if (bufferLength == 0) {
@@ -101,8 +102,14 @@ int PL_Platform_GetSaveFolder(DXCHAR *buffer, int bufferLength,
         return 0;
     }
     
+#ifdef UNICODE
     PL_Text_DxStrncpyFromString(buffer, prefPath, bufferLength,
                                 DX_CHARSET_EXT_UTF8);
+#else
+    PL_Text_ConvertString(prefPath, buffer, bufferLength,
+                          DX_CHARSET_EXT_UTF8, destEncoding);
+#endif
+
     SDL_free(prefPath);
     return 0;
 }

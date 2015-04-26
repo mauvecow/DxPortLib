@@ -211,6 +211,22 @@ int PL_Text_WriteDxChar(DXCHAR *text, unsigned int ch, int maxLen) {
 
 #endif
 
+int PL_Text_ConvertString(const char *inString, char *outBuffer, int maxLen,
+                            int srcCharset, int destCharset) {
+    unsigned int ch;
+    int count = 0;
+    
+    maxLen -= 1;
+    
+    while (count < maxLen && (ch = PL_Text_ReadChar(&inString, srcCharset)) != 0) {
+        count += PL_Text_WriteChar(outBuffer + count, ch, maxLen - count, destCharset);
+    }
+    
+    outBuffer[count] = '\0';
+    
+    return count;
+}
+
 /* glorified strcpys go here */
 int PL_Text_DxStringToString(const DXCHAR *inString, char *outBuffer, int maxLen, int charset) {
     unsigned int ch;

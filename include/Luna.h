@@ -582,7 +582,8 @@ public:
     static LUNACALL void EXTSetUseCharset(int dxCharset);
     
     static LUNACALL void EXTGetSaveFolder(DXCHAR *buffer, int bufferLength,
-                             const DXCHAR *org, const DXCHAR *app);
+                             const DXCHAR *org, const DXCHAR *app,
+                             int destEncoding);
     static LUNACALL int EXTConvertText(DXCHAR *buffer, int bufferLength,
                             const DXCHAR *string,
                             int destEncoding, int srcEncoding);

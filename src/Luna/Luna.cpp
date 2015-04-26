@@ -318,8 +318,10 @@ void Luna::GetScreenData(Sint32 *width, Sint32 *height, bool *isWindowed) {
 }
 
 void Luna::EXTGetSaveFolder(DXCHAR *buffer, int bufferLength,
-                            const DXCHAR *org, const DXCHAR *app) {
-    PL_Platform_GetSaveFolder(buffer, bufferLength, org, app);
+                            const DXCHAR *org, const DXCHAR *app,
+                            int destEncoding) {
+    PL_Platform_GetSaveFolder(buffer, bufferLength, org, app,
+        destEncoding);
 }
 
 int Luna::EXTConvertText(DXCHAR *buffer, int bufferLength,
@@ -328,16 +330,8 @@ int Luna::EXTConvertText(DXCHAR *buffer, int bufferLength,
 #ifdef UNICODE
     return PL_Text_DxStrlen(buffer);
 #else
-    unsigned int ch;
-    int pos = 0;
-    
-    while ((ch = PL_Text_ReadChar(&string, srcEncoding)) != 0) {
-        pos += PL_Text_WriteChar(buffer + pos, ch, bufferLength - pos, destEncoding);
-    }
-    
-    buffer[pos] = '\0';
-    
-    return pos;
+    return PL_Text_ConvertString(string, buffer, bufferLength,
+        srcEncoding, destEncoding);
 #endif
 }
 

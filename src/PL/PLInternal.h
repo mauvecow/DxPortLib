@@ -50,7 +50,8 @@ extern void PL_Platform_Wait(int ticks);
 
 extern int PL_Platform_FileOpenReadDirect(const DXCHAR *filename);
 extern int PL_Platform_GetSaveFolder(DXCHAR *buffer, int bufferLength,
-                                     const DXCHAR *org, const DXCHAR *app);
+                                     const DXCHAR *org, const DXCHAR *app,
+                                     int destEncoding);
 
 /* -------------------------------------------------------------- Text.c */
 /* Read functions automatically advance the string pointed to.
@@ -77,6 +78,9 @@ extern int PL_Text_WriteChar(char *buffer, unsigned int ch, int maxLen, int char
 
 extern unsigned int PL_Text_SJISToUnicode(unsigned int sjis);
 extern unsigned int PL_Text_UnicodeToSJIS(unsigned int unicode);
+
+extern int PL_Text_ConvertString(const char *inString, char *outBuffer, int maxLen,
+                                int srcCharset, int destCharset);
 
 extern int PL_Text_DxStringToString(const DXCHAR *inString, char *outBuffer, int maxLen, int charset);
 extern int PL_Text_StringToDxString(const char *inString, DXCHAR *outBuffer, int maxLen, int charset);
