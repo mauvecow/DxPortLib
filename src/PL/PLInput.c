@@ -433,6 +433,10 @@ int PL_Input_GetJoypadState(int inputIndex) {
         return 0;
     }
     
+    if (PL_Window_GetActiveFlag() == DXFALSE) {
+        return 0;
+    }
+    
     if (controllerIndex >= DX_INPUT_PAD1 && controllerIndex <= DX_INPUT_PAD16) {
         int index = controllerIndex - DX_INPUT_PAD1;
         Controller *controller = s_GetController(index);
@@ -576,6 +580,10 @@ int PL_Input_SetJoypadInputToKeyInput(int controllerIndex, int input,
 }
 
 int PL_Input_GetJoypadPOVState(int controllerIndex, int povNumber) {
+    if (PL_Window_GetActiveFlag() == DXFALSE) {
+        return -1;
+    }
+    
     if (controllerIndex >= DX_INPUT_PAD1 && controllerIndex <= DX_INPUT_PAD16) {
         int index = controllerIndex - DX_INPUT_PAD1;
         Controller *controller = s_GetController(index);
@@ -630,6 +638,14 @@ int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *sta
             int axis;
             
             SDL_memset(state, 0, sizeof(DINPUT_JOYSTATE));
+            state->POV[0] = -1;
+            state->POV[1] = -1;
+            state->POV[2] = -1;
+            state->POV[3] = -1;
+            
+            if (PL_Window_GetActiveFlag() == DXFALSE) {
+                return 0;
+            }
             
             state->X = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_LEFTX) * DX_INPUT_RANGE / 32767;
             state->Y = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_LEFTY) * DX_INPUT_RANGE / 32767;
@@ -659,9 +675,6 @@ int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *sta
             }
             
             state->POV[0] = PL_Input_GetJoypadPOVState(controllerIndex, 0);
-            state->POV[1] = -1;
-            state->POV[2] = -1;
-            state->POV[3] = -1;
             
             return 0;
         } else if (controller != NULL && controller->joystick != NULL) {
@@ -670,6 +683,14 @@ int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *sta
             int i;
             
             SDL_memset(state, 0, sizeof(DINPUT_JOYSTATE));
+            state->POV[0] = -1;
+            state->POV[1] = -1;
+            state->POV[2] = -1;
+            state->POV[3] = -1;
+            
+            if (PL_Window_GetActiveFlag() == DXFALSE) {
+                return 0;
+            }
             
             /* SDL's axis data has no direct mapping to DirectInput,
              * even though it converts from DirectInput in the first place.
@@ -701,6 +722,11 @@ int PL_Input_GetJoypadXInputState(int controllerIndex, XINPUT_STATE *state) {
         Controller *controller = s_GetController(index);
         if (controller != NULL && controller->gamecontroller != NULL) {
             SDL_GameController *gc = controller->gamecontroller;
+            
+            if (PL_Window_GetActiveFlag() == DXFALSE) {
+                memset(state, 0, sizeof(XINPUT_STATE));
+                return 0;
+            }
             
             state->Buttons[XINPUT_BUTTON_DPAD_UP] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_UP);
             state->Buttons[XINPUT_BUTTON_DPAD_DOWN] = SDL_GameControllerGetButton(gc, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
