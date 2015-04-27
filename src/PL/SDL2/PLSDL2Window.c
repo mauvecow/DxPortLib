@@ -422,7 +422,6 @@ int PL_Window_ProcessMessages() {
                 case SDL_WINDOWEVENT:
                     switch(event.window.event) {
                         case SDL_WINDOWEVENT_ENTER:
-                            SDL_DisableScreenSaver();
                             s_lacksFocus &= ~1;
                             break;
                         case SDL_WINDOWEVENT_FOCUS_GAINED:
@@ -430,7 +429,6 @@ int PL_Window_ProcessMessages() {
                             s_lacksFocus &= ~2;
                             break;
                         case SDL_WINDOWEVENT_LEAVE:
-                            SDL_EnableScreenSaver();
                             s_lacksFocus |= 1;
                             break;
                         case SDL_WINDOWEVENT_FOCUS_LOST:
