@@ -686,7 +686,7 @@ int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *sta
             if (n > 32) { n = 32; }
             
             for (i = 0; i < n; ++i) {
-                state->Buttons[n] = SDL_JoystickGetButton(js, i);
+                state->Buttons[i] = SDL_JoystickGetButton(js, i);
             }
             
             return 0;
