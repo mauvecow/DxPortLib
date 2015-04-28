@@ -618,6 +618,7 @@ int PLEXT_Window_SetIconImageFile(const DXCHAR *filename) {
 
 int PL_Window_SetWaitVSyncFlag(int flag) {
     s_windowVSync = (flag == DXFALSE) ? DXFALSE : DXTRUE;
+    PL_SDL2GL_UpdateVSync(s_windowVSync);
     return 0;
 }
 

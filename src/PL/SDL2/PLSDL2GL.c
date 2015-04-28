@@ -74,7 +74,19 @@ void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     s_initialized = DXTRUE;
 }
 
+void PL_SDL2GL_UpdateVSync(int vsyncFlag) {
+    if (s_initialized == DXFALSE) {
+        return;
+    }
+
+    SDL_GL_SetSwapInterval((vsyncFlag != DXFALSE) ? 1 : 0);
+}
+
 void PL_SDL2GL_End() {
+    if (s_initialized == DXFALSE) {
+        return;
+    }
+
     PLG.End();
     
     if (s_context != NULL) {
