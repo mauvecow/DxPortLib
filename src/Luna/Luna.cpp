@@ -384,4 +384,12 @@ void Luna::EXTSetWindowIconFromFile(const DXCHAR *filename) {
     PLEXT_Window_SetIconImageFile(filename);
 }
 
+void Luna::EXTSetVSync(bool vsyncEnabled) {
+    if (vsyncEnabled) {
+        PL_Window_SetWaitVSyncFlag(DXTRUE);
+    } else {
+        PL_Window_SetWaitVSyncFlag(DXFALSE);
+    }
+}
+
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

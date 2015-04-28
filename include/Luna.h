@@ -595,6 +595,7 @@ public:
                                               bool isFullscreenDesktop);
     
     static LUNACALL void EXTSetWindowIconFromFile(const DXCHAR *filename);
+    static LUNACALL void EXTSetVSync(bool vsyncEnabled);
     
     // Supplied by the application.
     //static LUNACALL Bool Init();
