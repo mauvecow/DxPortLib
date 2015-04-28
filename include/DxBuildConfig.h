@@ -22,6 +22,9 @@
 #ifndef DXLIB_BUILDCONFIG_H_HEADER
 #define DXLIB_BUILDCONFIG_H_HEADER
 
+#define DXPORTLIB
+#define DXPORTLIB_VERSION "0.3.0"
+
 #if defined(__APPLE__)
 #  include "TargetConditionals.h"
 #endif
@@ -48,7 +51,7 @@
 
 /* DxPortLib extension - Sets the drawing backend.
  */
-#define DXPORTLIB_DRAW_DIRECT3D9
+/* #define DXPORTLIB_DRAW_DIRECT3D9 */
 #define DXPORTLIB_DRAW_OPENGL
 
 /* For OpenGL, define this to use the OpenGL ES 2.0 support.
