@@ -8827,7 +8827,7 @@ Sint32 LunaMath::Atan(Sint32 dx, Sint32 dy) {
             if (dx >= dy) {
                 return s_atan_lookup[(dy << ARCTAN_POS_SHIFT) / dx];
             } else {
-                return ARCTAN_POS_1 + s_atan_lookup[(dx << ARCTAN_POS_SHIFT) / dy];
+                return ARCTAN_POS_1 - s_atan_lookup[(dx << ARCTAN_POS_SHIFT) / dy];
             }
         }
     }
