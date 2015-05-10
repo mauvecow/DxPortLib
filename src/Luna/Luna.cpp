@@ -41,7 +41,8 @@ static int s_initialized = DXFALSE;
 static int s_forcequit = DXFALSE;
 
 static int s_frameRate = 0;
-static int s_timerLastTicks = 0;
+static Sint32 s_timerLastTicks = 0;
+static int s_timer = 0;
 static int s_drawTitleInfo = 0;
 static int s_lunaUseFlags = 0;
 
@@ -190,28 +191,45 @@ Bool Luna::WaitForMsgLoop(Bool isFullActive) {
 }
 
 void Luna::SyncFrame() {
-    Sint32 ticks = (Sint32)PL_Platform_GetTicks();
-    Sint32 diff = ticks - s_timerLastTicks;
+    /* Luna's original timing loop runs on a higher precision
+     * than SDL2 allows, so we have to be a little more perceptive
+     * of this than normal, or we end up with 62.5 FPS or some
+     * other such silliness. */
+    static bool firstFrame = true;
+    int timer = s_timer;
+    if (firstFrame) {
+        timer = 0;
+        s_timerLastTicks = PL_Platform_GetTicks(); 
+        firstFrame = false;
+    } else {
+        int ticks = PL_Platform_GetTicks();
+        timer += (ticks - s_timerLastTicks) * 1000;
+        s_timerLastTicks = ticks;
+    }
     
 #ifndef EMSCRIPTEN
-    /* Emscripten uses an alternate main loop, so this will just
-     * freeze the browser if it runs. */
     if (s_frameRate > 0) {
-        Sint32 waitTime = 1000 / s_frameRate;
-        
-        while (waitTime > diff) {
-            Sint32 amount = waitTime - diff;
+        int targetTime = 1000000 / s_frameRate;
+        while (targetTime > timer) {
+            int amount = (targetTime - timer) / 1000;
             PL_Platform_Wait((amount > 1) ? (amount - 1) : 1);
             
-            ticks = (Sint32)PL_Platform_GetTicks();
-            diff = ticks - s_timerLastTicks;
+            int ticks = PL_Platform_GetTicks();
+            timer += (ticks - s_timerLastTicks) * 1000;
+            s_timerLastTicks = ticks;
         }
+        // Don't allow frames to stack up.
+        timer -= (timer / targetTime) * targetTime;
     }
 #endif
     
-    s_timerLastTicks = (Sint32)PL_Platform_GetTicks();
+    if (timer < 0) {
+        timer = 0;
+    }
     
-    // WRITEME: Update FPS
+    s_timer = timer;
+    
+    /* WRITEME: Update FPS */
 }
 
 void Luna::SetApplicationName(const DXCHAR *name) {
