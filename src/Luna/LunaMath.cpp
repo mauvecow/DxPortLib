@@ -8873,7 +8873,7 @@ Sint32 LunaMath::Atan(Float dx, Float dy) {
             if (dx >= dy) {
                 return s_atan_lookup[toI(ARCTAN_SCALE(dy) / dx)];
             } else {
-                return ARCTAN_POS_1 + s_atan_lookup[toI(ARCTAN_SCALE(dx) / dy)];
+                return ARCTAN_POS_1 - s_atan_lookup[toI(ARCTAN_SCALE(dx) / dy)];
             }
         }
     }
