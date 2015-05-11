@@ -199,6 +199,11 @@ void Luna::SyncFrame() {
     int timer = s_timer;
     if (firstFrame) {
         timer = 0;
+        if (s_frameRate > 0) {
+            /* We start close to the vsync position like this,
+             * so try to get close-but-not-over to minimize input latency. */
+            timer = 300000 / s_frameRate;
+        }
         s_timerLastTicks = PL_Platform_GetTicks(); 
         firstFrame = false;
     } else {
@@ -210,14 +215,16 @@ void Luna::SyncFrame() {
 #ifndef EMSCRIPTEN
     if (s_frameRate > 0) {
         int targetTime = 1000000 / s_frameRate;
+        int lastTicks = s_timerLastTicks;
         while (targetTime > timer) {
             int amount = (targetTime - timer) / 1000;
             PL_Platform_Wait((amount > 1) ? (amount - 1) : 1);
             
             int ticks = PL_Platform_GetTicks();
-            timer += (ticks - s_timerLastTicks) * 1000;
-            s_timerLastTicks = ticks;
+            timer += (ticks - lastTicks) * 1000;
+            lastTicks = ticks;
         }
+        s_timerLastTicks = lastTicks;
         // Don't allow frames to stack up.
         timer -= (timer / targetTime) * targetTime;
     }
