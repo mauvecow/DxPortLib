@@ -216,17 +216,23 @@ void Luna::SyncFrame() {
     if (s_frameRate > 0) {
         int targetTime = 1000000 / s_frameRate;
         int lastTicks = s_timerLastTicks;
-        while (targetTime > timer) {
-            int amount = (targetTime - timer) / 1000;
-            PL_Platform_Wait((amount > 1) ? (amount - 1) : 1);
-            
-            int ticks = PL_Platform_GetTicks();
-            timer += (ticks - lastTicks) * 1000;
-            lastTicks = ticks;
+        if (targetTime < timer) {
+            // If we blow past our limit, reset, it's probably vsync.
+            timer = 300000 / s_frameRate;
         }
-        s_timerLastTicks = lastTicks;
-        // Don't allow frames to stack up.
-        timer -= (timer / targetTime) * targetTime;
+        if (targetTime > timer) {
+            while (targetTime > timer) {
+                int amount = (targetTime - timer) / 1000;
+                PL_Platform_Wait((amount > 1) ? (amount - 1) : 1);
+                
+                int ticks = PL_Platform_GetTicks();
+                timer += (ticks - lastTicks) * 1000;
+                lastTicks = ticks;
+            }
+            s_timerLastTicks = lastTicks;
+            // Don't allow frames to stack up.
+            timer -= (timer / targetTime) * targetTime;
+        }
     }
 #endif
     
