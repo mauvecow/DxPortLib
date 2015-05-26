@@ -41,7 +41,7 @@
 
 #include "SDL.h"
 
-/* ----------------------------------------------------- VIEW INFOMATION */
+/* ----------------------------------------------------- VIEW INFORMATION */
 int PLGL_SetViewport(int x, int y, int w, int h) {
     PL_GL.glViewport(x, y, w, h);
     
