@@ -524,7 +524,7 @@ int PL_Window_ProcessMessages() {
 }
 
 int PL_Window_GetActiveFlag() {
-    return s_lacksFocus == 0 ? DXTRUE : DXFALSE;
+    return (s_lacksFocus != 3) ? DXTRUE : DXFALSE;
 }
 int PL_Window_GetWindowModeFlag() {
     if ((s_windowFlags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0) {
