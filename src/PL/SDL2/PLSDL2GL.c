@@ -39,7 +39,7 @@ static int s_GLIsExtSupported(const char *string) {
     return SDL_GL_ExtensionSupported(string);
 }
 
-void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
+void PL_SDL2GL_Init(SDL_Window *window, int width, int height) {
     int majorVersion, minorVersion;
     
     if (s_initialized) {
@@ -63,8 +63,6 @@ void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
         return;
     }
     
-    SDL_GL_SetSwapInterval((vsyncFlag != DXFALSE) ? 1 : 0);
-    
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &majorVersion);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minorVersion);
     
@@ -74,12 +72,13 @@ void PL_SDL2GL_Init(SDL_Window *window, int width, int height, int vsyncFlag) {
     s_initialized = DXTRUE;
 }
 
-void PL_SDL2GL_UpdateVSync(int vsyncFlag) {
+int PL_SDL2GL_UpdateVSync(int vsyncFlag) {
     if (s_initialized == DXFALSE) {
-        return;
+        return 0;
     }
 
     SDL_GL_SetSwapInterval((vsyncFlag != DXFALSE) ? 1 : 0);
+    return (SDL_GL_GetSwapInterval() != 1) ? DXFALSE : DXTRUE;
 }
 
 void PL_SDL2GL_End() {

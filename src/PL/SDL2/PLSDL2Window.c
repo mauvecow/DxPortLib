@@ -292,7 +292,8 @@ int PL_Window_Init(void) {
     
     SDL_DisableScreenSaver();
     
-    PL_SDL2GL_Init(s_window, PL_windowWidth, PL_windowHeight, s_windowVSync);
+    PL_SDL2GL_Init(s_window, PL_windowWidth, PL_windowHeight);
+    s_windowVSync = PL_SDL2GL_UpdateVSync(s_windowVSync);
     
     s_offscreenVBO = PLG.VertexBuffer_Create(&s_RectVertexDefinition, NULL, 4, DXFALSE);
     
@@ -642,8 +643,9 @@ int PLEXT_Window_SetIconImageFile(const DXCHAR *filename) {
 
 int PL_Window_SetWaitVSyncFlag(int flag) {
     s_windowVSync = (flag == DXFALSE) ? DXFALSE : DXTRUE;
-    PL_SDL2GL_UpdateVSync(s_windowVSync);
-    s_windowVSync = (SDL_GL_GetSwapInterval() != 1) ? DXFALSE : DXTRUE;
+    if (s_initialized) {
+        s_windowVSync = PL_SDL2GL_UpdateVSync(s_windowVSync);
+    }
     return 0;
 }
 
