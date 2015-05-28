@@ -215,6 +215,8 @@ extern int PL_Window_SetTitle(const DXCHAR *titleString);
 extern int PL_Window_SetWindowResizeFlag(int flag);
 extern int PL_Window_ChangeOnlyWindowSize(int width, int height);
 
+extern int PL_Window_GetRefreshRate();
+
 extern int PL_Window_SetMouseDispFlag(int flag);
 extern int PL_Window_GetMouseDispFlag();
 extern int PL_Window_GetMousePoint(int *xPosition, int *yPosition);

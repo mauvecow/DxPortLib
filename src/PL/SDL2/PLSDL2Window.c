@@ -31,6 +31,7 @@ static int s_initialized = 0;
 int PL_windowWidth = 640;
 int PL_windowHeight = 480;
 static int s_windowRefreshRate = 60;
+static int s_screenRefreshRate = 60;
 static int s_windowDepth = 32;
 static SDL_Window *s_window = NULL;
 static PLRect s_targetRect = { 0, 0, 640, 480 };
@@ -241,6 +242,20 @@ static void PL_Window_Refresh() {
     }
 }
 
+static void s_UpdateScreenInfo() {
+    int i;
+    SDL_DisplayMode mode;
+    
+    s_screenRefreshRate = 60;
+    
+    for (i = 0; i < SDL_GetNumVideoDisplays(); ++i) {
+        if (SDL_GetCurrentDisplayMode(i, &mode) == 0) {
+            s_screenRefreshRate = mode.refresh_rate;
+            break;
+        }
+    }
+}
+
 int PL_Window_BindMainFramebuffer() {
     PLG.Texture_BindFramebuffer(s_screenFrameBufferA);
     return 0;
@@ -270,6 +285,8 @@ int PL_Window_Init(void) {
     if (s_windowIcon != NULL) {
         SDL_SetWindowIcon(s_window, s_windowIcon);
     }
+    
+    s_UpdateScreenInfo();
     
     SDL_ShowWindow(s_window);
     
@@ -346,6 +363,7 @@ int PL_Window_SetFullscreen(int isFullscreen, int fullscreenDesktop) {
         s_windowFlags = newFlags;
         if (s_initialized == DXTRUE) {
             SDL_SetWindowFullscreen(s_window, newFlags);
+            s_UpdateScreenInfo();
         }
     }
     
@@ -357,6 +375,7 @@ int PL_Window_ChangeOnlyWindowSize(int width, int height) {
         return -1;
     }
     SDL_SetWindowSize(s_window, width, height);
+    s_UpdateScreenInfo();
     s_forceWindowCentered = DXTRUE;
     
     return 0;
@@ -379,12 +398,17 @@ int PL_Window_SetDimensions(int width, int height, int colorDepth, int refreshRa
              * window size. (unless it's smaller?) */
             SDL_SetWindowSize(s_window, width, height);
             s_forceWindowCentered = DXTRUE;
+            s_UpdateScreenInfo();
             
             PL_Window_ResizeBuffer(PL_windowWidth, PL_windowHeight);
         }
     }
     
     return 0;
+}
+
+int PL_Window_GetRefreshRate() {
+    return s_windowRefreshRate;
 }
 
 int PL_Window_SetTitle(const DXCHAR *titleString) {

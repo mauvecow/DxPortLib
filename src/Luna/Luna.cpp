@@ -183,7 +183,11 @@ Bool Luna::WaitForMsgLoop(Bool isFullActive) {
         return false;
     }
     
-    Luna::SyncFrame();
+    // If VSync is enabled and screen refresh rate == desired refresh rate,
+    // just trust vsync to time us correctly. Otherwise, time manually.
+    if (PL_Window_GetWaitVSyncFlag() != DXTRUE || PL_Window_GetRefreshRate() != s_frameRate) {
+        Luna::SyncFrame();
+    }
     
     s_handleAltEnter();
     
@@ -196,14 +200,10 @@ void Luna::SyncFrame() {
      * of this than normal, or we end up with 62.5 FPS or some
      * other such silliness. */
     static bool firstFrame = true;
+    int targetTime = 1000000 / s_frameRate;
     int timer = s_timer;
     if (firstFrame) {
-        timer = 0;
-        if (s_frameRate > 0) {
-            /* We start close to the vsync position like this,
-             * so try to get close-but-not-over to minimize input latency. */
-            timer = 300000 / s_frameRate;
-        }
+        timer = targetTime;
         s_timerLastTicks = PL_Platform_GetTicks(); 
         firstFrame = false;
     } else {
@@ -214,16 +214,11 @@ void Luna::SyncFrame() {
     
 #ifndef EMSCRIPTEN
     if (s_frameRate > 0) {
-        int targetTime = 1000000 / s_frameRate;
         int lastTicks = s_timerLastTicks;
-        if (targetTime < timer) {
-            // If we blow past our limit, reset, it's probably vsync.
-            timer = 300000 / s_frameRate;
-        }
         if (targetTime > timer) {
             while (targetTime > timer) {
                 int amount = (targetTime - timer) / 1000;
-                PL_Platform_Wait((amount > 1) ? (amount - 1) : 1);
+                PL_Platform_Wait(amount);
                 
                 int ticks = PL_Platform_GetTicks();
                 timer += (ticks - lastTicks) * 1000;
@@ -231,8 +226,8 @@ void Luna::SyncFrame() {
             }
             s_timerLastTicks = lastTicks;
             // Don't allow frames to stack up.
-            timer -= (timer / targetTime) * targetTime;
         }
+        timer -= (timer / targetTime) * targetTime;
     }
 #endif
     
@@ -320,6 +315,9 @@ void Luna::ChangeScreenMode() {
 }
 
 void Luna::SetFrameRate(Sint32 frameRate) {
+    if (frameRate == 0) {
+        frameRate = 60;
+    }
     s_frameRate = frameRate;
 }
 void Luna::SetDrawTitleInfo(void) {
