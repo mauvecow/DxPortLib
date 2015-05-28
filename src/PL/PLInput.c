@@ -384,6 +384,10 @@ int PL_Input_CheckHitKey(int dxKey) {
 }
 
 int PL_Input_CheckHitKeyAll(int checkType) {
+    if (PL_Window_GetActiveFlag() == DXFALSE) {
+        return 0;
+    }
+    
     if ((checkType & DX_CHECKINPUT_KEY) != 0) {
         if (s_downKeyCount != 0) {
             return 1;

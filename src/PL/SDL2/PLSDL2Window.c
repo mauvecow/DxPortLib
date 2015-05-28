@@ -40,6 +40,7 @@ static int s_windowRealHeight = 480;
 static SDL_Surface *s_windowIcon = NULL;
 static int s_windowVSync = DXTRUE;
 static int s_alwaysRunFlag = DXFALSE;
+static int s_lacksFocus = 3;
 
 static Uint32 s_windowFlags =
         SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE;
@@ -432,8 +433,6 @@ int PL_Window_SetTitle(const DXCHAR *titleString) {
     return 0;
 }
 
-static int s_lacksFocus = 0;
-
 int PL_Window_ProcessMessages() {
     SDL_Event event;
     
@@ -499,11 +498,11 @@ int PL_Window_ProcessMessages() {
 #ifdef EMSCRIPTEN
         /* Emscripten uses an alternate main loop, so looping with Delay() here
          * will just freeze the browser instead. */
-        s_lacksFocus = 0;
+        break;
 #else
         if (s_lacksFocus) {
             if (s_alwaysRunFlag) {
-                s_lacksFocus = 0;
+                break;
             } else {
                 SDL_Delay(1);
             }
