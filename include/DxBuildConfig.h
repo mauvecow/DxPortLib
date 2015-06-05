@@ -23,7 +23,7 @@
 #define DXLIB_BUILDCONFIG_H_HEADER
 
 #define DXPORTLIB
-#define DXPORTLIB_VERSION "0.3.0"
+#define DXPORTLIB_VERSION "0.4.0"
 
 #if defined(__APPLE__)
 #  include "TargetConditionals.h"
