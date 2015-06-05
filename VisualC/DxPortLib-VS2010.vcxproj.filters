@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Library Include="external\lib\x86\libvorbisfile.lib" />
+    <Library Include="external\lib\x86\SDL2.lib" />
+    <Library Include="external\lib\x86\SDL2_image.lib" />
+    <Library Include="external\lib\x86\SDL2_ttf.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Public Includes">
+      <UniqueIdentifier>{f00895fd-fcd9-4cb1-9e30-6c6775e30199}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DxLib">
+      <UniqueIdentifier>{24ed34b5-f049-4ed7-a207-46d36d1b90a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Luna">
+      <UniqueIdentifier>{dd86e0ce-a6f3-4894-abad-a7a11dfd0f60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PortLib">
+      <UniqueIdentifier>{11ecde97-002e-4aba-aa14-59ae9c2a8d60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PortLib\D3D9">
+      <UniqueIdentifier>{9b1d0111-c85f-4f9a-996f-94b50bff8649}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PortLib\GL">
+      <UniqueIdentifier>{57f3ec63-e4e5-40da-bfa6-73f1ce6dfe15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PortLib\SDL2">
+      <UniqueIdentifier>{92c88e19-d5cc-41f5-a334-0cfddbf6b400}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\DxBuildConfig.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DxDefines.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DxLib.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DxLib_c.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Luna.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LunaDx8.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LunaMain.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DxLib\DxInternal.h">
+      <Filter>DxLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PL\PLInternal.h">
+      <Filter>PortLib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Luna\LunaInternal.h">
+      <Filter>Luna</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PL\GL\PLGLInternal.h">
+      <Filter>PortLib\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PL\SDL2\PLSDL2Internal.h">
+      <Filter>PortLib\SDL2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\PL\D3D9\PLD3D9Internal.h">
+      <Filter>PortLib\D3D9</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\DxLib\DxLib_c.c">
+      <Filter>DxLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DxLib\DxDraw.c">
+      <Filter>DxLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DxLib\DxDXA.c">
+      <Filter>DxLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DxLib\DxFile.c">
+      <Filter>DxLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DxLib\DxFont.c">
+      <Filter>DxLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DxLib\DxGraph.c">
+      <Filter>DxLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DxLib\DxLib.cpp">
+      <Filter>DxLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLAudio.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLFile.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLHandle.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLInput.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLMath.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLRNG.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLSurface.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLText.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLText_CP932.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\Luna.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\Luna3D.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaCamera.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaFile.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaFontSprite.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaInput.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaMath.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaRand.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaSound.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaSprite.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaTexture.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaVecMath.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\GL\PLGL.c">
+      <Filter>PortLib\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\GL\PLGLBuffers.c">
+      <Filter>PortLib\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\GL\PLGLFixedFunction.c">
+      <Filter>PortLib\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\GL\PLGLRender.c">
+      <Filter>PortLib\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\GL\PLGLShaders.c">
+      <Filter>PortLib\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\GL\PLGLTexture.c">
+      <Filter>PortLib\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2File.c">
+      <Filter>PortLib\SDL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2GL.c">
+      <Filter>PortLib\SDL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2Main.c">
+      <Filter>PortLib\SDL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2Memory.c">
+      <Filter>PortLib\SDL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2SaveScreen.c">
+      <Filter>PortLib\SDL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2Window.c">
+      <Filter>PortLib\SDL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9.c">
+      <Filter>PortLib\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9Buffers.c">
+      <Filter>PortLib\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9FixedFunction.c">
+      <Filter>PortLib\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9Render.c">
+      <Filter>PortLib\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9Shaders.c">
+      <Filter>PortLib\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\D3D9\PLD3D9Texture.c">
+      <Filter>PortLib\D3D9</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

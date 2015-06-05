@@ -17,6 +17,28 @@
 #  include "SDL_main.h"
 #endif
 
+#ifdef DX_NON_FONT
+
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    printf("DxPortLib was compiled without font support.\n");
+    return -1;
+}
+
+#else /* #ifndef DX_NON_FONT */
+
+#ifndef DXLIB_VERSION
+
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    printf("DxPortLib was compiled without DxLib support.\n");
+    return -1;
+}
+
+#else
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -100,7 +122,8 @@ int main(int argc, char **argv) {
         SetDrawBlendMode(fontBlendMode, 255);
         
         for (int i = 0; i < 17; ++i) {
-            DrawStringToHandle(30, 30 + (i * 32), _T("The quick brown fox jumped over the lazy dog. あいうえお"), 0xffffff, fonts[i]);
+            DrawStringToHandle(30, 30 + (i * 32), _T("The creeping coin does 123456789 damage!"), 0xffffff, fonts[i]);
+            //DrawStringToHandle(30, 30 + (i * 32), _T("The quick brown fox jumped over the lazy dog. あいうえお"), 0xffffff, fonts[i]);
         }
         
         ScreenFlip();
@@ -111,3 +134,7 @@ int main(int argc, char **argv) {
     
     return 0;
 }
+
+#endif /* #ifdef DXLIB_VERSION */
+
+#endif /* #ifndef DX_NON_FONT */

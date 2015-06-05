@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2015 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,8 @@
 // EXT_ is used for DxPortLib extensions.
 
 #include "DxBuildConfig.h"
+
+#ifdef DXPORTLIB_DXLIB_INTERFACE
 
 #include "DxDefines.h"
 
@@ -64,7 +66,7 @@ extern DXCALL int WaitTimer(int msTime);
 extern DXCALL int WaitKey();
 
 // - Gets the time since program start, in milliseconds.
-extern DXCALL int GetNowCount();
+extern DXCALL int GetNowCount(int UseRDTSCFlag = FALSE);
 
 // - Gets a random value from [0...RandMax]
 extern DXCALL int GetRand(int maxValue);
@@ -92,16 +94,16 @@ extern DXCALL int EXT_FileRead_SetCharSet(int charset);
 
 // - Opens a file stream handle to the given file.
 // Returns -1 on failure, otherwise returns the stream handle.
-extern DXCALL int FileRead_open(const DXCHAR *filename);
+extern DXCALL int FileRead_open(const DXCHAR *filename, int ASync = FALSE);
 
 // - Returns the size of the file.
-extern DXCALL long long FileRead_size(int fileHandle);
+extern DXCALL int64_t FileRead_size(const DXCHAR *filename);
 
 // - Closes the file stream handle.
 extern DXCALL int FileRead_close(int fileHandle);
 
 // - Returns the current position within the file stream.
-extern DXCALL long long FileRead_tell(int fileHandle);
+extern DXCALL int64_t FileRead_tell(int fileHandle);
 
 // - Seeks to a given position within the file.
 // Origin may have the following values:
@@ -110,7 +112,7 @@ extern DXCALL long long FileRead_tell(int fileHandle);
 // SEEK_END: Seek to an offset from the end of the file.
 // Returns the new position within the file.
 extern DXCALL int FileRead_seek(int fileHandle,
-                                long long position, int origin);
+                                int64_t position, int origin);
 
 // - Reads size bytes from the file, storing in the data pointer.
 // Returns the number of bytes read.
@@ -133,19 +135,19 @@ extern DXCALL int FileRead_scanf(int fileHandle,
 // ---------------------------------------------------------- DxArchive.cpp
 // - If true, will attempt to load data from dirname.dxa.
 // e.g. "directory/blah.txt" looks for "blah.txt" in "directory.dxa"
-extern DXCALL int SetUseDXArchiveFlag(bool flag);
+extern DXCALL int SetUseDXArchiveFlag(int flag);
 
 // - Sets the encryption key to be used for DXA files.
-extern DXCALL int SetDXArchiveKeyString(const DXCHAR *keyString);
+extern DXCALL int SetDXArchiveKeyString(const DXCHAR *keyString = NULL);
 
 // - Sets the filename extension to be used for DXA files.
 // Default is "dxa".
 // NOTICE: Non-Windows platforms are case sensitive!
-extern DXCALL int SetDXArchiveExtension(const DXCHAR *extension);
+extern DXCALL int SetDXArchiveExtension(const DXCHAR *extension = NULL);
 
 // - If FALSE, tries to load from dxa files then normal files.
 //   If TRUE, tries to load from normal files then dxa files.
-extern DXCALL int SetDXArchivePriority(int flag);
+extern DXCALL int SetDXArchivePriority(int priority = 0);
 
 // - Preloads the dxa archive to memory.
 // NOTICE: async is not supported and will be ignored.
@@ -200,8 +202,8 @@ extern DXCALL int GetJoypadXInputState(int controllerIndex,
 
 // - Sets the associated keybinds for a given joystick input.
 extern DXCALL int SetJoypadInputToKeyInput(int controllerIndex, int input,
-                                    int key1, int key2 = 0,
-                                    int key3 = 0, int key4 = 0);
+                                    int key1, int key2 = -1,
+                                    int key3 = -1, int key4 = -1);
 
 // - Gets the mouse position.
 extern DXCALL int GetMousePoint(int *xPosition, int *yPosition);
@@ -212,10 +214,10 @@ extern DXCALL int GetMouseInput();
 
 // - Gets the Vertical or Horizontal mouse wheel states.
 // If clearFlag, resets internal value to zero.
-extern DXCALL int GetMouseWheelRotVol(int clearFlag);
-extern DXCALL int GetMouseHWheelRotVol(int clearFlag);
-extern DXCALL float GetMouseWheelRotVolF(int clearFlag);
-extern DXCALL float GetMouseHWheelRotVolF(int clearFlag);
+extern DXCALL int GetMouseWheelRotVol(int clearFlag = TRUE);
+extern DXCALL int GetMouseHWheelRotVol(int clearFlag = TRUE);
+extern DXCALL float GetMouseWheelRotVolF(int clearFlag = TRUE);
+extern DXCALL float GetMouseHWheelRotVolF(int clearFlag = TRUE);
 
 #endif /* #ifndef DX_NON_INPUT */
 
@@ -228,7 +230,8 @@ extern DXCALL int SetGraphMode(int width, int height,
 
 // - Sets if the window can be resized or not.
 // NOTICE: Can only be set before DxLib_Init is called!
-extern DXCALL int SetWindowSizeChangeEnableFlag(int windowResizeFlag);
+extern DXCALL int SetWindowSizeChangeEnableFlag(int windowResizeFlag,
+                                                int fitScreen = TRUE);
 
 // Avoid conflicts with windows headers that will define SetWindowText.
 #ifdef SetWindowText
@@ -275,7 +278,7 @@ extern DXCALL int GetAlwaysRunFlag();
 // - If TRUE, displays the mouse cursor, othersise hides.
 // Default is TRUE.
 extern DXCALL int SetMouseDispFlag(int flag);
-extern DXCALL int GetMouseDispFlag(int flag);
+extern DXCALL int GetMouseDispFlag();
 
 // - If TRUE, window is currently in focus and active.
 extern DXCALL int GetWindowActiveFlag();
@@ -296,13 +299,16 @@ extern DXCALL int EXT_MessageBoxYesNo(const DXCHAR *title,
 // --------------------------------------------------------- DxGraphics.cpp
 // - Creates a screen graph that can be used with SetDrawScreen.
 // Note that you can't use it to draw with while bound.
-extern DXCALL int MakeScreen(int width, int height, int hasAlphaChannel);
+extern DXCALL int MakeScreen(int width, int height,
+                             int hasAlphaChannel = FALSE);
 
 // - Loads the given image file into the returned handle.
-extern DXCALL int LoadGraph(const DXCHAR *name);
+extern DXCALL int LoadGraph(const DXCHAR *name,
+                            int notUse3DFlag = FALSE);
 
 // - Loads the given image flipped horizontally into the returned handle.
-extern DXCALL int LoadReverseGraph(const DXCHAR *name);
+extern DXCALL int LoadReverseGraph(const DXCHAR *name,
+                                   int notUse3DFlag = FALSE);
 
 // - Loads an image, and then derives into graphCount graphics handles,
 //   placing them into handleBuf.
@@ -312,7 +318,8 @@ extern DXCALL int LoadReverseGraph(const DXCHAR *name);
 extern DXCALL int LoadDivGraph(
                           const DXCHAR *filename, int graphCount,
                           int xCount, int yCount, int xSize, int ySize,
-                          int *handleBuf);
+                          int *handleBuf,
+                          int notUse3DFlag = FALSE);
 extern DXCALL int LoadDivBmpGraph(
                           const DXCHAR *filename, int graphCount,
                           int xCount, int yCount, int xSize, int ySize,
@@ -320,14 +327,15 @@ extern DXCALL int LoadDivBmpGraph(
 extern DXCALL int LoadReverseDivGraph(
                           const DXCHAR *filename, int graphCount,
                           int xCount, int yCount, int xSize, int ySize,
-                          int *handleBuf);
+                          int *handleBuf,
+                          int notUse3DFlag = FALSE);
 
 // - Deletes a Graph handle.
-extern DXCALL int DeleteGraph(int graphID);
+extern DXCALL int DeleteGraph(int graphID, int LogOutFlag = FALSE);
 // - Deletes all graph handles that were based on the same graph as this.
 extern DXCALL int DeleteSharingGraph(int graphID);
 // - Deletes ALL Graph handles.
-extern DXCALL int InitGraph();
+extern DXCALL int InitGraph(int LogOutFlag = FALSE);
 
 // - Gets the number of currently active graphs.
 extern DXCALL int GetGraphNum();
@@ -368,6 +376,7 @@ extern DXCALL int DrawPixel(int x, int y, DXCOLOR color);
 // - Draws a line from (x1,y1) to (x2,y2) with the given color.
 extern DXCALL int DrawLine(int x1, int y1, int x2, int y2,
                            DXCOLOR color, int thickness = 1);
+// DrawLineF is a PL Extension.
 extern DXCALL int DrawLineF(float x1, float y1, float x2, float y2,
                             DXCOLOR color, int thickness = 1);
 
@@ -375,22 +384,25 @@ extern DXCALL int DrawLineF(float x1, float y1, float x2, float y2,
 //   If FillFlag is set, draws a filled box, otherwise a rectangle.
 extern DXCALL int DrawBox(int x1, int y1, int x2, int y2,
                           DXCOLOR color, int FillFlag);
+// DrawBoxF is a PL extension.
 extern DXCALL int DrawBoxF(float x1, float y1, float x2, float y2,
                            DXCOLOR color, int FillFlag);
 extern DXCALL int DrawFillBox(int x1, int y1, int x2, int y2,
                               DXCOLOR color);
+// DrawFillBoxF is a PL extension.
 extern DXCALL int DrawFillBoxF(float x1, float y1, float x2, float y2,
                                DXCOLOR color);
 extern DXCALL int DrawLineBox(int x1, int y1, int x2, int y2,
                               DXCOLOR color);
+// DrawLineBoxF is a PL extension.
 extern DXCALL int DrawLineBoxF(float x1, float y1, float x2, float y2,
                                DXCOLOR color);
 
 // - Draws a circle centered at (x,y), with radius r.
 extern DXCALL int DrawCircle(int x, int y, int r,
-                             DXCOLOR color, int fillFlag);
+                             DXCOLOR color, int fillFlag = TRUE);
 extern DXCALL int DrawCircleF(float x, float y, float r,
-                              DXCOLOR color, int fillFlag);
+                              DXCOLOR color, int fillFlag = TRUE);
 // - Draws an ellipse centered at (x,y), with extents (rx,ry).
 extern DXCALL int DrawOval(int x, int y, int rx, int ry,
                            DXCOLOR color, int fillFlag);
@@ -592,7 +604,8 @@ extern DXCALL int EXT_InitFontMappings();
 // - Draws a string at the given position, with the given font and color.
 extern DXCALL int DrawStringToHandle(int x, int y, const DXCHAR *string,
                                      DXCOLOR color, int fontHandle,
-                                     DXCOLOR edgeColor = 0);
+                                     DXCOLOR edgeColor = 0,
+                                     int VerticalFlag = FALSE);
 extern DXCALL int DrawFormatStringToHandle(
                                      int x, int y, DXCOLOR color,
                                      int fontHandle,
@@ -604,7 +617,8 @@ extern DXCALL int DrawExtendStringToHandle(double ExRateX,
                                            const DXCHAR *string,
                                            DXCOLOR color,
                                            int fontHandle,
-                                           DXCOLOR edgeColor = 0);
+                                           DXCOLOR edgeColor = 0,
+                                           int VerticalFlag = FALSE);
 extern DXCALL int DrawExtendFormatStringToHandle(
                                            double ExRateX,
                                            double ExRateY,
@@ -616,7 +630,8 @@ extern DXCALL int DrawExtendFormatStringToHandle(
 
 // - Gets the width of a string that would be drawn.
 extern DXCALL int GetDrawStringWidthToHandle(const DXCHAR *string,
-                                             int strLen, int fontHandle);
+                                             int strLen, int fontHandle,
+                                             int VerticalFlag = FALSE);
 extern DXCALL int GetDrawFormatStringWidthToHandle(int fontHandle,
                                                    const DXCHAR *string,
                                                    ...);
@@ -624,7 +639,8 @@ extern DXCALL int GetDrawFormatStringWidthToHandle(int fontHandle,
 extern DXCALL int GetDrawExtendStringWidthToHandle(double ExRateX,
                                                    const DXCHAR *string,
                                                    int strLen,
-                                                   int fontHandle);
+                                                   int fontHandle,
+                                                   int VerticalFlag = FALSE);
 extern DXCALL int GetDrawExtendFormatStringWidthToHandle(
                                                    double ExRateX,
                                                    int fontHandle,
@@ -655,11 +671,12 @@ extern DXCALL int SetFontSpaceToHandle(int fontSpacing, int fontHandle);
 //   -1 or DX_CHARSET_DEFAULT uses the current charset.
 // edgeSize is valid for DX_FONTTYPE*_EDGE and may be 1 through 4.
 //   Default edgeSize is 1.
-// italics draws the font italicized. defualt is DXFALSE.
+// italics draws the font italicized. default is DXFALSE.
 extern DXCALL int CreateFontToHandle(const DXCHAR *fontname,
                                      int size, int thickness,
                                      int fontType = -1, int charset = -1,
-                                     int edgeSize = -1, int italic = DXFALSE
+                                     int edgeSize = -1, int italic = DXFALSE,
+                                     int handle = -1
                                      );
 // - Deletes a font handle.
 extern DXCALL int DeleteFontToHandle(int handle);
@@ -703,13 +720,15 @@ extern DXCALL int DrawExtendFormatString(int x, int y,
                                          const DXCHAR *formatString, ...);
 
 // - Gets the width of a string using the default font.
-extern DXCALL int GetDrawStringWidth(const DXCHAR *string, int strLen);
+extern DXCALL int GetDrawStringWidth(const DXCHAR *string, int strLen,
+                                     int VerticalFlag = FALSE);
 extern DXCALL int GetDrawFormatStringWidth(const DXCHAR *string, ...);
 
 // - Gets the scaled width of a string using the default font.
 extern DXCALL int GetDrawExtendStringWidth(double ExRateX,
                                            const DXCHAR *string,
-                                                 int strLen);
+                                           int strLen,
+                                           int VerticalFlag = FALSE);
 extern DXCALL int GetDrawExtendFormatStringWidth(double ExRateX,
                                                  const DXCHAR *string, ...);
 
@@ -770,17 +789,18 @@ extern DXCALL int SetUseOldVolumeCalcFlag(int volumeFlag);
 
 // - Loads a sound file, returning a playable handle.
 // WAV files are loaded whole, OGG files are streamed.
-extern DXCALL int LoadSoundMem(const DXCHAR *filename);
+extern DXCALL int LoadSoundMem(const DXCHAR *filename,
+                               int bufferNum = 3, int unionHandle = -1);
 // - Loads two sound files, an intro segment and then a second segment.
 // If this is played with DX_PLAYTYPE_LOP, only the second part will loop.
 extern DXCALL int LoadSoundMem2(const DXCHAR *filename,
                                 const DXCHAR *filename2);
 
 // - Deletes a sound handle.
-extern DXCALL int DeleteSoundMem(int soundID);
+extern DXCALL int DeleteSoundMem(int soundID, int LogOutFlag = FALSE);
 
 // - Deletes all sound handles.
-extern DXCALL int InitSoundMem();
+extern DXCALL int InitSoundMem(int LogOutFlag = FALSE);
 
 // - Sets the data storage type for loaded sounds.
 // NOTICE: DxPortLib currently only supports DX_SOUNDDATATYPE_MEMNOPRESS.
@@ -805,11 +825,8 @@ extern DXCALL void * DxRealloc(void *memory, size_t allocationSize,
 // - Frees a block of memory.
 extern DXCALL void DxFree(void *memory);
 
-};
+}
 
-// ------------------------------------------------------------------
-// Set DxLib as a default namespace, like the original library.
-
-using namespace DxLib;
+#endif // #ifdef DXPORTLIB_DXLIB_INTERFACE
 
 #endif

@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2015 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,11 +24,23 @@
 
 #include "DxBuildConfig.h"
 
+#include <stdint.h>
+
 #ifdef UNICODE
-#include <wchar.h>
+#  include <wchar.h>
+#endif
+
+#if defined(__GNUC__)
+#  define DXINLINE __inline__
+#elif defined(_MSC_VER) || defined(__BORLANDC__)
+#  define DXINLINE __inline
+#else
+#  define DXINLINE inline
 #endif
 
 #if defined _WIN32
+#  define _WIN32_WINNT 0x0400
+#  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 #  include <tchar.h>
 #else
@@ -39,6 +51,10 @@ typedef struct _RECT {
     int right;
     int bottom;
 } RECT;
+typedef struct _POINT {
+    int x;
+    int y;
+} POINT;
 
 typedef int BOOL;
 typedef long LONG;
@@ -47,21 +63,46 @@ typedef unsigned short WORD;
 typedef unsigned char BYTE;
 
 #  ifdef UNICODE
-#    define _TEXT(s) L ## s
 typedef wchar_t TCHAR;
 #  else
-#    define _TEXT(s) s
 typedef char TCHAR;
 #  endif
+#endif
+
+/* Verify that all text defines exist. */
+#ifndef _TEXT
+#  ifdef UNICODE
+#    define _TEXT(s) L ## s
+#  else
+#    define _TEXT(s) s
+#  endif
+#endif
+
+#ifndef _T
 #  define _T(s) _TEXT(s)
+#endif
+#ifndef __TEXT
+#  define __TEXT(s) _TEXT(s)
+#endif
+#ifndef TEXT
+#  define TEXT(s) _TEXT(s)
+#endif
+
+#ifndef NULL
+#define NULL (0)
+#endif
+
+#ifndef DXINLINE
+#if defined(__GNUC__)
+#define DXINLINE __inline__
+#else
+#define DXINLINE __inline
+#endif
 #endif
 
 #ifdef __cplusplus
 namespace DxLib {
 #endif
-
-#define DXPORTLIB
-#define DXPORTLIB_VERSION "0.1.0"
 
 /* This library is compatible with DxLib v3.11. */
 #define DXLIB_VERSION 0x3110
@@ -167,7 +208,7 @@ namespace DxLib {
 #define DX_FONTTYPE_ANTIALIASING_EDGE_8X8       (0x23)
 
 /* ----------------------------------------------------- INPUT DEFINES */
-typedef struct DINPUT_JOYSTATE {
+typedef struct _DINPUT_JOYSTATE {
     int X;
     int Y;
     int Z;
@@ -179,7 +220,7 @@ typedef struct DINPUT_JOYSTATE {
     unsigned char Buttons[32];
 } DINPUT_JOYSTATE;
 
-typedef struct XINPUT_STATE {
+typedef struct _XINPUT_STATE {
     unsigned char Buttons[16];
     unsigned char LeftTrigger;
     unsigned char RightTrigger;
@@ -445,7 +486,12 @@ typedef struct XINPUT_STATE {
 #define DX_SOUNDDATATYPE_FILE                   (3)
 
 #ifdef __cplusplus   
-}
+} /* namespace */
+
+/* ------------------------------------------------------------------
+ * Set DxLib as a default namespace, like the original library. */
+
+using namespace DxLib;
 #endif
 
 #endif

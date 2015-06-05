@@ -13,7 +13,20 @@
 
 #include "DxLib.h"
 
-#include "SDL_main.h"
+#ifdef DXPORTLIB
+#  include "SDL_main.h"
+#endif
+
+#ifndef DXLIB_VERSION
+
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    printf("DxPortLib was compiled without DxLib support.\n");
+    return -1;
+}
+
+#else
 
 int main(int argc, char **argv) {
     SetUseCharSet(DX_CHARSET_EXT_UTF8);
@@ -96,7 +109,6 @@ int main(int argc, char **argv) {
         }
         
         for (int i = 1; i < DX_BLENDMODE_NUM; ++i) {
-            /* 540 / 6 = 90 */
             int color = GetColor(0x00, 0x80, 0x80);
             int x = ((i - 1) % 6);
             int y = ((i - 1) / 6);
@@ -129,3 +141,5 @@ int main(int argc, char **argv) {
     
     return 0;
 }
+
+#endif /* #ifdef DXLIB_VERSION */

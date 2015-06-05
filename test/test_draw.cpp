@@ -17,6 +17,17 @@
 #  include "SDL_main.h"
 #endif
 
+#ifndef DXLIB_VERSION
+
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    printf("DxPortLib was compiled without DxLib support.\n");
+    return -1;
+}
+
+#else
+
 static const int BOUNCETHINGCOUNT = 50;
 
 struct BounceThing {
@@ -84,7 +95,7 @@ static void DrawBounceThings() {
             float halfH = (float)thing->h * 0.5f;
             DrawOval(
                 (int)(thing->x + halfW), (int)(thing->y + halfH),
-                halfW, halfH,
+                (int)halfW, (int)halfH,
                 thing->color, thing->isFilled
             );
         } else {
@@ -186,3 +197,5 @@ int main(int argc, char **argv) {
     
     return 0;
 }
+
+#endif /* #ifdef DXLIB_VERSION */

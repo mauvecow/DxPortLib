@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2015 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,13 @@
 #ifndef DXLIB_BUILDCONFIG_H_HEADER
 #define DXLIB_BUILDCONFIG_H_HEADER
 
+#define DXPORTLIB
+#define DXPORTLIB_VERSION "0.4.0"
+
+#if defined(__APPLE__)
+#  include "TargetConditionals.h"
+#endif
+
 /* ------------------------------------------------------------------------
  * These should be set at build time.
  * 
@@ -30,16 +37,31 @@
  * section from the build entirely.
  */
 
-/* DxPortLib extension - Disables SHIFT-JIS codepage. (-74kB binary size)
- * If you do not use SJIS it is recommended to disable this.
+/* DxPortLib - Enables and disables interfaces to the library.
  */
-/* #define DXPORTLIB_NON_SJIS */
+#define DXPORTLIB_DXLIB_INTERFACE
+#define DXPORTLIB_LUNA_INTERFACE
+
+/* DxPortLib - Choose one platform target.
+ */
+#define DXPORTLIB_PLATFORM_SDL2
+
+/* DxPortLib - Disables SHIFT-JIS codepage. (-74kB binary size) */
+/* #define DXPORTLIB_NO_SJIS */
 
 /* DxPortLib extension - Sets the drawing backend.
- * --- SELECT ONLY ONE --- */
-/* #define DXPORTLIB_DRAW_SDL2_RENDER */
+ */
+/* #define DXPORTLIB_DRAW_DIRECT3D9 */
 #define DXPORTLIB_DRAW_OPENGL
 
+/* For OpenGL, define this to use the OpenGL ES 2.0 support.
+ * This is automatically enforced for Android, IOS, and Emscripten targets.
+ */
+/* #define DXPORTLIB_DRAW_OPENGL_ES2 */
+
+/* ------------------------------------------------------------------------
+ * DxLib-specific features.
+ */
 /* Disables the archive format. */
 /* #define DX_NON_DXA */
 
@@ -54,6 +76,17 @@
 
 /* Disables the font backend. */
 /* #define DX_NON_FONT */
+
+/* ------------------------------------------------------------------------
+ * Luna-specific features.
+ * No effect if DXPORTLIB_LUNA_INTERFACE is disabled.
+ */
+
+/* Instead of storing the math table in the binary, dynamically generates
+ * it on startup. This is identical to LunaDx8's functionality, but is not
+ * portable.
+ * Reduces binary size by ~300k. */
+/* #define DXPORTLIB_LUNA_DYNAMIC_MATH_TABLE */
 
 /* ------------------------------------------------------------------------
  * These are features not supported by DxPortLib at this time.
@@ -149,5 +182,22 @@
 
 /* printfDx is not currently supported. */
 #define DX_NON_PRINTF_DX
+
+/* ------------------------------------------------------------------------
+ * Implicit/required supports are handled down here.
+ */
+
+#if defined(ANDROID) || defined(__ANDROID__) || defined(TARGET_OS_IPHONE) || defined(EMSCRIPTEN)
+#  ifndef DXPORTLIB_DRAW_OPENGL_ES2
+#    define DXPORTLIB_DRAW_OPENGL_ES2
+#  endif
+#endif
+
+/* D3D9 not available on non-Windows platforms */
+#if !defined(WIN32)
+#  ifdef DXPORTLIB_DRAW_DIRECT3D9
+#    undef DXPORTLIB_DRAW_DIRECT3D9
+#  endif
+#endif
 
 #endif /* _DXLIB_BUILDCONFIG_H */
