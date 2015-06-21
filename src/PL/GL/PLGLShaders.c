@@ -280,6 +280,10 @@ int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
     int shaderHandle;
     PLGLShaderInfo *info;
     
+    if (PL_GL.hasShaderSupport == DXFALSE) {
+        return -1;
+    }
+    
     do {
         GLint status;
         /* Clear any GL errors out before we do anything. */
@@ -387,6 +391,10 @@ static GLenum VertexElementSizeToGL(int value) {
 }
 
 void PLGL_Shaders_UseProgram(int shaderHandle) {
+    if (PL_GL.hasShaderSupport == DXFALSE) {
+        return;
+    }
+    
     if (shaderHandle < 0) {
         PL_GL.glUseProgram(0);
     } else {
