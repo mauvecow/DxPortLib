@@ -347,6 +347,10 @@ int DxLib_SetMainWindowText(const DXCHAR *windowName) {
     return 0;
 }
 int DxLib_ScreenFlip() {
+    if (s_initialized == DXFALSE) {
+        return -1;
+    }
+    
     Dx_Draw_FlushCache();
     Dx_Draw_ForceUpdate();
     PLG.EndFrame();

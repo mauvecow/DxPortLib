@@ -54,6 +54,12 @@ static void s_Enlarge() {
     if (s_handleTable == NULL) {
         s_handleTable = DXALLOC((size_t)n * sizeof(HandleData));
         first = s_handleCount + 1; /* Reserve the first handle. */
+        
+        handle = s_handleTable;
+        handle[0].data = NULL;
+        handle[0].handleType = DXHANDLE_NONE;
+        handle[0].nextID = -1;
+        handle[0].prevID = -1;
     } else {
         s_handleTable = DXREALLOC(s_handleTable, (size_t)n * sizeof(HandleData));
     }
