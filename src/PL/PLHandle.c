@@ -57,6 +57,7 @@ static void s_Enlarge() {
         
         handle = s_handleTable;
         handle[0].data = NULL;
+        handle[0].deleteFlag = 0;
         handle[0].handleType = DXHANDLE_NONE;
         handle[0].nextID = -1;
         handle[0].prevID = -1;
@@ -69,6 +70,7 @@ static void s_Enlarge() {
     for (i = n - 1; i >= first; --i) {
         handle = &s_handleTable[i];
         handle->data = NULL;
+        handle->deleteFlag = 0;
         handle->handleType = DXHANDLE_NONE;
         handle->nextID = last;
         handle->prevID = i - 1;
