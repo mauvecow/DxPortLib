@@ -467,7 +467,7 @@ int PL_Window_ProcessMessages() {
                             PL_Window_HandleResize(event.window.data1, event.window.data2);
                             break;
                         case SDL_WINDOWEVENT_CLOSE:
-                            PL_Window_End();
+                            /* PL_Window_End(); -- Incorrect behavior */
                             return -1;
                         default:
                             break;
