@@ -152,11 +152,11 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     }
 #endif
 
-    PL_GL.glFramebufferTexture2D = GetGLFunction("glFramebufferTexture2DEXT");
-    PL_GL.glBindFramebuffer = GetGLFunction("glBindFramebufferEXT");
-    PL_GL.glDeleteFramebuffers = GetGLFunction("glDeleteFramebuffersEXT");
-    PL_GL.glGenFramebuffers = GetGLFunction("glGenFramebuffersEXT");
-    PL_GL.glCheckFramebufferStatus = GetGLFunction("glCheckFramebufferStatusEXT");
+    PL_GL.glFramebufferTexture2D = GetGLFunction("glFramebufferTexture2D");
+    PL_GL.glBindFramebuffer = GetGLFunction("glBindFramebuffer");
+    PL_GL.glDeleteFramebuffers = GetGLFunction("glDeleteFramebuffers");
+    PL_GL.glGenFramebuffers = GetGLFunction("glGenFramebuffers");
+    PL_GL.glCheckFramebufferStatus = GetGLFunction("glCheckFramebufferStatus");
     
     if (PL_GL.glFramebufferTexture2D != 0 && PL_GL.glBindFramebuffer != 0
         && PL_GL.glDeleteFramebuffers != 0 && PL_GL.glGenFramebuffers != 0
