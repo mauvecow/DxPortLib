@@ -245,8 +245,17 @@ int Dx_Graph_Derivation(int x, int y, int w, int h, int srcGraphID) {
     rect = srcGraph->rect;
     rect.x += x;
     rect.y += y;
-    rect.w = w;
-    rect.h = h;
+    
+    if ((x + w) > rect.w) {
+        rect.w = rect.w - x;
+    } else {
+        rect.w = w;
+    }
+    if ((y + h) > rect.h) {
+        rect.h = rect.h - y;
+    } else {
+        rect.h = h;
+    }
     
     return s_AllocateGraphID(srcGraph->textureRefID, rect, srcGraphID);
 }
