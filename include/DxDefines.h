@@ -57,10 +57,10 @@ typedef struct _POINT {
 } POINT;
 
 typedef int BOOL;
-typedef long LONG;
-typedef unsigned long DWORD;
-typedef unsigned short WORD;
-typedef unsigned char BYTE;
+typedef int32_t LONG;
+typedef uint32_t DWORD;
+typedef uint16_t WORD;
+typedef uint8_t BYTE;
 
 #  ifdef UNICODE
 typedef wchar_t TCHAR;
