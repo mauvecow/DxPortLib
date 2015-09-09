@@ -90,6 +90,13 @@ extern DXCALL int SetDeleteHandleFlag(int handleID, int *flag);
 // It is highly recommended to build your application to use UTF8.
 extern DXCALL int SetUseCharSet(int charset);
 
+// - DxPortLib extension: Sets the displayed window parameters.
+// This does not change the framebuffer size set at SetGraphMode,
+// only the display information.
+extern DXCALL void EXT_SetOnlyWindowSize(int width, int height,
+                                         bool isFullscreen,
+                                         bool isFullscreenDesktop);
+
 // ------------------------------------------------------------- DxFile.cpp
 // - DxPortLib extension: Sets the charset to use with FileRead strings.
 // Defaults to the currently active character set.

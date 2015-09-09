@@ -66,6 +66,11 @@ extern DXCALL int DxLib_SetOutApplicationLogValidFlag(int logFlag);
 extern DXCALL int DxLib_SetDeleteHandleFlag(int handleID, int *flag);
 
 extern DXCALL int DxLib_SetUseCharSet(int charset);
+
+extern DXCALL void DxLib_EXT_SetOnlyWindowSize(int width, int height,
+                                              int isFullscreen,
+                                              int isFullscreenDesktop);
+
 /* ----------------------------------------------------------- DxFile.cpp */
 extern DXCALL int DxLib_EXT_FileRead_SetCharSet(int charset);
 

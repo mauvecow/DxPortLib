@@ -86,6 +86,13 @@ int SetUseCharSet(int charset) {
     return ::DxLib_SetUseCharSet(charset);
 }
 
+void EXT_SetOnlyWindowSize(int width, int height,
+                           bool isFullscreen, bool isFullscreenDesktop) {
+    return ::DxLib_EXT_SetOnlyWindowSize(width, height,
+                                         isFullscreen ? DXTRUE : DXFALSE,
+                                         isFullscreenDesktop ? DXTRUE : DXFALSE);
+}
+
 // ---------------------------------------------------- DxFile.cpp
 int EXT_FileRead_SetCharSet(int charset) {
     return ::DxLib_EXT_FileRead_SetCharSet(charset);

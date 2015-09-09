@@ -33,6 +33,12 @@
 static int s_calledMainReady = DXFALSE;
 static int s_initialized = DXFALSE;
 
+static int s_fullscreenDesktopFlag = DXTRUE;
+static int s_realWidth = 640;
+static int s_realHeight = 480;
+static int s_screenWidth = 640;
+static int s_screenHeight = 480;
+
 /* For setting the floating precision to the system value.
  * There is no real architecture agnostic answer here, so
  * add more of these as needed. */
@@ -192,6 +198,34 @@ int DxLib_SetUseCharSet(int charset) {
     return PL_Text_SetUseCharSet(charset);
 }
 
+void DxLib_EXT_SetOnlyWindowSize(int width, int height, int isFullscreen, int isFullscreenDesktop) {
+    int newDesktopFlag;
+    if (isFullscreenDesktop) {
+        newDesktopFlag = DXTRUE;
+    } else {
+        newDesktopFlag = DXFALSE;
+    }
+
+    s_realWidth = width;
+    s_realHeight = height;
+
+    if (isFullscreen) {
+        /* Momentarily go to windowed mode if already fullscreen. */
+        if (s_fullscreenDesktopFlag != newDesktopFlag
+            && PL_Window_GetWindowModeFlag() == DXFALSE)
+        {
+            PL_Window_SetFullscreen(DXFALSE, s_fullscreenDesktopFlag);
+        }
+
+        PL_Window_ChangeOnlyWindowSize(s_screenWidth, s_screenHeight);
+        PL_Window_SetFullscreen(DXTRUE, newDesktopFlag);
+    } else {
+        PL_Window_SetFullscreen(DXFALSE, newDesktopFlag);
+        PL_Window_ChangeOnlyWindowSize(width, height);
+    }
+    s_fullscreenDesktopFlag = newDesktopFlag;
+}
+
 /* ---------------------------------------------------- DxFile.cpp */
 int DxLib_EXT_FileRead_SetCharSet(int charset) {
     return PLEXT_FileRead_SetCharSet(charset);
@@ -334,6 +368,8 @@ float DxLib_GetMouseHWheelRotVolF(int clearFlag) {
 
 /* ---------------------------------------------------- DxWindow.cpp */
 int DxLib_SetGraphMode(int width, int height, int bitDepth, int FPS) {
+    s_screenWidth = width;
+    s_screenHeight = height;
     PL_Window_SetDimensions(width, height, bitDepth, FPS);
     return 0;
 }
