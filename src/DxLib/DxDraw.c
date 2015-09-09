@@ -1235,7 +1235,7 @@ int Dx_Draw_UpdateDrawScreen() {
         }
         
         PL_Matrix_CreateOrthoOffCenterLH(&s_projectionMatrix,
-            0, (float)s_drawScreenWidth, (float)s_drawScreenHeight, 0, -32768, 32767);
+            0, (float)s_drawScreenWidth, 0, (float)s_drawScreenHeight, -32768, 32767);
         PL_Matrix_CreateIdentity(&s_viewMatrix);
     }
     return 0;

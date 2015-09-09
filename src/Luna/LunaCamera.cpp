@@ -113,7 +113,10 @@ void LunaCamera::LookAt(LCAMERA lCam, CVector3D *pEye,
 void LunaCamera_SetDevice(LCAMERA lCam) {
     CameraData *camera = (CameraData *)PL_Handle_GetData((int)lCam, DXHANDLE_LUNACAMERA);
     if (camera != NULL) {
+        PLMatrix o;
+        
         PL_Matrix_Copy(&g_lunaProjectionMatrix, &camera->projection);
+        PL_Matrix_Multiply(&g_lunaProjectionMatrix, &g_lunaProjectionMatrix, PL_Matrix_CreateScale(&o, 1, -1, 1));
         PL_Matrix_Copy(&g_lunaViewMatrix, &camera->view);
     }
 }

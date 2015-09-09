@@ -75,7 +75,7 @@ void Luna3D::SetViewport(const RECT *rect) {
     
     PL_Matrix_CreateOrthoOffCenterLH(&g_lunaUntransformedProjectionMatrix,
                       (float)rect->left, (float)rect->right,
-                      (float)rect->bottom, (float)rect->top,
+                      (float)rect->top, (float)rect->bottom,
                       0.0f, 1.0f);
     PL_Matrix_CreateTranslation(&g_lunaUntransformedViewMatrix, 0.5f, 0.5f, 0.0f);
 }

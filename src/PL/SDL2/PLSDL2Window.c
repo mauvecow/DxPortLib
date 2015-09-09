@@ -121,7 +121,7 @@ void PL_Window_UpdateTargetRects(const PLRect *fullRect, const PLRect *targetRec
     RectVertex v[4];
     
     PL_Matrix_CreateOrthoOffCenterLH(&s_projectionMatrix,
-        0, (float)fullRect->w, 0, (float)fullRect->h, 0.0, 1.0f);
+        0, (float)fullRect->w, (float)fullRect->h, 0, 0.0, 1.0f);
     PL_Matrix_CreateIdentity(&s_viewMatrix);
     
     s_fullRect = *fullRect;
