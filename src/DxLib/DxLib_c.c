@@ -164,6 +164,10 @@ int DxLib_WaitKey() {
 #endif
 }
 
+int DxLib_GetDateTime(DATEDATA *dateBuf) {
+    return PL_Platform_GetDateTime(dateBuf);
+}
+
 int DxLib_GetNowCount(int UseRDTSCFlag) {
     /* FIXME: UseRDTSCFlag is not supported. */
     return (int)PL_Platform_GetTicks();

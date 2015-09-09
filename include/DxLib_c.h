@@ -53,6 +53,8 @@ extern DXCALL int DxLib_ProcessMessage(void);
 extern DXCALL int DxLib_WaitTimer(int msTime);
 extern DXCALL int DxLib_WaitKey();
 
+extern DXCALL int DxLib_GetDateTime(DATEDATA *dateBuf);
+
 extern DXCALL int DxLib_GetNowCount(int UseRDTSCFlag);
 
 extern DXCALL int DxLib_GetRand(int maxValue);
@@ -64,7 +66,6 @@ extern DXCALL int DxLib_SetOutApplicationLogValidFlag(int logFlag);
 extern DXCALL int DxLib_SetDeleteHandleFlag(int handleID, int *flag);
 
 extern DXCALL int DxLib_SetUseCharSet(int charset);
-
 /* ----------------------------------------------------------- DxFile.cpp */
 extern DXCALL int DxLib_EXT_FileRead_SetCharSet(int charset);
 

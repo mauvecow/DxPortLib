@@ -59,6 +59,10 @@ int WaitKey() {
     return ::DxLib_WaitKey();
 }
 
+int GetDateTime(DATEDATA *dateBuf) {
+    return ::DxLib_GetDateTime(dateBuf);
+}
+
 int GetNowCount(int UseRDTSCFlag) {
     return ::DxLib_GetNowCount(UseRDTSCFlag);
 }

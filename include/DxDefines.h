@@ -207,6 +207,18 @@ namespace DxLib {
 #define DX_FONTTYPE_ANTIALIASING_EDGE_4X4       (0x13)
 #define DX_FONTTYPE_ANTIALIASING_EDGE_8X8       (0x23)
 
+/* ------------------------------------------------------ SYSTEM TYPES */
+typedef struct _DATEDATA {
+    int Year;
+    int Mon;
+    int Day;
+    int Hour;
+    int Min;
+    int Sec;
+} DATEDATA;
+
+typedef DATEDATA *LPDATEDATA;
+
 /* ----------------------------------------------------- INPUT DEFINES */
 typedef struct _DINPUT_JOYSTATE {
     int X;

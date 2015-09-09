@@ -47,6 +47,7 @@ extern void PL_Platform_Init();
 extern void PL_Platform_Finish();
 extern int PL_Platform_GetTicks();
 extern void PL_Platform_Wait(int ticks);
+extern int PL_Platform_GetDateTime(DATEDATA *dateBuf);
 
 extern int PL_Platform_FileOpenReadDirect(const DXCHAR *filename);
 extern int PL_Platform_GetSaveFolder(DXCHAR *buffer, int bufferLength,

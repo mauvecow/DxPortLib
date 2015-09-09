@@ -65,6 +65,9 @@ extern DXCALL int WaitTimer(int msTime);
 // - Waits for a key to be pressed.
 extern DXCALL int WaitKey();
 
+// - Gets the current date and time.
+extern DXCALL int GetDateTime(DATEDATA *dateBuf);
+
 // - Gets the time since program start, in milliseconds.
 extern DXCALL int GetNowCount(int UseRDTSCFlag = FALSE);
 

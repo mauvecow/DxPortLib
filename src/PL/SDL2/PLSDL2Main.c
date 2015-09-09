@@ -27,6 +27,8 @@
 
 #include "SDL_image.h"
 
+#include <time.h>
+
 PLIGraphics PLG;
 
 /* For setting the floating precision to the system value.
@@ -75,6 +77,25 @@ int PL_Platform_GetTicks() {
 
 void PL_Platform_Wait(int ticks) {
     SDL_Delay(ticks);
+}
+
+int PL_Platform_GetDateTime(DATEDATA *dateBuf) {
+    /* SDL does not have a function for getting system date and time,
+     * so we use time/localtime for this. */
+    time_t t;
+    struct tm *format;
+    
+    time(&t);
+    format = localtime(&t);
+    
+    dateBuf->Year = format->tm_year + 1900;
+    dateBuf->Mon = format->tm_mon + 1;
+    dateBuf->Day = format->tm_mday;
+    dateBuf->Hour = format->tm_hour;
+    dateBuf->Min = format->tm_min;
+    dateBuf->Sec = format->tm_sec;
+    
+    return 0;
 }
 
 int PL_Platform_GetSaveFolder(DXCHAR *buffer, int bufferLength,
