@@ -93,7 +93,7 @@ static int s_GLFrameBuffer_Create(int width, int height) {
             break;
         }
         
-        handleID = PL_Handle_GetNextID(DXHANDLE_FRAMEBUFFER);
+        handleID = PL_Handle_GetNextID(handleID);
     }
     
     if (handleID < 0) {
