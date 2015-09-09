@@ -214,6 +214,10 @@ int GetMouseInput() {
     return ::DxLib_GetMouseInput();
 }
 
+int SetValidMousePointerWindowOutClientAreaMoveFlag(int flag) {
+    return ::DxLib_SetValidMousePointerWindowOutClientAreaMoveFlag(flag);
+}
+
 int GetMouseWheelRotVol(int clearFlag) {
     return ::DxLib_GetMouseWheelRotVol(clearFlag);
 }

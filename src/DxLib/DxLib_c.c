@@ -350,6 +350,9 @@ int DxLib_SetMousePoint(int xPosition, int yPosition) {
 int DxLib_GetMouseInput() {
     return PL_Window_GetMouseInput();
 }
+int DxLib_SetValidMousePointerWindowOutClientAreaMoveFlag(int flag) {
+    return PL_Window_GrabMouse(flag == DXFALSE ? DXTRUE : DXFALSE);
+}
 
 int DxLib_GetMouseWheelRotVol(int clearFlag) {
     return PL_Input_GetMouseWheelRotVol(clearFlag);

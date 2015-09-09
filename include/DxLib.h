@@ -222,6 +222,11 @@ extern DXCALL int SetMousePoint(int xPosition, int yPosition);
 // - Gets the bitmasked state of mouse buttons.
 extern DXCALL int GetMouseInput();
 
+// - Sets if the mouse can leave the window or not.
+// Internally, this prevents all mouse motion and handles mouse input in a
+// customized way.
+extern DXCALL int SetValidMousePointerWindowOutClientAreaMoveFlag(int flag);
+
 // - Gets the Vertical or Horizontal mouse wheel states.
 // If clearFlag, resets internal value to zero.
 extern DXCALL int GetMouseWheelRotVol(int clearFlag = TRUE);

@@ -223,6 +223,7 @@ extern int PL_Window_GetMouseDispFlag();
 extern int PL_Window_GetMousePoint(int *xPosition, int *yPosition);
 extern int PL_Window_SetMousePoint(int xPosition, int yPosition);
 extern int PL_Window_GetMouseInput();
+extern int PL_Window_GrabMouse(int flag);
 
 extern int PL_Window_SetWaitVSyncFlag(int flag);
 extern int PL_Window_GetWaitVSyncFlag();

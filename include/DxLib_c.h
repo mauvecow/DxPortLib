@@ -137,6 +137,7 @@ extern DXCALL int DxLib_SetJoypadInputToKeyInput(
 extern DXCALL int DxLib_GetMousePoint(int *xPosition, int *yPosition);
 extern DXCALL int DxLib_SetMousePoint(int xPosition, int yPosition);
 extern DXCALL int DxLib_GetMouseInput();
+extern DXCALL int DxLib_SetValidMousePointerWindowOutClientAreaMoveFlag(int flag);
 
 extern DXCALL int DxLib_GetMouseWheelRotVol(int clearFlag);
 extern DXCALL int DxLib_GetMouseHWheelRotVol(int clearFlag);

@@ -41,6 +41,9 @@ static SDL_Surface *s_windowIcon = NULL;
 static int s_windowVSync = DXTRUE;
 static int s_alwaysRunFlag = DXFALSE;
 static int s_lacksFocus = 3;
+static int s_grabMouseFlag = DXFALSE;
+static int s_grabMouseX = 0;
+static int s_grabMouseY = 0;
 
 static Uint32 s_windowFlags =
         SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE;
@@ -309,6 +312,7 @@ int PL_Window_Init(void) {
     s_initialized = DXTRUE;
     
     SDL_ShowCursor(s_mouseVisible);
+    PL_Window_GrabMouse(s_grabMouseFlag);
     PL_Window_Refresh();
     
     return 0;
@@ -489,6 +493,13 @@ int PL_Window_ProcessMessages() {
                 case SDL_MOUSEWHEEL:
                     PL_Input_HandleWheelMotion(event.wheel.x, event.wheel.y);
                     break;
+                case SDL_MOUSEMOTION:
+                    if (s_grabMouseFlag == DXTRUE) {
+                        /* Only when the mouse is here do we do this. */
+                        s_grabMouseX += event.motion.xrel;
+                        s_grabMouseY += event.motion.yrel;
+                    }
+                    break;
 #endif /* #ifndef DX_NON_INPUT */
                 case SDL_QUIT:
                     return -1;
@@ -565,6 +576,12 @@ int PL_Window_GetMousePoint(int *xPosition, int *yPosition) {
         return -1;
     }
     
+    if (s_grabMouseFlag == DXTRUE) {
+        *xPosition = ((s_grabMouseX - s_targetRect.x) * PL_windowWidth) / s_targetRect.w;
+        *yPosition = ((s_grabMouseY - s_targetRect.y) * PL_windowHeight) / s_targetRect.h;
+        return 0;
+    }
+    
     if (s_targetRect.w == 0 || s_targetRect.h == 0) {
         *xPosition = 0;
         *yPosition = 0;
@@ -581,6 +598,12 @@ int PL_Window_GetMousePoint(int *xPosition, int *yPosition) {
 int PL_Window_SetMousePoint(int xPosition, int yPosition) {
     if (s_initialized == DXFALSE) {
         return -1;
+    }
+    
+    if (s_grabMouseFlag == DXTRUE) {
+        s_grabMouseX = ((xPosition * s_targetRect.w) / PL_windowWidth) + s_targetRect.x;
+        s_grabMouseY = ((yPosition * s_targetRect.h) / PL_windowHeight) + s_targetRect.y;
+        return 0;
     }
     
     if (PL_windowWidth != 0) {
@@ -613,6 +636,22 @@ int PL_Window_GetMouseInput() {
     retval = (int)buttons;
     
     return retval;
+}
+int PL_Window_GrabMouse(int flag) {
+    s_grabMouseFlag = flag;
+    
+    if (s_initialized == DXFALSE) {
+        return 0;
+    }
+    
+    if (s_grabMouseFlag) {
+        SDL_GetMouseState(&s_grabMouseX, &s_grabMouseY);
+        SDL_SetRelativeMouseMode(SDL_TRUE);
+    } else {
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+    }
+    
+    return 0;
 }
 
 int PLEXT_Window_SetIconImageFile(const DXCHAR *filename) {
