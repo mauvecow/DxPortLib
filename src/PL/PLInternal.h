@@ -598,6 +598,8 @@ extern int PL_Input_GetJoypadNum();
 extern int PL_Input_GetJoypadState(int controllerIndex);
 extern int PL_Input_SetJoypadInputToKeyInput(int controllerIndex, int input,
                                              int key1, int key2, int key3, int key4);
+extern int PL_Input_GetJoypadAnalogInput(int *x, int *y, int controllerIndex);
+extern int PL_Input_GetJoypadAnalogInputRight(int *x, int *y, int controllerIndex);
 extern int PL_Input_GetJoypadPOVState(int controllerIndex, int povNumber);
 extern int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *state);
 extern int PL_Input_GetJoypadXInputState(int controllerIndex, XINPUT_STATE *state);

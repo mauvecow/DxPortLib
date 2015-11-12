@@ -763,6 +763,83 @@ int PL_Input_GetJoypadXInputState(int controllerIndex, XINPUT_STATE *state) {
     
     return -1;
 }
+int PL_Input_GetJoypadAnalogInput(int *x, int *y, int controllerIndex) {
+    *x = 0;
+    *y = 0;
+    
+    if (controllerIndex >= DX_INPUT_PAD1 && controllerIndex <= DX_INPUT_PAD16) {
+        int index = controllerIndex - DX_INPUT_PAD1;
+        Controller *controller = s_GetController(index);
+        if (controller != NULL && controller->gamecontroller != NULL) {
+            SDL_GameController *gc = controller->gamecontroller;
+            
+            if (PL_Window_GetActiveFlag() == DXFALSE) {
+                return 0;
+            }
+            
+            *x = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_LEFTX) * DX_INPUT_RANGE / 32767;
+            *y = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_LEFTY) * DX_INPUT_RANGE / 32767;
+            return 0;
+        } else if (controller != NULL && controller->joystick != NULL) {
+            SDL_Joystick *js = controller->joystick;
+            int n;
+            
+            if (PL_Window_GetActiveFlag() == DXFALSE) {
+                return 0;
+            }
+            
+            /* SDL's axis data has no direct mapping to DirectInput,
+             * even though it converts from DirectInput in the first place.
+             * So it's best that we just don't try to guess, in the end. */
+            n = SDL_JoystickNumAxes(js);
+            if (n >= 0) { *x = (int)SDL_JoystickGetAxis(js, 0) * DX_INPUT_RANGE / 32767; }
+            if (n >= 1) { *y = (int)SDL_JoystickGetAxis(js, 1) * DX_INPUT_RANGE / 32767; }
+            
+            return 0;
+        }
+    }
+    
+    return -1;
+    return -1;
+}
+int PL_Input_GetJoypadAnalogInputRight(int *x, int *y, int controllerIndex) {
+    *x = 0;
+    *y = 0;
+    
+    if (controllerIndex >= DX_INPUT_PAD1 && controllerIndex <= DX_INPUT_PAD16) {
+        int index = controllerIndex - DX_INPUT_PAD1;
+        Controller *controller = s_GetController(index);
+        if (controller != NULL && controller->gamecontroller != NULL) {
+            SDL_GameController *gc = controller->gamecontroller;
+            
+            if (PL_Window_GetActiveFlag() == DXFALSE) {
+                return 0;
+            }
+            
+            *x = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_RIGHTX) * DX_INPUT_RANGE / 32767;
+            *y = (int)SDL_GameControllerGetAxis(gc, SDL_CONTROLLER_AXIS_RIGHTY) * DX_INPUT_RANGE / 32767;
+            return 0;
+        } else if (controller != NULL && controller->joystick != NULL) {
+            SDL_Joystick *js = controller->joystick;
+            int n;
+            
+            if (PL_Window_GetActiveFlag() == DXFALSE) {
+                return 0;
+            }
+            
+            /* SDL's axis data has no direct mapping to DirectInput,
+             * even though it converts from DirectInput in the first place.
+             * So it's best that we just don't try to guess, in the end. */
+            n = SDL_JoystickNumAxes(js);
+            if (n >= 2) { *x = (int)SDL_JoystickGetAxis(js, 2) * DX_INPUT_RANGE / 32767; }
+            if (n >= 3) { *y = (int)SDL_JoystickGetAxis(js, 3) * DX_INPUT_RANGE / 32767; }
+            
+            return 0;
+        }
+    }
+    
+    return -1;
+}
 
 void PL_Input_Init() {
     s_InitializeInput();

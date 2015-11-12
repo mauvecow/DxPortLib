@@ -123,6 +123,8 @@ extern DXCALL int DxLib_GetHitKeyStateAll(char *table);
 extern DXCALL int DxLib_GetJoypadNum();
 
 extern DXCALL int DxLib_GetJoypadInputState(int controllerIndex);
+extern DXCALL int DxLib_GetJoypadAnalogInput(int *x, int *y, int controllerIndex);
+extern DXCALL int DxLib_GetJoypadAnalogInputRight(int *x, int *y, int controllerIndex);
 extern DXCALL int DxLib_GetJoypadPOVState(int controllerIndex, int povNumber);
 extern DXCALL int DxLib_GetJoypadDirectInputState(int controllerIndex,
                                                   DINPUT_JOYSTATE *state);
