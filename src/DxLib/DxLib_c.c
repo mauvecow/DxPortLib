@@ -362,6 +362,12 @@ int DxLib_GetJoypadNum() {
 int DxLib_GetJoypadInputState(int controllerIndex) {
     return PL_Input_GetJoypadState(controllerIndex);
 }
+int DxLib_GetJoypadAnalogInput(int *x, int *y, int controllerIndex) {
+    return PL_Input_GetJoypadAnalogInput(x, y, controllerIndex);
+}
+int DxLib_GetJoypadAnalogInputRight(int *x, int *y, int controllerIndex) {
+    return PL_Input_GetJoypadAnalogInputRight(x, y, controllerIndex);
+}
 int DxLib_GetJoypadPOVState(int controllerIndex, int povNumber) {
     return PL_Input_GetJoypadPOVState(controllerIndex, povNumber);
 }

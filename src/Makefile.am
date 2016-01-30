@@ -50,6 +50,7 @@ libDxPortLib_la_SOURCES =	\
 	PL/SDL2/PLSDL2Window.c \
 	PL/SDL2/PLSDL2Memory.c \
 	PL/SDL2/PLSDL2SaveScreen.c \
+	PL/SDL2/PLSDL2System.c \
 	PL/PLSurface.c \
 	PL/PLText.c \
 	PL/PLText_CP932.c

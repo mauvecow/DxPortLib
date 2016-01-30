@@ -184,9 +184,9 @@ int PL_Text_ToCharset(int charset) {
     }
 }
 
-int PL_Text_ConvertString(const char *srcStr, int srcCharset,
-                          char *dest, int destCharset,
-                          int bufSize) {
+int PL_Text_ConvertStrncpy(char *dest, int destCharset,
+                           const char *srcStr, int srcCharset,
+                           int bufSize) {
     unsigned int ch;
     int count = 0;
     
@@ -212,7 +212,7 @@ int PL_Text_ConvertString(const char *srcStr, int srcCharset,
     return count;
 }
 
-const char *PL_Text_ConvertStringIfNecessary(
+const char *PL_Text_ConvertStrncpyIfNecessary(
             char *dest, int destCharset,
             const char *srcStr, int srcCharset,
             int bufSize) {
