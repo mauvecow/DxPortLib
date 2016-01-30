@@ -237,7 +237,7 @@ static int s_LoadFontRW(
 }
 
 static int s_LoadFontFile(
-    const DXCHAR *filename, FontMapping *mapping,
+    const char *filename, FontMapping *mapping,
     int size
 ) {
     int fileHandle = PL_File_OpenRead(filename);
@@ -245,10 +245,13 @@ static int s_LoadFontFile(
 }
 
 static int s_LoadFontFileDirect(
-    const DXCHAR *filename, FontMapping *mapping,
+    const char *filename, FontMapping *mapping,
     int size
 ) {
-    return s_LoadFontRW(PLSDL2_FileOpenReadDirect(filename), mapping, size);
+    return s_LoadFontRW(
+        PLSDL2_FileOpenReadDirect(filename),
+        mapping, size
+    );
 }
 
 
@@ -271,8 +274,8 @@ int PLEXT_Font_MapFontFileToName(
     
     mapping = DXALLOC(sizeof(FontMapping));
     
-    mapping->filename = DXSTRDUP(filename);
-    mapping->fontname = DXSTRDUP(fontname);
+    mapping->filename = PL_Text_Strdup(filename);
+    mapping->fontname = PL_Text_Strdup(fontname);
     mapping->directFileAccessOnly = DXFALSE; /* Probably breaks Eryi's FIXME */
     mapping->thickness = thickness;
     mapping->boldFlag = boldFlag;
@@ -707,8 +710,8 @@ static GlyphData *s_CacheGlyph(FontData *fontData, unsigned int glyphID) {
 
 /* ---------------------------------------- DRAWING AND PUBLIC FUNCTIONS */
 
-int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRateY,
-                                     const DXCHAR *string, DXCOLOR color, int fontHandle,
+int Dx_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRateY,
+                                     const char *string, DXCOLOR color, int fontHandle,
                                      DXCOLOR edgeColor
 ) {
     FontData *fontData;
@@ -720,11 +723,9 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
     int loop;
     float scaleX;
     float scaleY;
-#ifndef UNICODE
-    int charset;
-#endif
     int redBright, greenBright, blueBright;
     int origDrawMode;
+    int charset;
     
     if (string == NULL || *string == 0) {
         return -1;
@@ -741,13 +742,9 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
     /* - Cache all glyphs beforehand, so as not to thrash the texture. */
     s = string;
     
-#ifdef UNICODE
-    while ((ch = PL_Text_ReadDxChar(&s)) != 0) {
-#else
     charset = fontData->charset;
     
     while ((ch = PL_Text_ReadChar(&s, charset)) != 0) {
-#endif
         s_CacheGlyph(fontData, ch);
     }
     
@@ -788,11 +785,7 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
         cx = (float)x + ((float)plus * scaleX);
         cy = (float)y + ((float)plus * scaleY);
         
-#ifdef UNICODE
-        while ((ch = PL_Text_ReadDxChar(&s)) != 0) {
-#else
         while ((ch = PL_Text_ReadChar(&s, charset)) != 0) {
-#endif
             if (ch == '\n') {
                 cy += (float)fontData->ptSize;
                 cx = (float)(x + plus) * scaleY;
@@ -824,37 +817,35 @@ int PL_Font_DrawExtendStringToHandle(int x, int y, double exRateX, double exRate
     
     return 0;
 }
-int PL_Font_DrawStringToHandle(int x, int y, const DXCHAR *string,
+int Dx_Font_DrawStringToHandle(int x, int y, const char *string,
                                DXCOLOR color, int fontHandle, DXCOLOR edgeColor) {
-    return PL_Font_DrawExtendStringToHandle(x, y, 1.0, 1.0, string, color, fontHandle, edgeColor);
+    return Dx_Font_DrawExtendStringToHandle(x, y, 1.0, 1.0, string, color, fontHandle, edgeColor);
 }
 
-int PL_Font_DrawFormatStringToHandle(
+int Dx_Font_DrawFormatStringToHandle(
     int x, int y, DXCOLOR color, int fontHandle,
-    const DXCHAR *formatString, va_list args
+    const char *formatString, va_list args
 ) {
-    return PL_Font_DrawExtendFormatStringToHandle(x, y, 1.0, 1.0, color, fontHandle, formatString, args);
+    return Dx_Font_DrawExtendFormatStringToHandle(x, y, 1.0, 1.0, color, fontHandle, formatString, args);
 }
 
-int PL_Font_DrawExtendFormatStringToHandle(
+int Dx_Font_DrawExtendFormatStringToHandle(
     int x, int y, double exRateX, double exRateY,
     DXCOLOR color, int fontHandle,
-    const DXCHAR *formatString, va_list args
+    const char *formatString, va_list args
 ) {
     DXCHAR buf[4096];
     DXVSNPRINTF(buf, 4096, formatString, args);
     
-    return PL_Font_DrawExtendStringToHandle(x, y, exRateX, exRateY, buf, color, fontHandle, 0);
+    return Dx_Font_DrawExtendStringToHandle(x, y, exRateX, exRateY, buf, color, fontHandle, 0);
 }
 
-int PL_Font_GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fontHandle) {
+int Dx_Font_GetDrawStringWidthToHandle(const char *string, int strLen, int fontHandle) {
     FontData *fontData;
     const DXCHAR *end;
     int spacing;
     unsigned int ch;
-#ifndef UNICODE
     int charset;
-#endif
     int x = 0, w = 0;
     
     if (string == NULL || *string == 0) {
@@ -872,13 +863,9 @@ int PL_Font_GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fon
     end = string + strLen;
     spacing = fontData->spacing;
     
-#ifdef UNICODE
-    while (string < end && (ch = PL_Text_ReadDxChar(&string)) != 0) {
-#else
     charset = fontData->charset;
     
     while (string < end && (ch = PL_Text_ReadChar(&string, charset)) != 0) {
-#endif
         GlyphData *glyph = s_CacheGlyph(fontData, ch);
         
         if (ch == '\n') {
@@ -899,21 +886,21 @@ int PL_Font_GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fon
     return w;
 }
 
-int PL_Font_GetDrawFormatStringWidthToHandle(int fontHandle, const DXCHAR *formatString, va_list args) {
-    DXCHAR buf[4096];
+int Dx_Font_GetDrawFormatStringWidthToHandle(int fontHandle, const char *formatString, va_list args) {
+    char buf[4096];
     DXVSNPRINTF(buf, 4096, formatString, args);
     
-    return PL_Font_GetDrawStringWidthToHandle(buf, -1, fontHandle);
+    return Dx_Font_GetDrawStringWidthToHandle(buf, -1, fontHandle);
 }
 
-int PL_Font_GetDrawExtendStringWidthToHandle(double ExRateX, const DXCHAR *string, int strLen, int fontHandle) {
-    return (int)SDL_ceil(PL_Font_GetDrawStringWidthToHandle(string, strLen, fontHandle) * ExRateX);
+int Dx_Font_GetDrawExtendStringWidthToHandle(double ExRateX, const char *string, int strLen, int fontHandle) {
+    return (int)SDL_ceil(Dx_Font_GetDrawStringWidthToHandle(string, strLen, fontHandle) * ExRateX);
 }
-int PL_Font_GetDrawExtendFormatStringWidthToHandle(double ExRateX, int fontHandle, const DXCHAR *formatString, va_list args) {
-    return (int)SDL_ceil(PL_Font_GetDrawFormatStringWidthToHandle(fontHandle, formatString, args) * ExRateX);
+int Dx_Font_GetDrawExtendFormatStringWidthToHandle(double ExRateX, int fontHandle, const char *formatString, va_list args) {
+    return (int)SDL_ceil(Dx_Font_GetDrawFormatStringWidthToHandle(fontHandle, formatString, args) * ExRateX);
 }
 
-int PL_Font_GetFontSizeToHandle(int fontHandle) {
+int Dx_Font_GetFontSizeToHandle(int fontHandle) {
     FontData *fontData = s_GetFontData(fontHandle);
     if (fontData == NULL) {
         return -1;
@@ -922,7 +909,7 @@ int PL_Font_GetFontSizeToHandle(int fontHandle) {
     return fontData->ptSize;
 }
 
-int PL_Font_GetFontCharInfo(int fontHandle, const DXCHAR *string, int *xPos, int *yPos, int *advanceX, int *width, int *height) {
+int Dx_Font_GetFontCharInfo(int fontHandle, const char *string, int *xPos, int *yPos, int *advanceX, int *width, int *height) {
     FontData *fontData = s_GetFontData(fontHandle);
     unsigned int ch;
     GlyphData *glyph;
@@ -932,11 +919,7 @@ int PL_Font_GetFontCharInfo(int fontHandle, const DXCHAR *string, int *xPos, int
         return -1;
     }
     
-#ifdef UNICODE
-    ch = PL_Text_ReadDxChar(&string);
-#else
     ch = PL_Text_ReadChar(&string, fontData->charset);
-#endif
     
     glyph = s_CacheGlyph(fontData, ch);
     if (glyph == NULL) {
@@ -954,7 +937,7 @@ int PL_Font_GetFontCharInfo(int fontHandle, const DXCHAR *string, int *xPos, int
     return 0;
 }
 
-int PL_Font_SetFontSpaceToHandle(int fontSpacing, int fontHandle) {
+int Dx_Font_SetFontSpaceToHandle(int fontSpacing, int fontHandle) {
     FontData *fontData = s_GetFontData(fontHandle);
     if (fontData == NULL) {
         return -1;
@@ -977,7 +960,7 @@ static int s_GetDefaultFontHandle() {
     }
     
     if (s_defaultFontHandle >= 0) {
-        PL_Font_DeleteFontToHandle(s_defaultFontHandle);
+        Dx_Font_DeleteFontToHandle(s_defaultFontHandle);
     }
     
     if (s_defaultFontInfo.name == NULL) {
@@ -987,7 +970,7 @@ static int s_GetDefaultFontHandle() {
     s_defaultFontRefreshFlag = DXFALSE;
     
     s_defaultFontHandle =
-        PL_Font_CreateFontToHandle(
+        Dx_Font_CreateFontToHandle(
             s_defaultFontInfo.name,
             s_defaultFontInfo.fontSize,
             s_defaultFontInfo.fontThickness,
@@ -996,57 +979,57 @@ static int s_GetDefaultFontHandle() {
             s_defaultFontInfo.edgeSize,
             DXFALSE
         );
-    PL_Font_SetFontSpaceToHandle(s_defaultFontInfo.fontSpacing, s_defaultFontHandle);
+    Dx_Font_SetFontSpaceToHandle(s_defaultFontInfo.fontSpacing, s_defaultFontHandle);
     
     return s_defaultFontHandle;
 }
 
-int PL_Font_DrawString(int x, int y, const DXCHAR *string, DXCOLOR color, DXCOLOR edgeColor) {
-    return PL_Font_DrawStringToHandle(x, y, string, color, s_GetDefaultFontHandle(), edgeColor);
+int Dx_Font_DrawString(int x, int y, const char *string, DXCOLOR color, DXCOLOR edgeColor) {
+    return Dx_Font_DrawStringToHandle(x, y, string, color, s_GetDefaultFontHandle(), edgeColor);
 }
 
-int PL_Font_DrawFormatString(
+int Dx_Font_DrawFormatString(
     int x, int y, DXCOLOR color,
-    const DXCHAR *formatString, va_list args
+    const char *formatString, va_list args
 ) {
-    return PL_Font_DrawFormatStringToHandle(x, y, color, s_GetDefaultFontHandle(), formatString, args);
+    return Dx_Font_DrawFormatStringToHandle(x, y, color, s_GetDefaultFontHandle(), formatString, args);
 }
 
-int PL_Font_DrawExtendString(int x, int y, double ExRateX, double ExRateY,
-                             const DXCHAR *string, DXCOLOR color, DXCOLOR edgeColor) {
-    return PL_Font_DrawExtendStringToHandle(x, y, ExRateX, ExRateY, string, color, s_GetDefaultFontHandle(), edgeColor);
+int Dx_Font_DrawExtendString(int x, int y, double ExRateX, double ExRateY,
+                             const char *string, DXCOLOR color, DXCOLOR edgeColor) {
+    return Dx_Font_DrawExtendStringToHandle(x, y, ExRateX, ExRateY, string, color, s_GetDefaultFontHandle(), edgeColor);
 }
 
-int PL_Font_DrawExtendFormatString(
+int Dx_Font_DrawExtendFormatString(
     int x, int y, double ExRateX, double ExRateY, DXCOLOR color,
-    const DXCHAR *formatString, va_list args
+    const char *formatString, va_list args
 ) {
-    return PL_Font_DrawExtendFormatStringToHandle(x, y, ExRateX, ExRateY, color, s_GetDefaultFontHandle(), formatString, args);
+    return Dx_Font_DrawExtendFormatStringToHandle(x, y, ExRateX, ExRateY, color, s_GetDefaultFontHandle(), formatString, args);
 }
 
-int PL_Font_GetDrawStringWidth(const DXCHAR *string, int strLen) {
-    return PL_Font_GetDrawStringWidthToHandle(string, strLen, s_GetDefaultFontHandle());
+int Dx_Font_GetDrawStringWidth(const char *string, int strLen) {
+    return Dx_Font_GetDrawStringWidthToHandle(string, strLen, s_GetDefaultFontHandle());
 }
 
-int PL_Font_GetDrawFormatStringWidth(const DXCHAR *string, va_list args) {
-    return PL_Font_GetDrawFormatStringWidthToHandle(s_GetDefaultFontHandle(), string, args);
+int Dx_Font_GetDrawFormatStringWidth(const char *string, va_list args) {
+    return Dx_Font_GetDrawFormatStringWidthToHandle(s_GetDefaultFontHandle(), string, args);
 }
 
-int PL_Font_GetDrawExtendStringWidth(double ExRateX, const DXCHAR *string, int strLen) {
-    return PL_Font_GetDrawExtendStringWidthToHandle(ExRateX, string, strLen, s_GetDefaultFontHandle());
+int Dx_Font_GetDrawExtendStringWidth(double ExRateX, const char *string, int strLen) {
+    return Dx_Font_GetDrawExtendStringWidthToHandle(ExRateX, string, strLen, s_GetDefaultFontHandle());
 }
 
-int PL_Font_GetDrawExtendFormatStringWidth(double ExRateX, const DXCHAR *string, va_list args) {
-    return PL_Font_GetDrawExtendFormatStringWidthToHandle(ExRateX, s_GetDefaultFontHandle(), string, args);
+int Dx_Font_GetDrawExtendFormatStringWidth(double ExRateX, const char *string, va_list args) {
+    return Dx_Font_GetDrawExtendFormatStringWidthToHandle(ExRateX, s_GetDefaultFontHandle(), string, args);
 }
 
-int PL_Font_ChangeFont(const DXCHAR *string, int charSet) {
-    if (s_defaultFontInfo.name != NULL && DXSTRCMP(s_defaultFontInfo.name, string)) {
+int Dx_Font_ChangeFont(const char *string, int charSet) {
+    if (s_defaultFontInfo.name != NULL && PL_Text_Strcmp(s_defaultFontInfo.name, string)) {
         DXFREE(s_defaultFontInfo.name);
     }
     
     if (s_defaultFontInfo.name == NULL) {
-        s_defaultFontInfo.name = DXSTRDUP(string);
+        s_defaultFontInfo.name = PL_Text_Strdup(string);
         s_defaultFontRefreshFlag = DXTRUE;
     }
     
@@ -1058,7 +1041,7 @@ int PL_Font_ChangeFont(const DXCHAR *string, int charSet) {
     return 0;
 }
 
-int PL_Font_ChangeFontType(int fontType) {
+int Dx_Font_ChangeFontType(int fontType) {
     if (s_defaultFontInfo.fontType != fontType) {
         s_defaultFontInfo.fontType = fontType;
         s_defaultFontRefreshFlag = DXTRUE;
@@ -1066,7 +1049,7 @@ int PL_Font_ChangeFontType(int fontType) {
     return 0;
 }
 
-int PL_Font_SetFontSize(int fontSize) {
+int Dx_Font_SetFontSize(int fontSize) {
     if (s_defaultFontInfo.fontSize != fontSize) {
         s_defaultFontInfo.fontSize = fontSize;
         s_defaultFontRefreshFlag = DXTRUE;
@@ -1074,11 +1057,11 @@ int PL_Font_SetFontSize(int fontSize) {
     return 0;
 }
 
-int PL_Font_GetFontSize() {
+int Dx_Font_GetFontSize() {
     return s_defaultFontInfo.fontSize;
 }
 
-int PL_Font_SetFontThickness(int fontThickness) {
+int Dx_Font_SetFontThickness(int fontThickness) {
     if (s_defaultFontInfo.fontThickness != fontThickness) {
         s_defaultFontInfo.fontThickness = fontThickness;
         s_defaultFontRefreshFlag = DXTRUE;
@@ -1086,25 +1069,25 @@ int PL_Font_SetFontThickness(int fontThickness) {
     return 0;
 }
 
-int PL_Font_SetFontSpace(int fontSpace) {
+int Dx_Font_SetFontSpace(int fontSpace) {
     s_defaultFontInfo.fontSpacing = fontSpace;
-    PL_Font_SetFontSpaceToHandle(fontSpace, s_defaultFontHandle);
+    Dx_Font_SetFontSpaceToHandle(fontSpace, s_defaultFontHandle);
     return 0;
 }
 
-int PL_Font_SetDefaultFontState(const DXCHAR *fontName, int fontSize, int fontThickness) {
-    PL_Font_ChangeFont(fontName, fontSize);
-    PL_Font_SetFontThickness(fontThickness);
+int Dx_Font_SetDefaultFontState(const DXCHAR *fontName, int fontSize, int fontThickness) {
+    Dx_Font_ChangeFont(fontName, fontSize);
+    Dx_Font_SetFontThickness(fontThickness);
     return 0;
 }
 
-int PL_Font_GetDefaultFontHandle() {
+int Dx_Font_GetDefaultFontHandle() {
     return s_GetDefaultFontHandle();
 }
 
 /* ----------------------------------------------- FONT HANDLE MANAGEMENT */
 
-int PL_Font_CreateFontToHandle(const DXCHAR *fontname,
+int Dx_Font_CreateFontToHandle(const char *fontname,
             int size, int thickness, int fontType, int charset,
             int edgeSize, int italic
 ) {
@@ -1131,7 +1114,7 @@ int PL_Font_CreateFontToHandle(const DXCHAR *fontname,
     }
     
     for (mapping = s_fontMappings; mapping != NULL; mapping = mapping->next) {
-        if (!DXSTRCMP(fontname, mapping->fontname)) {
+        if (!PL_Text_Strcmp(fontname, mapping->fontname)) {
             if (bestMapping == NULL
                 || (bestMapping != NULL
                     && mapping->thickness <= thickness
@@ -1177,7 +1160,7 @@ int PL_Font_CreateFontToHandle(const DXCHAR *fontname,
     return fontID;
 }
 
-int PL_Font_DeleteFontToHandle(int handle) {
+int Dx_Font_DeleteFontToHandle(int handle) {
     FontData *fontData = s_GetFontData(handle);
     if (fontData == NULL) {
         return -1;
@@ -1207,11 +1190,11 @@ int PL_Font_DeleteFontToHandle(int handle) {
     return 0;
 }
 
-int PL_Font_SetFontLostFlag(int fontHandle, int *lostFlag) {
+int Dx_Font_SetFontLostFlag(int fontHandle, int *lostFlag) {
     return PL_Handle_SetDeleteFlag(fontHandle, lostFlag);
 }
 
-int PL_Font_CheckFontHandleValid(int fontHandle) {
+int Dx_Font_CheckFontHandleValid(int fontHandle) {
     FontData *fontData = s_GetFontData(fontHandle);
     if (fontData == NULL) {
         return -1;
@@ -1219,7 +1202,7 @@ int PL_Font_CheckFontHandleValid(int fontHandle) {
     return 0;
 }
 
-int PL_Font_InitFontToHandle() {
+int Dx_Font_InitFontToHandle() {
     int handle;
     
     if (s_fontInitialized == DXFALSE) {
@@ -1227,26 +1210,26 @@ int PL_Font_InitFontToHandle() {
     }
     
     while ((handle = PL_Handle_GetFirstIDOf(DXHANDLE_FONT)) >= 0) {
-        PL_Font_DeleteFontToHandle(handle);
+        Dx_Font_DeleteFontToHandle(handle);
     }
     
     return 0;
 }
 
-int PL_Font_SetFontCacheUsePremulAlphaFlag(int flag) {
+int Dx_Font_SetFontCacheUsePremulAlphaFlag(int flag) {
     s_applyPMA = (flag == 0) ? DXFALSE : DXTRUE;
     return 0;
 }
-int PL_Font_GetFontCacheUsePremulAlphaFlag() {
+int Dx_Font_GetFontCacheUsePremulAlphaFlag() {
     return s_applyPMA;
 }
 
-void PL_Font_Init() {
+void Dx_Font_Init() {
     /* Do nothing */
 }
 
-void PL_Font_End() {
-    PL_Font_InitFontToHandle();
+void Dx_Font_End() {
+    Dx_Font_InitFontToHandle();
     
     PLEXT_Font_InitFontMappings();
     

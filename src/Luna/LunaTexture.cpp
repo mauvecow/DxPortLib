@@ -31,7 +31,11 @@
 LTEXTURE LunaTexture::CreateFromFile(const DXCHAR *pFileName,
                                      eSurfaceFormat format,
                                      D3DCOLOR keyColor) {
-    int surfaceID = PL_Surface_Load(pFileName);
+    char buf[2048];
+    int surfaceID = PL_Surface_Load(
+        PL_Text_ConvertStrncpyIfNecessary(
+            buf, -1, pFileName, g_lunaUseCharSet, 2048)
+    );
     int handle;
     
     if (surfaceID < 0) {

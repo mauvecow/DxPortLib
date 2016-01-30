@@ -50,83 +50,65 @@ extern void PL_Platform_Wait(int ticks);
 extern int PL_Platform_GetDateTime(DATEDATA *dateBuf);
 
 extern int PL_Platform_FileOpenReadDirect(const DXCHAR *filename);
-extern int PL_Platform_GetSaveFolder(DXCHAR *buffer, int bufferLength,
-                                     const DXCHAR *org, const DXCHAR *app,
+extern int PL_Platform_GetSaveFolder(char *buffer, int bufferLength,
+                                     const char *org, const char *app,
                                      int destEncoding);
+
+extern int PL_Platform_MessageBoxError(const char *title, const char *text);
+extern int PL_Platform_MessageBoxYesNo(const char *title, const char *text,
+                                       const char *yes, const char *no);
 
 /* -------------------------------------------------------------- Text.c */
 /* Read functions automatically advance the string pointed to.
  * Write functions return the number of bytes written.
  */
-#ifdef UNICODE
-extern unsigned int PL_Text_ReadUNICODEChar(const wchar_t **textRef);
-extern int PL_Text_WriteUNICODEChar(wchar_t *text, unsigned int ch, int maxLen);
-#endif
+
+extern int PL_Text_ToCharset(int charset);
 
 extern unsigned int PL_Text_ReadUTF8Char(const char **textRef);
-extern int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int maxLen);
+extern int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int bufSize);
+extern int PL_Text_IsIncompleteUTF8Char(const char *string, int length);
 
 #ifndef DXPORTLIB_NON_SJIS
 extern unsigned int PL_Text_ToSJIS(int ch);
 extern unsigned int PL_Text_ReadSJISChar(const char **textRef);
-extern int PL_Text_WriteSJISChar(char *buffer, unsigned int ch, int maxLen);
+extern int PL_Text_WriteSJISChar(char *buffer, unsigned int ch, int bufSize);
+extern int PL_Text_IsIncompleteSJISChar(const char *string, int length);
 #endif /* #ifndef DXPORTLIB_NON_SJIS */
 
-extern unsigned int PL_Text_ReadDxChar(const DXCHAR **textRef);
-extern int PL_Text_WriteDxChar(DXCHAR *textRef, unsigned int ch, int maxLen);
-extern unsigned int PL_Text_ReadChar(const char **textRef, int charset);
-extern int PL_Text_WriteChar(char *buffer, unsigned int ch, int maxLen, int charset);
-
-extern unsigned int PL_Text_SJISToUnicode(unsigned int sjis);
-extern unsigned int PL_Text_UnicodeToSJIS(unsigned int unicode);
-
-extern int PL_Text_ConvertString(const char *inString, char *outBuffer, int maxLen,
-                                int srcCharset, int destCharset);
-
-extern int PL_Text_DxStringToString(const DXCHAR *inString, char *outBuffer, int maxLen, int charset);
-extern int PL_Text_StringToDxString(const char *inString, DXCHAR *outBuffer, int maxLen, int charset);
-
-extern int PL_Text_DxStrlen(const DXCHAR *str);
-extern DXCHAR *PL_Text_DxStrdup(const DXCHAR *str);
-extern void PL_Text_DxStrncat(DXCHAR *str, const DXCHAR *catStr, int maxLen);
-extern void PL_Text_DxStrncpy(DXCHAR *str, const DXCHAR *srcStr, int maxLen);
-extern int PL_Text_DxStrcmp(const DXCHAR *strA, const DXCHAR *strB);
-extern int PL_Text_DxStrcasecmp(const DXCHAR *strA, const DXCHAR *strB);
-extern int PL_Text_DxStrncmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen);
-extern int PL_Text_DxStrncasecmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen);
-extern const DXCHAR *PL_Text_DxStrstr(const DXCHAR *strA, const DXCHAR *strB);
-extern const DXCHAR *PL_Text_DxStrcasestr(const DXCHAR *strA, const DXCHAR *strB);
-extern int PL_Text_DxStrTestExt(const DXCHAR *str, const DXCHAR *ext);
-
-extern void PL_Text_DxStrncatFromString(DXCHAR *str, const char *catStr, int maxLen, int charset);
-extern void PL_Text_DxStrncpyFromString(DXCHAR *str, const char *srcStr, int maxLen, int charset);
-
-extern int PL_Text_IsIncompleteSJISChar(const char *string, int length);
-extern int PL_Text_IsIncompleteUTF8Char(const char *string, int length);
 extern int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset);
-extern int PL_Text_SetUseCharSet(int charset);
-extern int PL_Text_GetUseCharSet();
 
-#define DXSTRLEN(str) PL_Text_DxStrlen(str)
-#define DXSTRDUP(str) PL_Text_DxStrdup(str)
-#define DXSTRNCPY(str, catStr, maxLen) PL_Text_DxStrncpy(str, catStr, maxLen)
-#define DXSTRNCAT(str, srcStr, maxLen) PL_Text_DxStrncat(str, srcStr, maxLen)
-#define DXSTRCMP(strA, strB) PL_Text_DxStrcmp(strA, strB)
-#define DXSTRCASECMP(strA, strB) PL_Text_DxStrcasecmp(strA, strB)
-#define DXSTRNCMP(strA, strB, len) PL_Text_DxStrncmp(strA, strB, len)
-#define DXSTRNCASECMP(strA, strB, len) PL_Text_DxStrncasecmp(strA, strB, len)
-#define DXSTRSTR(strA, strB) PL_Text_DxStrstr(strA, strB)
-#define DXSTRCASESTR(strA, strB) PL_Text_DxStrcasestr(strA, strB)
-#define DXSTRTESTEXT(str, ext) PL_Text_DxStrTestExt(str, ext)
+extern unsigned int PL_Text_ReadChar(const char **textRef, int charset);
+extern int PL_Text_WriteChar(char *buffer, unsigned int ch, int bufSize, int charset);
 
-#define DXSTRNCATFROMSTR(str, catStr, maxLen, charset) PL_Text_DxStrncatFromString(str, catStr, maxLen, charset)
-#define DXSTRNCPYFROMSTR(str, srcStr, maxLen, charset) PL_Text_DxStrncpyFromString(str, srcStr, maxLen, charset)
+extern int PL_Text_Strlen(const char *dest);
+extern char *PL_Text_Strdup(const char *dest);
+extern int PL_Text_Strncat(char *dest, const char *srcStr, int bufSize);
+extern int PL_Text_Strncpy(char *dest, const char *srcStr, int bufSize);
+extern int PL_Text_Strcmp(const char *strA, const char *strB);
+extern int PL_Text_Strcasecmp(const char *strA, const char *strB);
+extern int PL_Text_Strncmp(const char *strA, const char *strB, int bufSize);
+extern int PL_Text_Strncasecmp(const char *strA, const char *strB, int bufSize);
+extern const char *PL_Text_Strstr(const char *strA, const char *strB);
+extern const char *PL_Text_Strcasestr(const char *strA, const char *strB);
+extern int PL_Text_StrTestExt(const char *str, const char *ext);
 
-#ifdef UNICODE
-#define DXVSNPRINTF vswprintf
-#else
+extern int PL_Text_ConvertStrncpy(char *dest, int destCharset,
+                                 const char *src, int srcCharset,
+                                 int bufSize);
+extern const char *PL_Text_ConvertStrncpyIfNecessary(
+                                 char *dest, int destCharset,
+                                 const char *src, int srcCharset,
+                                 int bufSize);
+
+extern int PL_Text_ConvertStrncat(char *dest, int destCharset,
+                                  const char *srcStr, int srcCharset,
+                                  int bufSize);
+
+extern int PL_Text_WideCharToString(char *dest, int charset, const wchar_t *srcStr, int bufSize); 
+extern int PL_Text_StringToWideChar(wchar_t *dest, const char *srcStr, int charset, int bufSize);
+
 #define DXVSNPRINTF SDL_vsnprintf
-#endif
 
 /* ------------------------------------------------------------ Handle.c */
 typedef enum {
@@ -173,7 +155,7 @@ extern int PL_Handle_GetNextID(int handleID);
 extern int PL_Handle_SetDeleteFlag(int handleID, int *deleteFlag);
 
 /* ------------------------------------------------------------ File.c */
-typedef int (*PLFileOpenFileFunction)(const DXCHAR *filename);
+typedef int (*PLFileOpenFileFunction)(const char *filename);
 
 typedef struct _PL_FileFunctions {
     int64_t (*getSize)(void *userdata);
@@ -184,7 +166,7 @@ typedef struct _PL_FileFunctions {
 } PL_FileFunctions;
 
 extern void PL_File_SetOpenReadFunction(PLFileOpenFileFunction func);
-extern int PL_File_OpenRead(const DXCHAR *filename);
+extern int PL_File_OpenRead(const char *filename);
 extern int PL_File_CreateHandle(const PL_FileFunctions *funcs, void *userdata);
 extern int PL_File_CreateHandleFromMemory(void *data, int length, int freeOnClose);
 extern int PL_File_CreateHandleSubsection(int srcFileHandle,
@@ -211,7 +193,7 @@ extern int PL_Window_ProcessMessages();
 
 extern int PL_Window_SetFullscreen(int isFullscreen, int fullscreenDesktop);
 extern int PL_Window_SetDimensions(int width, int height, int colorDepth, int refreshRate);
-extern int PL_Window_SetTitle(const DXCHAR *titleString);
+extern int PL_Window_SetTitle(const char *titleString);
 
 extern int PL_Window_SetWindowResizeFlag(int flag);
 extern int PL_Window_ChangeOnlyWindowSize(int width, int height);
@@ -234,11 +216,7 @@ extern int PL_Window_GetAlwaysRunFlag();
 extern int PL_Window_GetActiveFlag();
 extern int PL_Window_GetWindowModeFlag();
 
-extern int PLEXT_Window_SetIconImageFile(const DXCHAR *filename);
-
-extern int PLEXT_Window_MessageBoxError(const DXCHAR *title, const DXCHAR *text);
-extern int PLEXT_Window_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
-                                        const DXCHAR *yes, const DXCHAR *no);
+extern int PL_Window_SetIconFromFile(const char *filename);
 
 extern int PL_Window_BindMainFramebuffer();
 extern int PL_Window_GetFramebuffer();
@@ -500,7 +478,7 @@ extern int PL_Surface_FlipSurface(int surfaceID);
 extern int PL_Surface_GetSize(int surfaceID, int *w, int *h);
 extern int PL_Surface_HasTransparency(int surfaceID);
 
-extern int PL_Surface_Load(const DXCHAR *filename);
+extern int PL_Surface_Load(const char *filename);
 extern int PL_Surface_Delete(int surfaceID);
 
 extern int PL_Surface_ToTexture(int surfaceID);
@@ -511,79 +489,14 @@ extern void PL_Surface_End();
 
 /* -------------------------------------------------------- SaveScreen.c */
 extern int PL_SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
-                                  const DXCHAR *filename);
+                                  const char *filename);
 extern int PL_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
-                                   const DXCHAR *filename,
+                                   const char *filename,
                                    int quality, int sample2x1);
 extern int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
-                                  const DXCHAR *filename,
+                                  const char *filename,
                                   int compressionLevel);
 
-/* -------------------------------------------------------------- Font.c */
-/* Handle font functions */
-extern int PL_Font_DrawStringToHandle(int x, int y, const DXCHAR *string,
-                                      DXCOLOR color, int fontHandle, DXCOLOR edgeColor);
-extern int PL_Font_DrawFormatStringToHandle(int x, int y, DXCOLOR color, int fontHandle,
-                                            const DXCHAR *string, va_list args);
-extern int PL_Font_DrawExtendStringToHandle(int x, int y, double ExRateX, double ExRateY,
-                                            const DXCHAR *string,
-                                            DXCOLOR color, int fontHandle, DXCOLOR edgeColor);
-extern int PL_Font_DrawExtendFormatStringToHandle(int x, int y, double ExRateX, double ExRateY,
-                                                  DXCOLOR color, int fontHandle,
-                                                  const DXCHAR *string, va_list args);
-
-extern int PL_Font_GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fontHandle);
-extern int PL_Font_GetDrawFormatStringWidthToHandle(int fontHandle, const DXCHAR *string, va_list args);
-extern int PL_Font_GetDrawExtendStringWidthToHandle(double ExRateX, const DXCHAR *string, int strLen, int fontHandle);
-extern int PL_Font_GetDrawExtendFormatStringWidthToHandle(double ExRateX, int fontHandle, const DXCHAR *string, va_list args);
-
-extern int PL_Font_GetFontSizeToHandle(int fontHandle);
-extern int PL_Font_GetFontCharInfo(int fontHandle, const DXCHAR *string,
-                              int *xPos, int *yPos, int *advanceX, int *width, int *height);
-extern int PL_Font_SetFontSpaceToHandle(int fontSpacing, int fontHandle);
-
-extern int PL_Font_CreateFontToHandle(const DXCHAR *fontname,
-                                 int size, int thickness, int fontType, int charset,
-                                 int edgeSize, int italic
-                                );
-extern int PL_Font_DeleteFontToHandle(int handle);
-extern int PL_Font_CheckFontHandleValid(int fontHandle);
-extern int PL_Font_SetFontLostFlag(int fontHandle, int *lostFlag);
-
-extern int PL_Font_InitFontToHandle();
-
-/* "Default" font functions */
-extern int PL_Font_DrawString(int x, int y, const DXCHAR *string, DXCOLOR color, DXCOLOR edgeColor);
-extern int PL_Font_DrawFormatString(int x, int y, DXCOLOR color, const DXCHAR *string, va_list args);
-extern int PL_Font_DrawExtendString(int x, int y, double ExRateX, double ExRateY, const DXCHAR *string, DXCOLOR color, DXCOLOR edgeColor);
-extern int PL_Font_DrawExtendFormatString(int x, int y, double ExRateX, double ExRateY, DXCOLOR color, const DXCHAR *string, va_list args);
-extern int PL_Font_GetDrawStringWidth(const DXCHAR *string, int strLen);
-extern int PL_Font_GetDrawFormatStringWidth(const DXCHAR *string, va_list args);
-extern int PL_Font_GetDrawExtendStringWidth(double ExRateX, const DXCHAR *string, int strLen);
-extern int PL_Font_GetDrawExtendFormatStringWidth(double ExRateX, const DXCHAR *string, va_list args);
-
-extern int PL_Font_ChangeFont(const DXCHAR *string, int charSet);
-extern int PL_Font_ChangeFontType(int fontType);
-extern int PL_Font_SetFontSize(int fontSize);
-extern int PL_Font_GetFontSize();
-extern int PL_Font_SetFontThickness(int fontThickness);
-extern int PL_Font_SetFontSpace(int fontSpace);
-extern int PL_Font_SetDefaultFontState(const DXCHAR *fontName, int fontSize, int fontThickness);
-extern int PL_Font_GetDefaultFontHandle();
-
-/* Font mappings and upkeep. */
-extern int PLEXT_Font_MapFontFileToName(const DXCHAR *filename,
-                                   const DXCHAR *fontname,
-                                   int thickness, int boldFlag,
-                                   double exRateX, double exRateY
-                                  );
-extern int PLEXT_Font_InitFontMappings();
-
-extern void PL_Font_Init();
-extern void PL_Font_End();
-
-extern int PL_Font_SetFontCacheUsePremulAlphaFlag(int flag);
-extern int PL_Font_GetFontCacheUsePremulAlphaFlag();
 
 /* --------------------------------------------------------------- Input.c */
 #ifndef DX_NON_INPUT
@@ -639,8 +552,8 @@ extern int PL_Random_SeedLuna(int randomSeed);
 /* --------------------------------------------------------------- Audio.c */
 #ifndef DX_NON_SOUND
 
-extern int PL_LoadSoundMem(const DXCHAR *filename);
-extern int PL_LoadSoundMem2(const DXCHAR *filenameA, const DXCHAR *filenameB);
+extern int PL_LoadSoundMem(const char *filename);
+extern int PL_LoadSoundMem2(const char *filenameA, const char *filenameB);
 extern int PL_DeleteSoundMem(int soundID);
 extern int PL_PlaySoundMem(int soundID, int playType, int startPositionFlag);
 extern int PL_StopSoundMem(int soundID);

@@ -37,7 +37,7 @@
 
 static int s_useArchiveFlag = DXTRUE;
 static char s_defaultArchiveString[DXA_KEY_LENGTH + 1] = { '\0' };
-static DXCHAR s_archiveExtension[64] = { '\0' };
+static char s_archiveExtension[64] = { '\0' };
 static int s_initialized = DXFALSE;
 static int s_filePriorityFlag = DXFALSE;
 static int s_fileUseCharset = DX_CHARSET_DEFAULT;
@@ -46,20 +46,20 @@ static int s_fileUseCharset = DX_CHARSET_DEFAULT;
 #ifndef DX_NON_DXA
 typedef struct ArchiveListEntry {
     DXArchive *archive;
-    DXCHAR *filename;
+    char *filename;
     
     struct ArchiveListEntry *next;
 } ArchiveListEntry;
 
 static ArchiveListEntry *s_archiveList = NULL;
 
-static DXArchive *s_GetArchive(const DXCHAR *filename) {
+static DXArchive *s_GetArchive(const char *filename) {
     /* - Check to see if this archive is already open first. */
     DXArchive *archive;
     ArchiveListEntry *entry;
     
     for (entry = s_archiveList; entry != NULL; entry = entry->next) {
-        if (!DXSTRCMP(entry->filename, filename)) {
+        if (!PL_Text_Strcmp(entry->filename, filename)) {
             return entry->archive;
         }
     }
@@ -70,7 +70,7 @@ static DXArchive *s_GetArchive(const DXCHAR *filename) {
         /* - On success, add to the open list. */
         entry = DXALLOC(sizeof(ArchiveListEntry));
         entry->archive = archive;
-        entry->filename = DXSTRDUP(filename);
+        entry->filename = PL_Text_Strdup(filename);
         entry->next = s_archiveList;
         s_archiveList = entry;
     }
@@ -83,7 +83,7 @@ static int s_CloseArchive(const DXCHAR *filename) {
     ArchiveListEntry *entry;
     
     while ((entry = *pEntry) != NULL) {
-        if (!DXSTRCMP(entry->filename, filename)) {
+        if (!PL_Text_Strcmp(entry->filename, filename)) {
             ArchiveListEntry *nextEntry = entry->next;
             
             DXA_CloseArchive(entry->archive);
@@ -138,16 +138,16 @@ static void s_CloseArchives() {
 #endif
 
 static int s_GetArchiveFilename(
-    const DXCHAR *filename, DXCHAR *buf, int maxLen,
-    const DXCHAR **pEnd
+    const char *filename, char *buf, int maxLen,
+    const char **pEnd
 ) {
     /* Extract the archive name from the filename. */
-    const DXCHAR *end = filename;
-    const DXCHAR *cur = filename;
+    const char *end = filename;
+    const char *cur = filename;
     unsigned int ch;
     int position;
     
-    while ((ch = PL_Text_ReadDxChar(&cur)) != 0) {
+    while ((ch = PL_Text_ReadUTF8Char(&cur)) != 0) {
         if (ch == '/' || ch == '\\') {
             break;
         }
@@ -164,27 +164,29 @@ static int s_GetArchiveFilename(
         
         if (s_archiveExtension[0] != '\0') {
             DXCHAR *c = buf + position;
-            c += PL_Text_WriteDxChar(c, '.', buf + maxLen - c);
-            DXSTRNCPY(c, s_archiveExtension, buf + maxLen - c);
+            c += PL_Text_WriteUTF8Char(c, '.', buf + maxLen - c);
+            position += PL_Text_Strncpy(c, s_archiveExtension, buf + maxLen - c);
         } else {
-            DXSTRNCPYFROMSTR(buf + position, ".dxa", maxLen - position, DX_CHARSET_EXT_UTF8);
+            position += PL_Text_ConvertStrncat(buf + position, -1,
+                                   ".dxa", DX_CHARSET_EXT_UTF8,
+                                   maxLen - position);
         }
         
         if (pEnd != NULL) {
             *pEnd = end;
         }
         
-        return DXSTRLEN(buf);
+        return position;
     }
     
     return 0;
 }
 
 /* ------------------------------------------------------------ STREAM INTERFACE */
-SDL_RWops *Dx_File_OpenArchiveStream(const DXCHAR *filename) {
+SDL_RWops *Dx_File_OpenArchiveStream(const char *filename) {
     /* Extract the archive name from the filename. */
-    DXCHAR buf[2048];
-    const DXCHAR *end;
+    char buf[2048];
+    const char *end;
     if (s_GetArchiveFilename(filename, buf, 2048, &end) > 0) {
         DXArchive *archive;
         
@@ -201,17 +203,11 @@ SDL_RWops *Dx_File_OpenArchiveStream(const DXCHAR *filename) {
     return NULL;
 }
 
-SDL_RWops *Dx_File_OpenDirectStream(const DXCHAR *filename) {
-    char utf8Buf[2048];
-    
-    if (PL_Text_DxStringToString(filename, utf8Buf, 2048, DX_CHARSET_EXT_UTF8) <= 0) {
-        return NULL;
-    }
-    
-    return SDL_RWFromFile(utf8Buf, "rb");
+SDL_RWops *Dx_File_OpenDirectStream(const char *filename) {
+    return SDL_RWFromFile(filename, "rb");
 }
 
-SDL_RWops *Dx_File_OpenStream(const DXCHAR *filename) {
+SDL_RWops *Dx_File_OpenStream(const char *filename) {
     if (s_useArchiveFlag == DXFALSE) {
         return Dx_File_OpenDirectStream(filename);
     } else if (s_filePriorityFlag == DXTRUE) {
@@ -229,7 +225,7 @@ SDL_RWops *Dx_File_OpenStream(const DXCHAR *filename) {
     }
 }
 
-int Dx_File_ReadFile(const DXCHAR *filename, unsigned char **dData, unsigned int *dSize) {
+int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *dSize) {
     unsigned char *data;
     unsigned int size;
     int retval;
@@ -259,12 +255,12 @@ int Dx_File_ReadFile(const DXCHAR *filename, unsigned char **dData, unsigned int
 
 /* ------------------------------------------------------------ PUBLIC INTERFACE */
 /* Sets the "encryption" key to use for the packfile. */
-int Dx_File_SetDXArchiveKeyString(const DXCHAR *keyString) {
+int Dx_File_SetDXArchiveKeyString(const char *keyString) {
     int n = 0;
     
     if (keyString != 0) {
         unsigned int ch;
-        while ((ch = PL_Text_ReadDxChar(&keyString)) != 0 && n < DXA_KEY_LENGTH) {
+        while ((ch = PL_Text_ReadUTF8Char(&keyString)) != 0 && n < DXA_KEY_LENGTH) {
             s_defaultArchiveString[n] = (char)ch;
             n += 1;
         }
@@ -275,7 +271,7 @@ int Dx_File_SetDXArchiveKeyString(const DXCHAR *keyString) {
     return 0;
 }
 
-int Dx_File_SetDXArchiveExtension(const DXCHAR *extension) {
+int Dx_File_SetDXArchiveExtension(const char *extension) {
     if (extension != 0) {
         s_archiveExtension[0] = '\0';
     } else {
@@ -306,7 +302,7 @@ int Dx_File_GetUseDXArchiveFlag() {
     return s_useArchiveFlag;
 }
 
-int Dx_File_DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
+int Dx_File_DXArchivePreLoad(const char *dxaFilename, int async) {
     DXCHAR buf[2048];
     DXArchive *archive;
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
@@ -318,12 +314,12 @@ int Dx_File_DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
     }
     return -1;
 }
-int Dx_File_DXArchiveCheckIdle(const DXCHAR *dxaFilename) {
+int Dx_File_DXArchiveCheckIdle(const char *dxaFilename) {
     /* This has no meaning when async is not supported,
      * so it is always idle. */
     return DXTRUE;
 }
-int Dx_File_DXArchiveRelease(const DXCHAR *dxaFilename) {
+int Dx_File_DXArchiveRelease(const char *dxaFilename) {
     DXCHAR buf[2048];
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
         return s_CloseArchive(buf);
@@ -331,7 +327,7 @@ int Dx_File_DXArchiveRelease(const DXCHAR *dxaFilename) {
     return -1;
 }
 
-int Dx_File_DXArchiveCheckFile(const DXCHAR *dxaFilename, const DXCHAR *filename) {
+int Dx_File_DXArchiveCheckFile(const char *dxaFilename, const char *filename) {
     DXCHAR buf[2048];
     DXArchive *archive;
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
@@ -353,7 +349,7 @@ int PLEXT_FileRead_SetCharSet(int charset) {
     return 0;
 }
 
-int Dx_FileRead_open(const DXCHAR *filename) {
+int Dx_FileRead_open(const char *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     int fileDataID;
     FileHandle *handle;
@@ -373,7 +369,7 @@ int Dx_FileRead_open(const DXCHAR *filename) {
     
     return fileDataID;
 }
-int64_t Dx_FileRead_size(const DXCHAR *filename) {
+int64_t Dx_FileRead_size(const char *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     if (rwops != NULL) {
         int64_t size = rwops->size(rwops);
@@ -453,7 +449,7 @@ static int Dx_FileRead_getWholeChar(int fileHandle) {
     return -1;
 }
 
-int Dx_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
+int Dx_FileRead_getsA(char *buffer, int bufferSize, int fileHandle) {
     int ch;
     int remaining = bufferSize - 1;
     
@@ -470,7 +466,7 @@ int Dx_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
         if (ch == '\n') {
             break;
         }
-        chSize = PL_Text_WriteDxChar(buffer, ch, remaining);
+        chSize = PL_Text_WriteChar(buffer, ch, remaining, g_DxUseCharSet);
         remaining -= chSize;
         buffer += chSize;
     }
@@ -480,7 +476,7 @@ int Dx_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
     return bufferSize - remaining - 1;
 }
 
-DXCHAR Dx_FileRead_getc(int fileHandle) {
+char Dx_FileRead_getcA(int fileHandle) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
     if (handle != NULL) {
         SDL_RWops *rwops = handle->rwops;
@@ -505,7 +501,7 @@ DXCHAR Dx_FileRead_getc(int fileHandle) {
  * And then I cleaned up so it's actually compliant C,
  * supports unicode, and without a silly crash bug with %%.
  *
- * FIXME: move this and other system-specific hacks to their own file.
+ * FIXME: remove this entirely and make a proper custom vsscanf function.
  */
 
 /*
@@ -519,11 +515,7 @@ DXCHAR Dx_FileRead_getc(int fileHandle) {
 
 static int vsscanf(
     const char  *buffer,
-#ifdef UNICODE
-	const wchar_t *format,
-#else
     const char  *format,
-#endif
     va_list     argPtr
 )
 {
@@ -565,11 +557,7 @@ static int vsscanf(
     {
         mov     savedESP, esp;
         mov     esp, newStack;
-#ifdef UNICODE
-        call    swscanf_s;
-#else
         call    sscanf_s;
-#endif
         mov     esp, savedESP;
         mov     result, eax;
     }
@@ -577,22 +565,26 @@ static int vsscanf(
 }
 #endif
 
-int Dx_FileRead_vscanf(int fileHandle, const DXCHAR *format, va_list args) {
-    DXCHAR dxBuffer[4096];
+int Dx_FileRead_vscanfA(int fileHandle, const char *format, va_list args) {
+    char dxBuffer[4096];
     char buffer[4096];
+    const char *targetBuf;
     int len;
     
-    len = Dx_FileRead_gets(dxBuffer, 4096, fileHandle);
+    len = Dx_FileRead_getsA(dxBuffer, 4096, fileHandle);
     if (len < 0) {
         return 0;
     }
     
-    len = PL_Text_DxStringToString(dxBuffer, buffer, 4096, PL_Text_GetUseCharSet());
+    targetBuf = PL_Text_ConvertStrncpyIfNecessary(
+                    buffer, -1,
+                    dxBuffer, g_DxUseCharSet,
+                    4096);
     
-    return vsscanf(buffer, format, args);
+    return vsscanf(targetBuf, format, args);
 }
 
-int Dx_File_OpenRead(const DXCHAR *filename) {
+int Dx_File_OpenRead(const char *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     if (rwops != NULL) {
         return PLSDL2_RWopsToFile(rwops);

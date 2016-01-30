@@ -676,7 +676,7 @@ static void s_AudioClose() {
 
 /* ------------------------------------------------------ DXLIB INTERFACE */
 
-static int s_LoadSound(const DXCHAR *filename) {
+static int s_LoadSound(const char *filename) {
     SDL_RWops *rwops;
     char buf[4];
     int soundID;
@@ -766,11 +766,11 @@ static int s_WaitForSound(int soundID) {
     return playing;
 }
 
-int PL_LoadSoundMem(const DXCHAR *filename) {
+int PL_LoadSoundMem(const char *filename) {
     return s_LoadSound(filename);
 }
 
-int PL_LoadSoundMem2(const DXCHAR *filenameA, const DXCHAR *filenameB) {
+int PL_LoadSoundMem2(const char *filenameA, const char *filenameB) {
     int soundIDA = s_LoadSound(filenameA);
     
     if (soundIDA >= 0) {

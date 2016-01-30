@@ -249,7 +249,7 @@ void PL_File_SetOpenReadFunction(PLFileOpenFileFunction func) {
     s_openReadFunction = func;
 }
 
-int PL_File_OpenRead(const DXCHAR *filename) {
+int PL_File_OpenRead(const char *filename) {
     if (s_openReadFunction != NULL) {
         return s_openReadFunction(filename);
     } else {
@@ -291,8 +291,10 @@ int PL_File_End() {
     while ((fileHandle = PL_Handle_GetFirstIDOf(DXHANDLE_PLFILE)) >= 0) {
         PL_File_Close(fileHandle);
     }
-    
+
+    /*
     s_openReadFunction = NULL;
+     */
     
     return 0;
 }

@@ -38,6 +38,7 @@ extern void PL_SDL2GL_Init(SDL_Window *window, int width, int height);
 extern int PL_SDL2GL_UpdateVSync(int vsyncFlag);
 extern void PL_SDL2GL_End();
 
+extern SDL_Window *PL_window;
 extern int PL_drawOffscreen;
 
 #endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */

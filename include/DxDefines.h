@@ -109,11 +109,7 @@ namespace DxLib {
 #define DXLIB_VERSION_STR "3.11 "
 
 /* Various type macros and build defines */
-#ifdef UNICODE
-#define DXCHAR wchar_t
-#else
 #define DXCHAR char
-#endif
 #define DXCOLOR int
 #define DXTRUE (1)
 #define DXFALSE (0)

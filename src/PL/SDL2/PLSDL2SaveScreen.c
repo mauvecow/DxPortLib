@@ -28,21 +28,20 @@
 #include "SDL_image.h"
 
 int PL_SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
-                           const DXCHAR *filename) {
+                           const char *filename) {
     return -1;
 }
 
 int PL_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
-                            const DXCHAR *filename,
+                            const char *filename,
                             int quality, int sample2x1) {
     return -1;
 }
 
 int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
-                           const DXCHAR *filename,
+                           const char *filename,
                            int compressionLevel) {
     SDL_Surface *surface;
-    char namebuf[4096];
     PLRect rect;
     rect.x = x1;
     rect.y = y1;
@@ -53,9 +52,7 @@ int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
         return -1;
     }
     
-    PL_Text_DxStringToString(filename, namebuf, 4096, DX_CHARSET_EXT_UTF8);
-    
-    return IMG_SavePNG(surface, namebuf);
+    return IMG_SavePNG(surface, filename);
 }
 
 #endif

@@ -137,7 +137,7 @@ int FileRead_scanf(int fileHandle, const DXCHAR *format, ...) {
     int retval;
     
     va_start(args, format);
-    retval = Dx_FileRead_vscanf(fileHandle, format, args);
+    retval = Dx_FileRead_vscanfA(fileHandle, format, args);
     va_end(args);
     
     return retval;
@@ -700,7 +700,7 @@ int DrawFormatStringToHandle(
     va_list args;
     int retval;
     va_start(args, formatString);
-    retval = ::PL_Font_DrawFormatStringToHandle(x, y, color, fontHandle, formatString, args);
+    retval = ::Dx_Font_DrawFormatStringToHandle(x, y, color, fontHandle, formatString, args);
     va_end(args);
     return retval;
 }
@@ -719,7 +719,7 @@ int DrawExtendFormatStringToHandle(
     va_list args;
     int retval;
     va_start(args, formatString);
-    retval = ::PL_Font_DrawExtendFormatStringToHandle(x, y, ExRateX, ExRateY, color, fontHandle, formatString, args);
+    retval = ::Dx_Font_DrawExtendFormatStringToHandle(x, y, ExRateX, ExRateY, color, fontHandle, formatString, args);
     va_end(args);
     return retval;
 }
@@ -734,7 +734,7 @@ int GetDrawFormatStringWidthToHandle(
     va_list args;
     int retval;
     va_start(args, formatString);
-    retval = ::PL_Font_GetDrawFormatStringWidthToHandle(fontHandle, formatString, args);
+    retval = ::Dx_Font_GetDrawFormatStringWidthToHandle(fontHandle, formatString, args);
     va_end(args);
     return retval;
 }
@@ -748,7 +748,7 @@ int GetDrawExtendFormatStringWidthToHandle(
     va_list args;
     int retval;
     va_start(args, formatString);
-    retval = ::PL_Font_GetDrawExtendFormatStringWidthToHandle(ExRateX, fontHandle, formatString, args);
+    retval = ::Dx_Font_GetDrawExtendFormatStringWidthToHandle(ExRateX, fontHandle, formatString, args);
     va_end(args);
     return retval;
 }
@@ -798,7 +798,7 @@ int DrawFormatString(
     va_list args;
     int retval;
     va_start(args, formatString);
-    retval = ::PL_Font_DrawFormatString(x, y, color, formatString, args);
+    retval = ::Dx_Font_DrawFormatString(x, y, color, formatString, args);
     va_end(args);
     return retval;
 }
@@ -814,7 +814,7 @@ int DrawExtendFormatString(
     va_list args;
     int retval;
     va_start(args, formatString);
-    retval = ::PL_Font_DrawExtendFormatString(x, y, ExRateX, ExRateY, color, formatString, args);
+    retval = ::Dx_Font_DrawExtendFormatString(x, y, ExRateX, ExRateY, color, formatString, args);
     va_end(args);
     return retval;
 }
@@ -827,7 +827,7 @@ int GetDrawFormatStringWidth(
     va_list args;
     int retval;
     va_start(args, formatString);
-    retval = ::PL_Font_GetDrawFormatStringWidth(formatString, args);
+    retval = ::Dx_Font_GetDrawFormatStringWidth(formatString, args);
     va_end(args);
     return retval;
 }
@@ -840,7 +840,7 @@ int GetDrawExtendFormatStringWidth(
     va_list args;
     int retval;
     va_start(args, formatString);
-    retval = ::PL_Font_GetDrawExtendFormatStringWidth(ExRateX, formatString, args);
+    retval = ::Dx_Font_GetDrawExtendFormatStringWidth(ExRateX, formatString, args);
     va_end(args);
     return retval;
 }

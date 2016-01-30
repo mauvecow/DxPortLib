@@ -64,6 +64,8 @@ static LunaInitFunc s_LunaInit = NULL;
 static LunaMainFunc s_LunaMain = NULL;
 static LunaMessageProcFunc s_LunaMessageProc = NULL;
 
+int g_lunaUseCharSet = DX_CHARSET_EXT_UTF8;
+
 int Luna::BootMain(Sint32 argc, char **argv,
                    LunaInitFunc LunaInit, LunaMainFunc LunaMain,
                    LunaMessageProcFunc LunaMessageProc
@@ -116,9 +118,6 @@ Bool Luna::Start() {
         PL_Audio_Init();
     }
 #endif /* #ifndef DX_NON_SOUND */
-#ifndef DX_NON_FONT
-    PL_Font_Init();
-#endif /* #ifndef DX_NON_FONT */
     
     Luna3D::SetViewport(NULL);
     
@@ -133,9 +132,6 @@ void Luna::End() {
     
     s_initialized = DXFALSE;
     
-#ifndef DX_NON_FONT
-    PL_Font_End();
-#endif /* #ifndef DX_NON_FONT */
 #ifndef DX_NON_SOUND
     if ((s_lunaUseFlags & OPTION_DIRECTSOUND) != 0) {
         PL_Audio_End();
@@ -240,8 +236,12 @@ void Luna::SyncFrame() {
     /* WRITEME: Update FPS */
 }
 
-void Luna::SetApplicationName(const DXCHAR *name) {
-    PL_Window_SetTitle(name);
+void Luna::SetApplicationName(const char *name) {
+    char buf[2048];
+    PL_Window_SetTitle(
+        PL_Text_ConvertStrncpyIfNecessary(
+            buf, -1, name, g_lunaUseCharSet, 2048)
+    );
 }
 
 void Luna::SetVirtualScreenSize(Sint32 rWidth, Sint32 rHeight,
@@ -332,7 +332,7 @@ void Luna::SetUseOption(Uint32 flags) {
 }
 
 void Luna::EXTSetUseCharset(int dxCharset) {
-    PL_Text_SetUseCharSet(dxCharset);
+    g_lunaUseCharSet = dxCharset;
 }
 void Luna::GetScreenData(Sint32 *width, Sint32 *height, bool *isWindowed) {
     if (width != NULL) {
@@ -346,22 +346,27 @@ void Luna::GetScreenData(Sint32 *width, Sint32 *height, bool *isWindowed) {
     }
 }
 
-void Luna::EXTGetSaveFolder(DXCHAR *buffer, int bufferLength,
-                            const DXCHAR *org, const DXCHAR *app,
+void Luna::EXTGetSaveFolder(char *buffer, int bufferLength,
+                            const char *org, const char *app,
                             int destEncoding) {
-    PL_Platform_GetSaveFolder(buffer, bufferLength, org, app,
+    char orgbuf[2048];
+    char appbuf[2048];
+    PL_Platform_GetSaveFolder(
+        buffer, bufferLength,
+        PL_Text_ConvertStrncpyIfNecessary(
+            orgbuf, -1, org, g_lunaUseCharSet, 2048),
+        PL_Text_ConvertStrncpyIfNecessary(
+            appbuf, -1, app, g_lunaUseCharSet, 2048),
         destEncoding);
 }
 
-int Luna::EXTConvertText(DXCHAR *buffer, int bufferLength,
-                          const DXCHAR *string,
-                          int destEncoding, int srcEncoding) {
-#ifdef UNICODE
-    return PL_Text_DxStrlen(buffer);
-#else
-    return PL_Text_ConvertString(string, buffer, bufferLength,
-        srcEncoding, destEncoding);
-#endif
+int Luna::EXTConvertText(char *buffer, int bufferLength,
+                         const char *string,
+                         int destEncoding, int srcEncoding) {
+    return PL_Text_ConvertStrncpy(
+            buffer, destEncoding,
+            string, srcEncoding,
+            bufferLength);
 }
 
 void Luna::EXTSetFullscreenDesktop(bool flag) {
@@ -410,7 +415,11 @@ void Luna::EXTSetOnlyWindowSize(int width, int height, bool isFullscreen, bool i
 }
 
 void Luna::EXTSetWindowIconFromFile(const DXCHAR *filename) {
-    PLEXT_Window_SetIconImageFile(filename);
+    char buf[2048];
+    PL_Window_SetIconFromFile(
+        PL_Text_ConvertStrncpyIfNecessary(
+            buf, -1, filename, g_lunaUseCharSet, 2048)
+    );
 }
 
 void Luna::EXTSetVSync(bool vsyncEnabled) {

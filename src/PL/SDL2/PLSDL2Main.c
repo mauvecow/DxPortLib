@@ -27,8 +27,6 @@
 
 #include "SDL_image.h"
 
-#include <time.h>
-
 PLIGraphics PLG;
 
 /* For setting the floating precision to the system value.
@@ -69,70 +67,6 @@ void PL_Platform_Init() {
 
 void PL_Platform_Finish() {
     SDL_Quit();
-}
-
-int PL_Platform_GetTicks() {
-    return SDL_GetTicks();
-}
-
-void PL_Platform_Wait(int ticks) {
-    SDL_Delay(ticks);
-}
-
-int PL_Platform_GetDateTime(DATEDATA *dateBuf) {
-    /* SDL does not have a function for getting system date and time,
-     * so we use time/localtime for this. */
-    time_t t;
-    struct tm *format;
-    
-    time(&t);
-    format = localtime(&t);
-    
-    dateBuf->Year = format->tm_year + 1900;
-    dateBuf->Mon = format->tm_mon + 1;
-    dateBuf->Day = format->tm_mday;
-    dateBuf->Hour = format->tm_hour;
-    dateBuf->Min = format->tm_min;
-    dateBuf->Sec = format->tm_sec;
-    
-    return 0;
-}
-
-int PL_Platform_GetSaveFolder(DXCHAR *buffer, int bufferLength,
-                              const DXCHAR *org, const DXCHAR *app,
-                              int destEncoding) {
-    char *prefPath;
-    
-    if (bufferLength == 0) {
-        return -1;
-    }
-
-#ifdef UNICODE
-    {
-        char orgBuf[4096];
-        char appBuf[4096];
-        PL_Text_DxStringToString(buffer, orgBuf, 4096, DX_CHARSET_EXT_UTF8);
-        PL_Text_DxStringToString(buffer, appBuf, 4096, DX_CHARSET_EXT_UTF8);
-        prefPath = SDL_GetPrefPath(orgBuf, appBuf);
-    }
-#else
-    prefPath = SDL_GetPrefPath(org, app);
-#endif
-    if (prefPath == NULL) {
-        buffer[0] = '\0';
-        return 0;
-    }
-    
-#ifdef UNICODE
-    PL_Text_DxStrncpyFromString(buffer, prefPath, bufferLength,
-                                DX_CHARSET_EXT_UTF8);
-#else
-    PL_Text_ConvertString(prefPath, buffer, bufferLength,
-                          DX_CHARSET_EXT_UTF8, destEncoding);
-#endif
-
-    SDL_free(prefPath);
-    return 0;
 }
 
 #endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */

@@ -32,38 +32,41 @@
 extern "C" {
 #endif
 
+/* ---------------------------------------------------------------Globals */
+extern int g_DxUseCharSet;
+
 /* --------------------------------------------------------------- File.c */
-extern SDL_RWops *Dx_File_OpenArchiveStream(const DXCHAR *filename);
-extern SDL_RWops *Dx_File_OpenDirectStream(const DXCHAR *filename);
-extern SDL_RWops *Dx_File_OpenStream(const DXCHAR *filename);
+extern SDL_RWops *Dx_File_OpenArchiveStream(const char *filename);
+extern SDL_RWops *Dx_File_OpenDirectStream(const char *filename);
+extern SDL_RWops *Dx_File_OpenStream(const char *filename);
 
-extern int Dx_File_ReadFile(const DXCHAR *filename, unsigned char **dData, unsigned int *dSize);
+extern int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *dSize);
 
-extern int Dx_File_SetDXArchiveKeyString(const DXCHAR *keyString);
-extern int Dx_File_SetDXArchiveExtension(const DXCHAR *extension);
+extern int Dx_File_SetDXArchiveKeyString(const char *keyString);
+extern int Dx_File_SetDXArchiveExtension(const char *extension);
 
 extern int Dx_File_SetUseDXArchiveFlag(int flag);
 extern int Dx_File_GetUseDXArchiveFlag();
 extern int Dx_File_SetDXArchivePriority(int flag);
 
-extern int Dx_File_DXArchivePreLoad(const DXCHAR *dxaFilename, int async);
-extern int Dx_File_DXArchiveCheckIdle(const DXCHAR *dxaFilename);
-extern int Dx_File_DXArchiveRelease(const DXCHAR *dxaFilename);
-extern int Dx_File_DXArchiveCheckFile(const DXCHAR *dxaFilename, const DXCHAR *filename);
+extern int Dx_File_DXArchivePreLoad(const char *dxaFilename, int async);
+extern int Dx_File_DXArchiveCheckIdle(const char *dxaFilename);
+extern int Dx_File_DXArchiveRelease(const char *dxaFilename);
+extern int Dx_File_DXArchiveCheckFile(const char *dxaFilename, const char *filename);
 
 extern int PLEXT_FileRead_SetCharSet(int charset);
 
-extern int Dx_FileRead_open(const DXCHAR *filename);
-extern int64_t Dx_FileRead_size(const DXCHAR *filename);
+extern int Dx_FileRead_open(const char *filename);
+extern int64_t Dx_FileRead_size(const char *filename);
 extern int Dx_FileRead_close(int fileHandle);
 extern int64_t Dx_FileRead_tell(int fileHandle);
 extern int Dx_FileRead_seek(int fileHandle, int64_t position, int origin);
 extern int Dx_FileRead_read(void *data, int size, int fileHandle);
 extern int Dx_FileRead_eof(int fileHandle);
 
-extern int Dx_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle);
-extern DXCHAR Dx_FileRead_getc(int fileHandle);
-extern int Dx_FileRead_vscanf(int fileHandle, const DXCHAR *format, va_list args);
+extern int Dx_FileRead_getsA(char *buffer, int bufferSize, int fileHandle);
+extern char Dx_FileRead_getcA(int fileHandle);
+extern int Dx_FileRead_vscanfA(int fileHandle, const char *format, va_list args);
 
 extern int Dx_File_Init();
 extern int Dx_File_End();
@@ -226,10 +229,76 @@ extern int Dx_Draw_SetDrawScreen(int drawScreen);
 extern int Dx_Draw_GetDrawScreen();
 extern int Dx_Draw_ResetDrawScreen();
 
+/* -------------------------------------------------------------- Font.c */
+/* Handle font functions */
+extern int Dx_Font_DrawStringToHandle(int x, int y, const DXCHAR *string,
+                                      DXCOLOR color, int fontHandle, DXCOLOR edgeColor);
+extern int Dx_Font_DrawFormatStringToHandle(int x, int y, DXCOLOR color, int fontHandle,
+                                            const DXCHAR *string, va_list args);
+extern int Dx_Font_DrawExtendStringToHandle(int x, int y, double ExRateX, double ExRateY,
+                                            const DXCHAR *string,
+                                            DXCOLOR color, int fontHandle, DXCOLOR edgeColor);
+extern int Dx_Font_DrawExtendFormatStringToHandle(int x, int y, double ExRateX, double ExRateY,
+                                                  DXCOLOR color, int fontHandle,
+                                                  const DXCHAR *string, va_list args);
+
+extern int Dx_Font_GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fontHandle);
+extern int Dx_Font_GetDrawFormatStringWidthToHandle(int fontHandle, const DXCHAR *string, va_list args);
+extern int Dx_Font_GetDrawExtendStringWidthToHandle(double ExRateX, const DXCHAR *string, int strLen, int fontHandle);
+extern int Dx_Font_GetDrawExtendFormatStringWidthToHandle(double ExRateX, int fontHandle, const DXCHAR *string, va_list args);
+
+extern int Dx_Font_GetFontSizeToHandle(int fontHandle);
+extern int Dx_Font_GetFontCharInfo(int fontHandle, const DXCHAR *string,
+                              int *xPos, int *yPos, int *advanceX, int *width, int *height);
+extern int Dx_Font_SetFontSpaceToHandle(int fontSpacing, int fontHandle);
+
+extern int Dx_Font_CreateFontToHandle(const DXCHAR *fontname,
+                                 int size, int thickness, int fontType, int charset,
+                                 int edgeSize, int italic
+                                );
+extern int Dx_Font_DeleteFontToHandle(int handle);
+extern int Dx_Font_CheckFontHandleValid(int fontHandle);
+extern int Dx_Font_SetFontLostFlag(int fontHandle, int *lostFlag);
+
+extern int Dx_Font_InitFontToHandle();
+
+/* "Default" font functions */
+extern int Dx_Font_DrawString(int x, int y, const DXCHAR *string, DXCOLOR color, DXCOLOR edgeColor);
+extern int Dx_Font_DrawFormatString(int x, int y, DXCOLOR color, const DXCHAR *string, va_list args);
+extern int Dx_Font_DrawExtendString(int x, int y, double ExRateX, double ExRateY, const DXCHAR *string, DXCOLOR color, DXCOLOR edgeColor);
+extern int Dx_Font_DrawExtendFormatString(int x, int y, double ExRateX, double ExRateY, DXCOLOR color, const DXCHAR *string, va_list args);
+extern int Dx_Font_GetDrawStringWidth(const DXCHAR *string, int strLen);
+extern int Dx_Font_GetDrawFormatStringWidth(const DXCHAR *string, va_list args);
+extern int Dx_Font_GetDrawExtendStringWidth(double ExRateX, const DXCHAR *string, int strLen);
+extern int Dx_Font_GetDrawExtendFormatStringWidth(double ExRateX, const DXCHAR *string, va_list args);
+
+extern int Dx_Font_ChangeFont(const DXCHAR *string, int charSet);
+extern int Dx_Font_ChangeFontType(int fontType);
+extern int Dx_Font_SetFontSize(int fontSize);
+extern int Dx_Font_GetFontSize();
+extern int Dx_Font_SetFontThickness(int fontThickness);
+extern int Dx_Font_SetFontSpace(int fontSpace);
+extern int Dx_Font_SetDefaultFontState(const DXCHAR *fontName, int fontSize, int fontThickness);
+extern int Dx_Font_GetDefaultFontHandle();
+
+/* Font mappings and upkeep. */
+extern int PLEXT_Font_MapFontFileToName(const DXCHAR *filename,
+                                   const DXCHAR *fontname,
+                                   int thickness, int boldFlag,
+                                   double exRateX, double exRateY
+                                  );
+extern int PLEXT_Font_InitFontMappings();
+
+extern void Dx_Font_Init();
+extern void Dx_Font_End();
+
+extern int Dx_Font_SetFontCacheUsePremulAlphaFlag(int flag);
+extern int Dx_Font_GetFontCacheUsePremulAlphaFlag();
+
 /* ------------------------------------------------------------- Graph.c */
 extern int Dx_Graph_MakeScreen(int width, int height, int hasAlphaChannel);
-extern int Dx_Graph_Load(const DXCHAR *filename, int flipFlag);
-extern int Dx_Graph_LoadDiv(const DXCHAR *filename, int graphCount,
+extern int Dx_Graph_Load(const char *filename, int flipFlag);
+extern int Dx_Graph_LoadDiv(const char *filename, int graphCount,
                             int xCount, int yCount, int xSize, int ySize,
                             int *handleBuf, int textureFlag, int flipFlag);
 extern int Dx_Graph_CreateFromSurface(int surfaceID);

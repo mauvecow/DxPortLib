@@ -135,7 +135,7 @@ int Dx_Graph_MakeScreen(int width, int height, int hasAlphaChannel) {
     return graphID;
 }
 
-int Dx_Graph_Load(const DXCHAR *filename, int flipFlag) {
+int Dx_Graph_Load(const char *filename, int flipFlag) {
     int surfaceID = PL_Surface_Load(filename);
     int graphID;
     
@@ -260,7 +260,7 @@ int Dx_Graph_Derivation(int x, int y, int w, int h, int srcGraphID) {
     return s_AllocateGraphID(srcGraph->textureRefID, rect, srcGraphID);
 }
 
-int Dx_Graph_LoadDiv(const DXCHAR *filename, int graphCount,
+int Dx_Graph_LoadDiv(const char *filename, int graphCount,
                      int xCount, int yCount, int xSize, int ySize,
                      int *handleBuf, int textureFlag, int flipFlag) {
     int graphID = Dx_Graph_Load(filename, flipFlag);

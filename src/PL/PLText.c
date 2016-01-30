@@ -21,7 +21,7 @@
 
 #include "PLInternal.h"
 
-static int s_useCharSet = DX_CHARSET_EXT_UTF8;
+static const int s_defaultCharset = DX_CHARSET_EXT_UTF8;
 
 unsigned int PL_Text_ReadUTF8Char(const char **textRef) {
     const unsigned char *text = (const unsigned char *)*textRef;
@@ -71,22 +71,22 @@ unsigned int PL_Text_ReadUTF8Char(const char **textRef) {
     return value;
 }
 
-int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int maxLen) {
+int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int bufSize) {
     if (ch < 0x80) {
-        if (maxLen >= 1) {
+        if (bufSize >= 1) {
             buffer[0] = (char)ch;
         
             return 1;
         }
     } else if (ch < 0x800) {
-        if (maxLen >= 2) {
+        if (bufSize >= 2) {
             buffer[0] = (char)(0xc0 | ((ch >> 6) & 0x1f));
             buffer[1] = (char)(0x80 | (ch & 0x3f));
             
             return 2;
         }
     } else if (ch < 0x10000) {
-        if (maxLen >= 3) {
+        if (bufSize >= 3) {
             buffer[0] = (char)(0xe0 | ((ch >> 12) & 0x0f));
             buffer[1] = (char)(0x80 | ((ch >> 6) & 0x3f));
             buffer[2] = (char)(0x80 | (ch & 0x3f));
@@ -94,7 +94,7 @@ int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int maxLen) {
             return 3;
         }
     } else if (ch < 0x200000) {
-        if (maxLen >= 4) {
+        if (bufSize >= 4) {
             buffer[0] = (char)(0xf0 | ((ch >> 18) & 0x07));
             buffer[1] = (char)(0x80 | ((ch >> 12) & 0x3f));
             buffer[2] = (char)(0x80 | ((ch >> 6) & 0x3f));
@@ -103,7 +103,7 @@ int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int maxLen) {
             return 4;
         }
     } else if (ch < 0x4000000) {
-        if (maxLen >= 5) {
+        if (bufSize >= 5) {
             buffer[0] = (char)(0xf8 | ((ch >> 24) & 0x03));
             buffer[1] = (char)(0x80 | ((ch >> 18) & 0x3f));
             buffer[2] = (char)(0x80 | ((ch >> 12) & 0x3f));
@@ -113,7 +113,7 @@ int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int maxLen) {
             return 5;
         }
     } else {
-        if (maxLen >= 6) {
+        if (bufSize >= 6) {
             buffer[0] = (char)(0xfc | ((ch >> 30) & 0x01));
             buffer[1] = (char)(0x80 | ((ch >> 24) & 0x3f));
             buffer[2] = (char)(0x80 | ((ch >> 18) & 0x3f));
@@ -155,110 +155,126 @@ unsigned int PL_Text_ReadChar(const char **textRef, int charset) {
         case DX_CHARSET_SHFTJIS:
             return PL_Text_ReadSJISChar(textRef);
 #endif /* #ifndef DXPORTLIB_NON_SJIS */
-        case DX_CHARSET_EXT_UTF8:
+        default: /* case DX_CHARSET_EXT_UTF8: */
             return PL_Text_ReadUTF8Char(textRef);
-        default:
-            return PL_Text_ReadChar(textRef, s_useCharSet);
     }
 }
 
-int PL_Text_WriteChar(char *text, unsigned int ch, int maxLen, int charset) {
+int PL_Text_WriteChar(char *text, unsigned int ch, int bufSize, int charset) {
     switch(charset) {
 #ifndef DXPORTLIB_NO_SJIS
         case DX_CHARSET_SHFTJIS:
-            return PL_Text_WriteSJISChar(text, ch, maxLen);
+            return PL_Text_WriteSJISChar(text, ch, bufSize);
+#endif /* #ifndef DXPORTLIB_NON_SJIS */
+        default: /* case DX_CHARSET_EXT_UTF8: */
+            return PL_Text_WriteUTF8Char(text, ch, bufSize);
+    }
+}
+
+int PL_Text_ToCharset(int charset) {
+    switch(charset) {
+#ifndef DXPORTLIB_NO_SJIS
+        case DX_CHARSET_SHFTJIS:
+            return DX_CHARSET_SHFTJIS;
 #endif /* #ifndef DXPORTLIB_NON_SJIS */
         case DX_CHARSET_EXT_UTF8:
-            return PL_Text_WriteUTF8Char(text, ch, maxLen);
+            return DX_CHARSET_EXT_UTF8;
         default:
-            return PL_Text_WriteChar(text, ch, maxLen, s_useCharSet);
+            return s_defaultCharset;
     }
 }
 
-#ifdef UNICODE
-unsigned int PL_Text_ReadUNICODEChar(const wchar_t **textRef) {
-    const wchar_t *text = *textRef;
-    unsigned int ch = *text;
-    
-    *textRef = text + 1;
-    
-    return ch;
-}
-int PL_Text_WriteUNICODEChar(wchar_t *text, unsigned int ch, int maxLen) {
-    if (maxLen >= 1) {
-        *text = ch;
-        return 1;
-    }
-    
-    return 0;
-}
-
-/* DXCHAR is wchar_t */
-unsigned int PL_Text_ReadDxChar(const DXCHAR **textRef) {
-    return PL_Text_ReadUNICODEChar(textRef);
-}
-int PL_Text_WriteDxChar(DXCHAR *text, unsigned int ch, int maxLen) {
-    return PL_Text_WriteUNICODEChar(text, ch, maxLen);
-}
-#else
-/* DXCHAR is CharSet */
-unsigned int PL_Text_ReadDxChar(const DXCHAR **textRef) {
-    return PL_Text_ReadChar((const char **)textRef, s_useCharSet);
-}
-int PL_Text_WriteDxChar(DXCHAR *text, unsigned int ch, int maxLen) {
-    return PL_Text_WriteChar((char *)text, ch, maxLen, s_useCharSet);
-}
-
-#endif
-
-int PL_Text_ConvertString(const char *inString, char *outBuffer, int maxLen,
-                            int srcCharset, int destCharset) {
+int PL_Text_ConvertString(const char *srcStr, int srcCharset,
+                          char *dest, int destCharset,
+                          int bufSize) {
     unsigned int ch;
     int count = 0;
     
-    maxLen -= 1;
-    
-    while (count < maxLen && (ch = PL_Text_ReadChar(&inString, srcCharset)) != 0) {
-        count += PL_Text_WriteChar(outBuffer + count, ch, maxLen - count, destCharset);
+    if (bufSize <= 0) {
+        return 0;
     }
     
-    outBuffer[count] = '\0';
+    srcCharset = PL_Text_ToCharset(srcCharset);
+    destCharset = PL_Text_ToCharset(destCharset);
+    
+    if (srcCharset == destCharset) {
+        return PL_Text_Strncpy(dest, srcStr, bufSize);
+    }
+    
+    bufSize -= 1;
+    
+    while (count < bufSize && (ch = PL_Text_ReadChar(&srcStr, srcCharset)) != 0) {
+        count += PL_Text_WriteChar(dest + count, ch, bufSize - count, destCharset);
+    }
+    
+    dest[count] = '\0';
     
     return count;
 }
 
-/* glorified strcpys go here */
-int PL_Text_DxStringToString(const DXCHAR *inString, char *outBuffer, int maxLen, int charset) {
-    unsigned int ch;
-    int count = 0;
+const char *PL_Text_ConvertStringIfNecessary(
+            char *dest, int destCharset,
+            const char *srcStr, int srcCharset,
+            int bufSize) {
+    srcCharset = PL_Text_ToCharset(srcCharset);
+    destCharset = PL_Text_ToCharset(destCharset);
     
-    maxLen -= 1;
-    
-    while (count < maxLen && (ch = PL_Text_ReadDxChar(&inString)) != 0) {
-        count += PL_Text_WriteChar(outBuffer + count, ch, maxLen - count, charset);
+    if (srcCharset == destCharset) {
+        return srcStr;
     }
     
-    outBuffer[count] = '\0';
+    PL_Text_ConvertStrncpy(dest, destCharset, srcStr, srcCharset, bufSize);
+    
+    return dest;
+}
+
+
+int PL_Text_WideCharToString(char *dest, int charset, const wchar_t *srcStr, int bufSize) {
+    unsigned int ch;
+    int count = 0;
+    int index = 0;
+    
+    if (bufSize <= 0) {
+        return 0;
+    }
+    
+    charset = PL_Text_ToCharset(charset);
+    
+    bufSize -= 1;
+    
+    while (count < bufSize && (ch = srcStr[index]) != 0) {
+        count += PL_Text_WriteChar(dest + count, ch, bufSize - count, charset);
+        index += 1;
+    }
+    
+    dest[count] = '\0';
     
     return count;
 }
 
-int PL_Text_StringToDxString(const char *inString, DXCHAR *outBuffer, int maxLen, int charset) {
+int PL_Text_StringToWideChar(wchar_t *dest, const char *srcStr, int charset, int bufSize) {
     unsigned int ch;
     int count = 0;
     
-    maxLen -= 1;
-    
-    while (count < maxLen && (ch = PL_Text_ReadChar(&inString, charset)) != 0) {
-        count += PL_Text_WriteDxChar(outBuffer + count, ch, maxLen - count);
+    if (bufSize <= 0) {
+        return 0;
     }
     
-    outBuffer[count] = '\0';
+    charset = PL_Text_ToCharset(charset);
+    
+    bufSize -= 1;
+    
+    while (count < bufSize && (ch = PL_Text_ReadChar(&srcStr, charset)) != 0) {
+        dest[count] = ch;
+        count += 1;
+    }
+    
+    dest[count] = '\0';
     
     return count;
 }
 
-int PL_Text_DxStrlen(const DXCHAR *str) {
+int PL_Text_Strlen(const char *str) {
     int i = 0;
     
     while (str[i] != 0) {
@@ -268,9 +284,9 @@ int PL_Text_DxStrlen(const DXCHAR *str) {
     return i;
 }
 
-DXCHAR *PL_Text_DxStrdup(const DXCHAR *str) {
-    int len = PL_Text_DxStrlen(str);
-    DXCHAR *dest = DXALLOC((unsigned int)(len + 1) * sizeof(DXCHAR));
+char *PL_Text_Strdup(const char *str) {
+    int len = PL_Text_Strlen(str);
+    char *dest = DXALLOC((unsigned int)(len + 1) * sizeof(char));
     int i;
     
     for (i = 0; i < len; ++i) {
@@ -281,62 +297,49 @@ DXCHAR *PL_Text_DxStrdup(const DXCHAR *str) {
     return dest;
 }
 
-void PL_Text_DxStrncat(DXCHAR *str, const DXCHAR *catStr, int maxLen) {
-    int len = PL_Text_DxStrlen(str);
-    DXCHAR *end = str + maxLen - 1;
-    DXCHAR ch;
+int PL_Text_Strncat(char *str, const char *catStr, int bufSize) {
+    int count = 0;
+    char ch;
     
-    str += len;
-    
-    while (str < end && (ch = (*catStr++)) != 0) {
-        *str++ = ch;
+    if (bufSize <= 0) {
+        return 0;
     }
     
-    *str = 0;
-}
-
-void PL_Text_DxStrncpy(DXCHAR *str, const DXCHAR *cpyStr, int maxLen) {
-    DXCHAR *end = str + maxLen - 1;
-    DXCHAR ch;
+    bufSize -= 1;
     
-    while (str < end && (ch = (*cpyStr++)) != 0) {
-        *str++ = ch;
+    while (count < bufSize && (ch = (*catStr++)) != 0) {
+        str[count++] = ch;
     }
     
-    *str = 0;
+    str[count] = 0;
+    return count;
 }
 
-void PL_Text_DxStrncatFromString(DXCHAR *str, const char *catStr, int maxLen, int charSet) {
-    int len = PL_Text_DxStrlen(str);
-    unsigned int ch;
+int PL_Text_Strncpy(char *str, const char *cpyStr, int bufSize) {
+    int count = 0;
+    char ch;
     
-    str += len;
-    maxLen -= len + 1;
-    
-    while ((ch = PL_Text_ReadChar(&catStr, charSet)) != 0 && maxLen > 0) {
-        int count = PL_Text_WriteDxChar(str, ch, maxLen);
-        maxLen -= count;
-        str += count;
+    if (bufSize <= 0) {
+        return 0;
     }
     
-    *str = 0;
-}
-
-void PL_Text_DxStrncpyFromString(DXCHAR *str, const char *cpyStr, int maxLen, int charSet) {
-    unsigned int ch;
+    bufSize -= 1;
     
-    maxLen -= 1;
-    
-    while ((ch = PL_Text_ReadChar(&cpyStr, charSet)) != 0 && maxLen > 0) {
-        int count = PL_Text_WriteDxChar(str, ch, maxLen);
-        maxLen -= count;
-        str += count;
+    while (count < bufSize && (ch = (*cpyStr++)) != 0) {
+        str[count++] = ch;
     }
     
-    *str = 0;
+    str[count] = 0;
+    return count;
 }
 
-int PL_Text_DxStrcmp(const DXCHAR *strA, const DXCHAR *strB) {
+int PL_Text_ConvertStrncat(char *dest, int destCharset, const char *srcStr, int srcCharset, int bufSize) {
+    int len = PL_Text_Strlen(dest);
+    
+    return PL_Text_ConvertStrncpy(dest + len, destCharset, srcStr, srcCharset, bufSize - len);
+}
+
+int PL_Text_Strcmp(const char *strA, const char *strB) {
     int v;
     
     while ((v = (*strB - *strA)) == 0 && *strA != 0) {
@@ -346,13 +349,13 @@ int PL_Text_DxStrcmp(const DXCHAR *strA, const DXCHAR *strB) {
     
     return v;
 }
-int PL_Text_DxStrcasecmp(const DXCHAR *strA, const DXCHAR *strB) {
+int PL_Text_Strcasecmp(const char *strA, const char *strB) {
     unsigned int a, b;
     int v;
     
     do {
-        a = PL_Text_ReadDxChar(&strA);
-        b = PL_Text_ReadDxChar(&strB);
+        a = PL_Text_ReadUTF8Char(&strA);
+        b = PL_Text_ReadUTF8Char(&strB);
         v = b - a;
         if (v != 0) {
             if (a >= 'A' && a <= 'Z') {
@@ -367,9 +370,9 @@ int PL_Text_DxStrcasecmp(const DXCHAR *strA, const DXCHAR *strB) {
     
     return v;
 }
-int PL_Text_DxStrncmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
+int PL_Text_Strncmp(const char *strA, const char *strB, int bufSize) {
     int v = 0;
-    const DXCHAR *end = strA + maxLen;
+    const char *end = strA + bufSize;
     
     while (strA < end && (v = (*strB - *strA)) == 0 && *strA != 0) {
         strA += 1;
@@ -378,14 +381,14 @@ int PL_Text_DxStrncmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
     
     return v;
 }
-int PL_Text_DxStrncasecmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
-    const DXCHAR *endA = strA + maxLen;
+int PL_Text_Strncasecmp(const char *strA, const char *strB, int bufSize) {
+    const char *endA = strA + bufSize;
     unsigned int a, b;
     int v;
     
     do {
-        a = PL_Text_ReadDxChar(&strA);
-        b = PL_Text_ReadDxChar(&strB);
+        a = PL_Text_ReadUTF8Char(&strA);
+        b = PL_Text_ReadUTF8Char(&strB);
         v = b - a;
         if (v != 0) {
             if (a >= 'A' && a <= 'Z') {
@@ -400,43 +403,43 @@ int PL_Text_DxStrncasecmp(const DXCHAR *strA, const DXCHAR *strB, int maxLen) {
     
     return v;
 }
-const DXCHAR *PL_Text_DxStrstr(const DXCHAR *strA, const DXCHAR *strB) {
-    int n = PL_Text_DxStrlen(strB);
+const char *PL_Text_Strstr(const char *strA, const char *strB) {
+    int n = PL_Text_Strlen(strB);
     while (*strA) {
-        if (!PL_Text_DxStrncmp(strA, strB, n)) {
+        if (!PL_Text_Strncmp(strA, strB, n)) {
             return strA;
         }
-        PL_Text_ReadDxChar(&strA);
+        PL_Text_ReadUTF8Char(&strA);
     }
     return NULL;
 }
-const DXCHAR *PL_Text_DxStrcasestr(const DXCHAR *strA, const DXCHAR *strB) {
-    int n = PL_Text_DxStrlen(strB);
+const char *PL_Text_Strcasestr(const char *strA, const char *strB) {
+    int n = PL_Text_Strlen(strB);
     while (*strA) {
-        if (!PL_Text_DxStrncasecmp(strA, strB, n)) {
+        if (!PL_Text_Strncasecmp(strA, strB, n)) {
             return strA;
         }
-        PL_Text_ReadDxChar(&strA);
+        PL_Text_ReadUTF8Char(&strA);
     }
     return NULL;
 }
-int PL_Text_DxStrTestExt(const DXCHAR *str, const DXCHAR *ext) {
-    int slen = PL_Text_DxStrlen(str);
-    int elen = PL_Text_DxStrlen(ext);
-    const DXCHAR *target = str + slen - elen;
+int PL_Text_StrTestExt(const char *str, const char *ext) {
+    int slen = PL_Text_Strlen(str);
+    int elen = PL_Text_Strlen(ext);
+    const char *target = str + slen - elen;
     
     if (slen < elen) {
         return DXFALSE;
     }
     
     while (str < target) {
-        PL_Text_ReadDxChar(&str);
+        PL_Text_ReadUTF8Char(&str);
     }
     if (str != target) {
         return DXFALSE;
     }
     
-    if (PL_Text_DxStrcasecmp(str, ext) == 0) {
+    if (PL_Text_Strcasecmp(str, ext) == 0) {
         return DXTRUE;
     }
     return DXFALSE;
@@ -448,27 +451,7 @@ int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
         case DX_CHARSET_SHFTJIS:
             return PL_Text_IsIncompleteSJISChar(string, length);
 #endif
-        case DX_CHARSET_EXT_UTF8:
+        default: /* case DX_CHARSET_EXT_UTF8: */
             return PL_Text_IsIncompleteUTF8Char(string, length);
-        default:
-            return PL_Text_IsIncompleteMultibyte(string, length, s_useCharSet);
     }
-}
-
-int PL_Text_SetUseCharSet(int charset) {
-    switch(charset) {
-#ifndef DXPORTLIB_NO_SJIS
-        case DX_CHARSET_SHFTJIS: break;
-#endif /* #ifndef DXPORTLIB_NON_SJIS */
-        case DX_CHARSET_EXT_UTF8: break;
-        default: return -1;
-    }
-    
-    s_useCharSet = charset;
-    
-    return 0;
-}
-
-int PL_Text_GetUseCharSet(int charset) {
-    return s_useCharSet;
 }
