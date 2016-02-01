@@ -455,3 +455,17 @@ int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
             return PL_Text_IsIncompleteUTF8Char(string, length);
     }
 }
+
+int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, va_list args) {
+    return 0;
+}
+int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
+                       const wchar_t *format, va_list args) {
+    return 0;
+}
+int PL_Text_Vsscanf(const char *buf, int bufSize, int charset, const char *format, va_list args) {
+    return 0;
+}
+int PL_Text_Wvsscanf(const wchar_t *buf, int bufSize, int charset, const wchar_t *format, va_list args) {
+    return 0;
+}

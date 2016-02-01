@@ -26,6 +26,9 @@
 
 // EXT_ is used for DxPortLib extensions.
 
+// All UNICODE support is handled in the header, so multiple libraries
+// are not required for different configurations.
+
 #include "DxBuildConfig.h"
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
@@ -69,7 +72,7 @@ extern DXCALL int WaitKey();
 extern DXCALL int GetDateTime(DATEDATA *dateBuf);
 
 // - Gets the time since program start, in milliseconds.
-extern DXCALL int GetNowCount(int UseRDTSCFlag = FALSE);
+extern DXCALL int GetNowCount(int UseRDTSCFlag = DXFALSE);
 
 // - Gets a random value from [0...RandMax]
 extern DXCALL int GetRand(int maxValue);
@@ -104,10 +107,16 @@ extern DXCALL int EXT_FileRead_SetCharSet(int charset);
 
 // - Opens a file stream handle to the given file.
 // Returns -1 on failure, otherwise returns the stream handle.
-extern DXCALL int FileRead_open(const DXCHAR *filename, int ASync = FALSE);
+extern DXCALL int FileRead_openW(const wchar_t *filename, int ASync = DXFALSE);
+extern DXCALL int FileRead_openA(const char *filename, int ASync = DXFALSE);
+DXUNICALL_WRAP(FileRead_open, (const TCHAR *filename, int ASync = DXFALSE),
+               (filename, ASync))
 
 // - Returns the size of the file.
-extern DXCALL int64_t FileRead_size(const DXCHAR *filename);
+extern DXCALL int64_t FileRead_sizeW(const wchar_t *filename);
+extern DXCALL int64_t FileRead_sizeA(const char *filename);
+DXUNICALL_WRAP(FileRead_size, (const TCHAR *filename),
+               (filename))
 
 // - Closes the file stream handle.
 extern DXCALL int FileRead_close(int fileHandle);
@@ -132,15 +141,33 @@ extern DXCALL int FileRead_read(void *data, int size, int fileHandle);
 extern DXCALL int FileRead_eof(int fileHandle);
 
 // - Reads a single line of text from the file, returns length.
-extern DXCALL int FileRead_gets(DXCHAR *buffer,
-                                int bufferSize, int fileHandle);
+extern DXCALL int FileRead_getsW(wchar_t *buffer,
+                                 int bufferSize, int fileHandle);
+extern DXCALL int FileRead_getsA(char *buffer,
+                                 int bufferSize, int fileHandle);
+DXUNICALL_WRAP(FileRead_gets, (TCHAR *buffer, int bufferSize, int fileHandle),
+               (buffer, bufferSize, fileHandle))
 
 // - Reads a single character.
-extern DXCALL DXCHAR FileRead_getc(int fileHandle);
+extern DXCALL wchar_t FileRead_getcW(int fileHandle);
+extern DXCALL char FileRead_getcA(int fileHandle);
+static DXINLINE TCHAR FileRead_getc(int fileHandle) {
+    return DXUNICALL(FileRead_getc)(fileHandle);
+}
+
+// - Performas a vscanf() on the next line of text in the file.
+extern DXCALL int FileRead_vscanfW(int fileHandle,
+                                  const wchar_t *format, va_list args);
+extern DXCALL int FileRead_vscanfA(int fileHandle,
+                                  const char *format, va_list args);
+DXUNICALL_WRAP(FileRead_vscanf,
+        (int fileHandle, const TCHAR *format, va_list args),
+        (fileHandle, format, args))
 
 // - Performas a scanf() on the next line of text in the file.
-extern DXCALL int FileRead_scanf(int fileHandle,
-                                 const DXCHAR *format, ...);
+DXUNICALL_VA_WRAPTO(
+    FileRead_scanf, (int fileHandle, const TCHAR *format, ...),
+    FileRead_vscanf, (fileHandle, format, args), format)
 
 // ---------------------------------------------------------- DxArchive.cpp
 // - If true, will attempt to load data from dirname.dxa.
@@ -148,33 +175,49 @@ extern DXCALL int FileRead_scanf(int fileHandle,
 extern DXCALL int SetUseDXArchiveFlag(int flag);
 
 // - Sets the encryption key to be used for DXA files.
-extern DXCALL int SetDXArchiveKeyString(const DXCHAR *keyString = NULL);
+extern DXCALL int SetDXArchiveKeyStringW(const wchar_t *keyString = NULL);
+extern DXCALL int SetDXArchiveKeyStringA(const char *keyString = NULL);
+DXUNICALL_WRAP(SetDXArchiveKeyString, (const TCHAR *keyString = NULL), (keyString))
 
 // - Sets the filename extension to be used for DXA files.
 // Default is "dxa".
 // NOTICE: Non-Windows platforms are case sensitive!
-extern DXCALL int SetDXArchiveExtension(const DXCHAR *extension = NULL);
+extern DXCALL int SetDXArchiveExtensionW(const wchar_t *extension = NULL);
+extern DXCALL int SetDXArchiveExtensionA(const char *extension = NULL);
+DXUNICALL_WRAP(SetDXArchiveExtension, (const TCHAR *extension = NULL), (extension))
 
 // - If FALSE, tries to load from dxa files then normal files.
 //   If TRUE, tries to load from normal files then dxa files.
 extern DXCALL int SetDXArchivePriority(int priority = 0);
 
 // - Preloads the dxa archive to memory.
-// NOTICE: async is not supported and will be ignored.
-extern DXCALL int DXArchivePreLoad(const DXCHAR *dxaFilename,
-                                   int async = DXFALSE);
+// NOTICE: async is not currently supported and will be ignored.
+extern DXCALL int DXArchivePreLoadW(const wchar_t *dxaFilename,
+                                    int async = DXFALSE);
+extern DXCALL int DXArchivePreLoadA(const char *dxaFilename,
+                                    int async = DXFALSE);
+DXUNICALL_WRAP(DXArchivePreLoad, (const TCHAR *dxaFilename, int async = DXFALSE),
+               (dxaFilename, async))
 
 // - Returns TRUE if preloading has been completed.
-// NOTICE: As async is not supported, this will always be TRUE.
-extern DXCALL int DXArchiveCheckIdle(const DXCHAR *dxaFilename);
+// NOTICE: As async is not currently supported, this will always be TRUE.
+extern DXCALL int DXArchiveCheckIdleW(const wchar_t *dxaFilename);
+extern DXCALL int DXArchiveCheckIdleA(const char *dxaFilename);
+DXUNICALL_WRAP(DXArchiveCheckIdle, (const TCHAR *dxaFilename), (dxaFilename))
 
 // - Releases the archive data from memory.
-extern DXCALL int DXArchiveRelease(const DXCHAR *dxaFilename);
+extern DXCALL int DXArchiveReleaseW(const wchar_t *dxaFilename);
+extern DXCALL int DXArchiveReleaseA(const char *dxaFilename);
+DXUNICALL_WRAP(DXArchiveRelease, (const TCHAR *dxaFilename), (dxaFilename))
 
 // - Returns TRUE if filename is contained within the
 //   archive pointed to by dxaFilename.
-extern DXCALL int DXArchiveCheckFile(const DXCHAR *dxaFilename,
-                                     const DXCHAR *filename);
+extern DXCALL int DXArchiveCheckFileW(const wchar_t *dxaFilename,
+                                      const wchar_t *filename);
+extern DXCALL int DXArchiveCheckFileA(const char *dxaFilename,
+                                      const char *filename);
+DXUNICALL_WRAP(DXArchiveCheckFile, (const TCHAR *dxaFilename, const TCHAR *filename),
+               (dxaFilename, filename))
 
 // ------------------------------------------------------------ DxInput.cpp
 #ifndef DX_NON_INPUT
@@ -235,10 +278,10 @@ extern DXCALL int SetValidMousePointerWindowOutClientAreaMoveFlag(int flag);
 
 // - Gets the Vertical or Horizontal mouse wheel states.
 // If clearFlag, resets internal value to zero.
-extern DXCALL int GetMouseWheelRotVol(int clearFlag = TRUE);
-extern DXCALL int GetMouseHWheelRotVol(int clearFlag = TRUE);
-extern DXCALL float GetMouseWheelRotVolF(int clearFlag = TRUE);
-extern DXCALL float GetMouseHWheelRotVolF(int clearFlag = TRUE);
+extern DXCALL int GetMouseWheelRotVol(int clearFlag = DXTRUE);
+extern DXCALL int GetMouseHWheelRotVol(int clearFlag = DXTRUE);
+extern DXCALL float GetMouseWheelRotVolF(int clearFlag = DXTRUE);
+extern DXCALL float GetMouseHWheelRotVolF(int clearFlag = DXTRUE);
 
 #endif /* #ifndef DX_NON_INPUT */
 
@@ -252,7 +295,7 @@ extern DXCALL int SetGraphMode(int width, int height,
 // - Sets if the window can be resized or not.
 // NOTICE: Can only be set before DxLib_Init is called!
 extern DXCALL int SetWindowSizeChangeEnableFlag(int windowResizeFlag,
-                                                int fitScreen = TRUE);
+                                                int fitScreen = DXTRUE);
 
 // Avoid conflicts with windows headers that will define SetWindowText.
 #ifdef SetWindowText
@@ -260,8 +303,13 @@ extern DXCALL int SetWindowSizeChangeEnableFlag(int windowResizeFlag,
 #endif
 
 // - Sets the title of the window.
-extern DXCALL int SetWindowText(const DXCHAR *windowName);
-extern DXCALL int SetMainWindowText(const DXCHAR *windowName);
+extern DXCALL int SetWindowTextW(const wchar_t *windowName);
+extern DXCALL int SetWindowTextA(const char *windowName);
+DXUNICALL_WRAP(SetWindowText, (const TCHAR *windowName), (windowName))
+
+// - SetMainWindowText is an alias for SetWindowText.
+DXUNICALL_WRAPTO(SetMainWindowText, (const TCHAR *windowName),
+                 SetWindowText, (windowName))
 
 // - Flips the backbuffer to the front buffer.
 // Call when drawing operations for a frame are finished.
@@ -289,7 +337,9 @@ extern DXCALL int GetWaitVSyncFlag();
 
 // - DxPortLib Extension: Sets the icon file to use.
 // NOTICE: Cannot use resource icons. Supply a .png.
-extern DXCALL int EXT_SetIconImageFile(const DXCHAR *filename);
+extern DXCALL int EXT_SetIconImageFileW(const wchar_t *filename);
+extern DXCALL int EXT_SetIconImageFileA(const char *filename);
+DXUNICALL_WRAP(EXT_SetIconImageFile, (const TCHAR *filename), (filename))
 
 // - If TRUE, runs even if the window is not focused.
 // Default is FALSE.
@@ -307,56 +357,109 @@ extern DXCALL int GetWindowActiveFlag();
 extern DXCALL int GetActiveFlag();
 
 // - Creates an error message box.
-extern DXCALL int EXT_MessageBoxError(const DXCHAR *title,
-                                      const DXCHAR *text);
+extern DXCALL int EXT_MessageBoxErrorW(const wchar_t *title,
+                                       const wchar_t *text);
+extern DXCALL int EXT_MessageBoxErrorA(const char *title,
+                                       const char *text);
+DXUNICALL_WRAP(EXT_MessageBoxError, (const TCHAR *title, const TCHAR *text),
+               (title, text))
+
 // - Creates a message box asking a yes/no question.
 // Default selected button is button1.
 // MessageBoxYesNo returns -1 on error, 0 for button1, 1 for button2.
-extern DXCALL int EXT_MessageBoxYesNo(const DXCHAR *title,
-                                      const DXCHAR *text,
-                                      const DXCHAR *button1,
-                                      const DXCHAR *button2);
+extern DXCALL int EXT_MessageBoxYesNoW(const wchar_t *title,
+                                       const wchar_t *text,
+                                       const wchar_t *button1,
+                                       const wchar_t *button2);
+extern DXCALL int EXT_MessageBoxYesNoA(const char *title,
+                                       const char *text,
+                                       const char *button1,
+                                       const char *button2);
+DXUNICALL_WRAP(EXT_MessageBoxYesNo,
+               (const TCHAR *title, const TCHAR *text,
+                const TCHAR *button1, const TCHAR *button2),
+               (title, text, button1, button2))
 
 // --------------------------------------------------------- DxGraphics.cpp
 // - Creates a screen graph that can be used with SetDrawScreen.
 // Note that you can't use it to draw with while bound.
 extern DXCALL int MakeScreen(int width, int height,
-                             int hasAlphaChannel = FALSE);
+                             int hasAlphaChannel = DXFALSE);
 
 // - Loads the given image file into the returned handle.
-extern DXCALL int LoadGraph(const DXCHAR *name,
-                            int notUse3DFlag = FALSE);
+extern DXCALL int LoadGraphW(const wchar_t *name,
+                             int notUse3DFlag = DXFALSE);
+extern DXCALL int LoadGraphA(const char *name,
+                             int notUse3DFlag = DXFALSE);
+DXUNICALL_WRAP(LoadGraph, (const TCHAR *name, int NotUse3DFlag = DXFALSE),
+               (name, NotUse3DFlag))
 
 // - Loads the given image flipped horizontally into the returned handle.
-extern DXCALL int LoadReverseGraph(const DXCHAR *name,
-                                   int notUse3DFlag = FALSE);
+extern DXCALL int LoadReverseGraphW(const wchar_t *name,
+                                    int notUse3DFlag = DXFALSE);
+extern DXCALL int LoadReverseGraphA(const char *name,
+                                    int notUse3DFlag = DXFALSE);
+DXUNICALL_WRAP(LoadReverseGraph, (const TCHAR *name, int NotUse3DFlag = DXFALSE),
+               (name, NotUse3DFlag))
 
 // - Loads an image, and then derives into graphCount graphics handles,
 //   placing them into handleBuf.
 // e.g.:
 //   int handles[16];
 //   LoadDivGraph("image.png", 16, 4, 4, 64, 64, handles);
-extern DXCALL int LoadDivGraph(
-                          const DXCHAR *filename, int graphCount,
+extern DXCALL int LoadDivGraphW(
+                          const wchar_t *filename, int graphCount,
                           int xCount, int yCount, int xSize, int ySize,
-                          int *handleBuf,
-                          int notUse3DFlag = FALSE);
-extern DXCALL int LoadDivBmpGraph(
-                          const DXCHAR *filename, int graphCount,
+                          int *handleBuf, int notUse3DFlag = DXFALSE);
+extern DXCALL int LoadDivGraphA(
+                          const char *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf, int notUse3DFlag = DXFALSE);
+DXUNICALL_WRAP(LoadDivGraph,
+               (const TCHAR *filename, int graphCount,
+                int xCount, int yCount, int xSize, int ySize,
+                int *handleBuf, int notUse3DFlag = DXFALSE),
+               (filename, graphCount, xCount, yCount,
+                xSize, ySize, handleBuf, notUse3DFlag))
+
+extern DXCALL int LoadDivBmpGraphW(
+                          const wchar_t *filename, int graphCount,
                           int xCount, int yCount, int xSize, int ySize,
                           int *handleBuf, int textureFlag, int flipFlag);
-extern DXCALL int LoadReverseDivGraph(
-                          const DXCHAR *filename, int graphCount,
+extern DXCALL int LoadDivBmpGraphA(
+                          const char *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf, int textureFlag, int flipFlag);
+DXUNICALL_WRAP(LoadDivBmpGraph,
+               (const TCHAR *filename, int graphCount,
+                int xCount, int yCount, int xSize, int ySize,
+                int *handleBuf, int textureFlag, int flipFlag),
+               (filename, graphCount, xCount, yCount,
+                xSize, ySize, handleBuf, textureFlag, flipFlag))
+
+extern DXCALL int LoadReverseDivGraphW(
+                          const wchar_t *filename, int graphCount,
                           int xCount, int yCount, int xSize, int ySize,
                           int *handleBuf,
-                          int notUse3DFlag = FALSE);
+                          int notUse3DFlag = DXFALSE);
+extern DXCALL int LoadReverseDivGraphA(
+                          const char *filename, int graphCount,
+                          int xCount, int yCount, int xSize, int ySize,
+                          int *handleBuf,
+                          int notUse3DFlag = DXFALSE);
+DXUNICALL_WRAP(LoadReverseDivGraph,
+               (const TCHAR *filename, int graphCount,
+                int xCount, int yCount, int xSize, int ySize,
+                int *handleBuf, int notUse3DFlag = DXFALSE),
+               (filename, graphCount, xCount, yCount,
+                xSize, ySize, handleBuf, notUse3DFlag))
 
 // - Deletes a Graph handle.
-extern DXCALL int DeleteGraph(int graphID, int LogOutFlag = FALSE);
+extern DXCALL int DeleteGraph(int graphID, int LogOutFlag = DXFALSE);
 // - Deletes all graph handles that were based on the same graph as this.
 extern DXCALL int DeleteSharingGraph(int graphID);
 // - Deletes ALL Graph handles.
-extern DXCALL int InitGraph(int LogOutFlag = FALSE);
+extern DXCALL int InitGraph(int LogOutFlag = DXFALSE);
 
 // - Gets the number of currently active graphs.
 extern DXCALL int GetGraphNum();
@@ -421,9 +524,9 @@ extern DXCALL int DrawLineBoxF(float x1, float y1, float x2, float y2,
 
 // - Draws a circle centered at (x,y), with radius r.
 extern DXCALL int DrawCircle(int x, int y, int r,
-                             DXCOLOR color, int fillFlag = TRUE);
+                             DXCOLOR color, int fillFlag = DXTRUE);
 extern DXCALL int DrawCircleF(float x, float y, float r,
-                              DXCOLOR color, int fillFlag = TRUE);
+                              DXCOLOR color, int fillFlag = DXTRUE);
 // - Draws an ellipse centered at (x,y), with extents (rx,ry).
 extern DXCALL int DrawOval(int x, int y, int rx, int ry,
                            DXCOLOR color, int fillFlag);
@@ -580,24 +683,64 @@ extern DXCALL int ClearDrawScreen(const RECT *clearRect = NULL);
 extern DXCALL int ClsDrawScreen();
 
 // - Saves a region of the current screen to an image file.
-extern DXCALL int SaveDrawScreen(int x1, int y1, int x2, int y2,
-                                 const DXCHAR *filename,
-                                 int saveType = DX_IMAGESAVETYPE_BMP,
-                                 int jpegQuality = 80,
-                                 int jpegSample2x1 = DXTRUE,
-                                 int pngCompressionLevel = -1);
-extern DXCALL int SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
-                                      const DXCHAR *filename);
-extern DXCALL int SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
-                                       const DXCHAR *filename,
-                                       int quality = 80,
-                                       int sample2x1 = DXTRUE);
-extern DXCALL int SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
-                                      const DXCHAR *filename,
-                                      int compressionLevel = -1);
+extern DXCALL int SaveDrawScreenW(int x1, int y1, int x2, int y2,
+                                  const wchar_t *filename,
+                                  int saveType = DX_IMAGESAVETYPE_BMP,
+                                  int jpegQuality = 80,
+                                  int jpegSample2x1 = DXTRUE,
+                                  int pngCompressionLevel = -1);
+extern DXCALL int SaveDrawScreenA(int x1, int y1, int x2, int y2,
+                                  const char *filename,
+                                  int saveType = DX_IMAGESAVETYPE_BMP,
+                                  int jpegQuality = 80,
+                                  int jpegSample2x1 = DXTRUE,
+                                  int pngCompressionLevel = -1);
+DXUNICALL_WRAP(SaveDrawScreen,
+               (int x1, int y1, int x2, int y2,
+                const TCHAR *filename,
+                int saveType = DX_IMAGESAVETYPE_BMP,
+                int jpegQuality = 80, int jpegSample2x1 = DXTRUE,
+                int pngCompressionLevel = -1),
+               (x1, y1, x2, y2, filename, saveType,
+                jpegQuality, jpegSample2x1, pngCompressionLevel))
+
+extern DXCALL int SaveDrawScreenToBMPW(int x1, int y1, int x2, int y2,
+                                       const wchar_t *filename);
+extern DXCALL int SaveDrawScreenToBMPA(int x1, int y1, int x2, int y2,
+                                       const char *filename);
+DXUNICALL_WRAP(SaveDrawScreenToBMP,
+               (int x1, int y1, int x2, int y2, const TCHAR *filename),
+               (x1, y1, x2, y2, filename))
+
+extern DXCALL int SaveDrawScreenToJPEGW(int x1, int y1, int x2, int y2,
+                                        const wchar_t *filename,
+                                        int quality = 80,
+                                        int sample2x1 = DXTRUE);
+extern DXCALL int SaveDrawScreenToJPEGA(int x1, int y1, int x2, int y2,
+                                        const char *filename,
+                                        int quality = 80,
+                                        int sample2x1 = DXTRUE);
+DXUNICALL_WRAP(SaveDrawScreenToJPEG,
+               (int x1, int y1, int x2, int y2,
+                const TCHAR *filename, int quality = 80,
+                int sample2x1 = DXTRUE),
+               (x1, y1, x2, y2, filename, quality, sample2x1))
+
+extern DXCALL int SaveDrawScreenToPNGW(int x1, int y1, int x2, int y2,
+                                       const wchar_t *filename,
+                                       int compressionLevel = -1);
+extern DXCALL int SaveDrawScreenToPNGA(int x1, int y1, int x2, int y2,
+                                       const char *filename,
+                                       int compressionLevel = -1);
+DXUNICALL_WRAP(SaveDrawScreenToPNG,
+               (int x1, int y1, int x2, int y2,
+                const TCHAR *filename, int compressionLevel = -1),
+               (x1, y1, x2, y2, filename, compressionLevel))
 
 // - Given the three RGB components, returns a color value.
-extern DXCALL DXCOLOR GetColor(int red, int green, int blue);
+static DXINLINE DXCOLOR GetColor(int red, int green, int blue) {
+    return red | (green << 8) | (blue << 16);
+}
 
 // ------------------------------------------------------------- DxFont.cpp
 #ifndef DX_NON_FONT
@@ -608,13 +751,25 @@ extern DXCALL DXCOLOR GetColor(int red, int green, int blue);
 //   bolded.
 //   exRateX/exRateY are a global Extend multiplier used.
 // NOTICE: This must be used for all fonts.
-extern DXCALL int EXT_MapFontFileToName(const DXCHAR *filename,
-                                        const DXCHAR *fontname,
-                                        int thickness,
-                                        int boldFlag,
-                                        double exRateX = 1.0,
-                                        double exRateY = 1.0
-                                        );
+extern DXCALL int EXT_MapFontFileToNameW(const wchar_t *filename,
+                                         const wchar_t *fontname,
+                                         int thickness,
+                                         int boldFlag,
+                                         double exRateX = 1.0,
+                                         double exRateY = 1.0);
+extern DXCALL int EXT_MapFontFileToNameA(const char *filename,
+                                         const char *fontname,
+                                         int thickness,
+                                         int boldFlag,
+                                         double exRateX = 1.0,
+                                         double exRateY = 1.0);
+DXUNICALL_WRAP(EXT_MapFontFileToName,
+               (const TCHAR *filename, const TCHAR *fontname,
+                int thickness, int boldFlag,
+                double exRateX = 1.0, double exRateY = 1.0),
+               (filename, fontname, thickness, boldFlag,
+                exRateX, exRateY))
+
 // - DxPortLib Extension.
 //   Deletes all existing font mappings.
 //   Will not delete font handles.
@@ -623,59 +778,151 @@ extern DXCALL int EXT_InitFontMappings();
 // ------ Font handle functions
 
 // - Draws a string at the given position, with the given font and color.
-extern DXCALL int DrawStringToHandle(int x, int y, const DXCHAR *string,
-                                     DXCOLOR color, int fontHandle,
-                                     DXCOLOR edgeColor = 0,
-                                     int VerticalFlag = FALSE);
-extern DXCALL int DrawFormatStringToHandle(
+extern DXCALL int DrawStringToHandleW(int x, int y, const wchar_t *string,
+                                      DXCOLOR color, int fontHandle,
+                                      DXCOLOR edgeColor = 0,
+                                      int VerticalFlag = DXFALSE);
+extern DXCALL int DrawStringToHandleA(int x, int y, const char *string,
+                                      DXCOLOR color, int fontHandle,
+                                      DXCOLOR edgeColor = 0,
+                                      int VerticalFlag = DXFALSE);
+DXUNICALL_WRAP(DrawStringToHandle,
+               (int x, int y, const TCHAR *string,
+                DXCOLOR color, int fontHandle,
+                DXCOLOR edgeColor = 0,
+                int VerticalFlag = DXFALSE),
+               (x, y, string, color, fontHandle,
+                edgeColor, VerticalFlag))
+
+extern DXCALL int DrawFormatVStringToHandleA(
                                      int x, int y, DXCOLOR color,
                                      int fontHandle,
-                                     const DXCHAR *formatString, ...);
+                                     const char *formatString, va_list args);
+extern DXCALL int DrawFormatVStringToHandleW(
+                                     int x, int y, DXCOLOR color,
+                                     int fontHandle,
+                                     const wchar_t *formatString, va_list args);
+DXUNICALL_VA_WRAPTO(DrawFormatStringToHandle,
+                    (int x, int y, DXCOLOR color,
+                     int fontHandle,
+                     const TCHAR *formatString, ...),
+                    DrawFormatVStringToHandle,
+                    (x, y, color, fontHandle, formatString, args),
+                    formatString)
+
 // - Draws a scaled string at the given position, with the given font/color.
-extern DXCALL int DrawExtendStringToHandle(double ExRateX,
-                                           double ExRateY,
+extern DXCALL int DrawExtendStringToHandleA(double ExRateX, double ExRateY,
+                                            int x, int y,
+                                            const char *string,
+                                            DXCOLOR color, int fontHandle,
+                                            DXCOLOR edgeColor = 0,
+                                            int VerticalFlag = DXFALSE);
+extern DXCALL int DrawExtendStringToHandleW(double ExRateX, double ExRateY,
+                                            int x, int y,
+                                            const wchar_t *string,
+                                            DXCOLOR color,
+                                            int fontHandle,
+                                            DXCOLOR edgeColor = 0,
+                                            int VerticalFlag = DXFALSE);
+DXUNICALL_WRAP(DrawExtendStringToHandle,
+               (double ExRateX, double ExRateY, int x, int y,
+                const TCHAR *string, DXCOLOR color, int fontHandle,
+                DXCOLOR edgeColor = 0, int VerticalFlag = DXFALSE),
+               (ExRateX, ExRateY, x, y, string,
+                color, fontHandle, edgeColor, VerticalFlag))
+
+extern DXCALL int DrawExtendFormatVStringToHandleA(
+                                           double ExRateX, double ExRateY,
                                            int x, int y,
-                                           const DXCHAR *string,
                                            DXCOLOR color,
                                            int fontHandle,
-                                           DXCOLOR edgeColor = 0,
-                                           int VerticalFlag = FALSE);
-extern DXCALL int DrawExtendFormatStringToHandle(
-                                           double ExRateX,
-                                           double ExRateY,
+                                           const char *formatString, va_list args);
+extern DXCALL int DrawExtendFormatVStringToHandleW(
+                                           double ExRateX, double ExRateY,
                                            int x, int y,
                                            DXCOLOR color,
                                            int fontHandle,
-                                           const DXCHAR *formatString,
-                                           ...);
+                                           const wchar_t *formatString, va_list args);
+DXUNICALL_VA_WRAPTO(DrawExtendFormatStringToHandle,
+                    (double ExRateX, double ExRateY, int x, int y,
+                     DXCOLOR color, int fontHandle, const TCHAR *formatString, ...),
+                    DrawExtendFormatVStringToHandle,
+                    (ExRateX, ExRateY, x, y,
+                     color, fontHandle, formatString, args),
+                    formatString)
 
 // - Gets the width of a string that would be drawn.
-extern DXCALL int GetDrawStringWidthToHandle(const DXCHAR *string,
+extern DXCALL int GetDrawStringWidthToHandleA(const char *string,
                                              int strLen, int fontHandle,
-                                             int VerticalFlag = FALSE);
-extern DXCALL int GetDrawFormatStringWidthToHandle(int fontHandle,
-                                                   const DXCHAR *string,
-                                                   ...);
+                                             int VerticalFlag = DXFALSE);
+extern DXCALL int GetDrawStringWidthToHandleW(const wchar_t *string,
+                                             int strLen, int fontHandle,
+                                             int VerticalFlag = DXFALSE);
+DXUNICALL_WRAP(GetDrawStringWidthToHandle,
+               (const TCHAR *string, int strLen, int fontHandle,
+                int VerticalFlag = DXFALSE),
+               (string, strLen, fontHandle, VerticalFlag))
+
+extern DXCALL int GetDrawFormatVStringWidthToHandleA(int fontHandle,
+                                                     const char *string,
+                                                     va_list args);
+extern DXCALL int GetDrawFormatVStringWidthToHandleW(int fontHandle,
+                                                     const wchar_t *string,
+                                                     va_list args);
+DXUNICALL_VA_WRAPTO(GetDrawFormatStringWidthToHandle,
+                    (int fontHandle, const TCHAR *string, ...),
+                    GetDrawFormatVStringWidthToHandle,
+                    (fontHandle, string, args),
+                    string)
+
 // - Gets the scaled width of a string that would be drawn.
-extern DXCALL int GetDrawExtendStringWidthToHandle(double ExRateX,
-                                                   const DXCHAR *string,
-                                                   int strLen,
-                                                   int fontHandle,
-                                                   int VerticalFlag = FALSE);
-extern DXCALL int GetDrawExtendFormatStringWidthToHandle(
+extern DXCALL int GetDrawExtendStringWidthToHandleA(double ExRateX,
+                                                    const char *string,
+                                                    int strLen,
+                                                    int fontHandle,
+                                                    int VerticalFlag = DXFALSE);
+extern DXCALL int GetDrawExtendStringWidthToHandleW(double ExRateX,
+                                                    const wchar_t *string,
+                                                    int strLen,
+                                                    int fontHandle,
+                                                    int VerticalFlag = DXFALSE);
+DXUNICALL_WRAP(GetDrawExtendStringWidthToHandle,
+               (double ExRateX, const TCHAR *string,
+                int strLen, int fontHandle, int VerticalFlag = DXFALSE),
+               (ExRateX, string, strLen, fontHandle, VerticalFlag))
+
+extern DXCALL int GetDrawExtendFormatVStringWidthToHandleA(
                                                    double ExRateX,
                                                    int fontHandle,
-                                                   const DXCHAR *string,
-                                                   ...);
+                                                   const char *string,
+                                                   va_list args);
+extern DXCALL int GetDrawExtendFormatVStringWidthToHandleW(
+                                                   double ExRateX,
+                                                   int fontHandle,
+                                                   const wchar_t *string,
+                                                   va_list args);
+DXUNICALL_VA_WRAPTO(GetDrawExtendFormatStringWidthToHandle,
+                    (double ExRateX, int fontHandle, const TCHAR *string, ...),
+                    GetDrawExtendFormatVStringWidthToHandle,
+                    (ExRateX, fontHandle, string, args),
+                    string)
 
 // - Gets the font handle's size.
 extern DXCALL int GetFontSizeToHandle(int fontHandle);
 
 // - Gets the dimensions and advance information of the first
 //   character of the given string.
-extern DXCALL int GetFontCharInfo(int fontHandle, const DXCHAR *string,
-                                  int *xPos, int *yPos, int *advanceX,
-                                  int *width, int *height);
+extern DXCALL int GetFontCharInfoA(int fontHandle, const char *string,
+                                   int *xPos, int *yPos, int *advanceX,
+                                   int *width, int *height);
+extern DXCALL int GetFontCharInfoW(int fontHandle, const wchar_t *string,
+                                   int *xPos, int *yPos, int *advanceX,
+                                   int *width, int *height);
+DXUNICALL_WRAP(GetFontCharInfo,
+               (int fontHandle, const TCHAR *string,
+                int *xPos, int *yPos, int *advanceX,
+                int *width, int *height),
+               (fontHandle, string, xPos, yPos, advanceX, width, height))
 
 // - Sets the spacing between characters for a font handle.
 // Negative values are valid.
@@ -693,12 +940,23 @@ extern DXCALL int SetFontSpaceToHandle(int fontSpacing, int fontHandle);
 // edgeSize is valid for DX_FONTTYPE*_EDGE and may be 1 through 4.
 //   Default edgeSize is 1.
 // italics draws the font italicized. default is DXFALSE.
-extern DXCALL int CreateFontToHandle(const DXCHAR *fontname,
-                                     int size, int thickness,
-                                     int fontType = -1, int charset = -1,
-                                     int edgeSize = -1, int italic = DXFALSE,
-                                     int handle = -1
-                                     );
+extern DXCALL int CreateFontToHandleW(const wchar_t *fontname,
+                                      int size, int thickness,
+                                      int fontType = -1, int charset = -1,
+                                      int edgeSize = -1, int italic = DXFALSE,
+                                      int handle = -1);
+extern DXCALL int CreateFontToHandleA(const char *fontname,
+                                      int size, int thickness,
+                                      int fontType = -1, int charset = -1,
+                                      int edgeSize = -1, int italic = DXFALSE,
+                                      int handle = -1);
+DXUNICALL_WRAP(CreateFontToHandle,
+               (const TCHAR *fontname, int size, int thickness,
+                int fontType = -1, int charset = -1, int edgeSize = -1,
+                int italic = DXFALSE, int handle = -1),
+               (fontname, size, thickness, fontType, charset, edgeSize,
+                italic, handle))
+
 // - Deletes a font handle.
 extern DXCALL int DeleteFontToHandle(int handle);
 // - Returns TRUE if a font handle is still valid.
@@ -711,7 +969,11 @@ extern DXCALL int InitFontToHandle();
 
 // ------ "Default" font functions
 // DxPortLib maintains a font handle internally for the default font.
-// NOTICE: Unliked DxLib, there is no font set by default!
+// NOTICE: Unlike DxLib, there is no font set by default!
+//
+// Most of these functions do not actually exist in code, and are aliases
+// that grab the current default font handle and use that. The C version
+// includes some basic hardcoded aliases for external linking.
 // 
 // Changing any font information will cause it to refresh that font handle
 // the next time it is used, which is slow.
@@ -722,39 +984,70 @@ extern DXCALL int InitFontToHandle();
 // You should set this only once in your program and then use handles
 // for everything else.
 
+// - Gets the current default font handle.
+// NOTICE: This will change if the font is changed.
+extern DXCALL int GetDefaultFontHandle();
+
 // - Draws a string with the default font to (x,y).
-extern DXCALL int DrawString(int x, int y,
-                             const DXCHAR *string,
-                             DXCOLOR color, DXCOLOR edgeColor = 0);
-extern DXCALL int DrawFormatString(int x, int y,
-                                   DXCOLOR color,
-                                   const DXCHAR *formatString, ...);
+DXUNICALL_WRAPTO(DrawString, 
+                 (int x, int y, const TCHAR *string,
+                  DXCOLOR color, DXCOLOR edgeColor = 0),
+                 DrawStringToHandle,
+                 (x, y, string, color, GetDefaultFontHandle(),
+                  edgeColor, FALSE))
+DXUNICALL_VA_WRAPTO(DrawFormatString, 
+                    (int x, int y, DXCOLOR color, const TCHAR *formatString, ...),
+                    DrawFormatVStringToHandle,
+                    (x, y, color, GetDefaultFontHandle(), formatString, args),
+                    formatString)
 
 // - Draws a scaled string with the default font.
-extern DXCALL int DrawExtendString(int x, int y,
-                                   double ExRateX, double ExRateY,
-                                   const DXCHAR *string,
-                                   DXCOLOR color, DXCOLOR edgeColor = 0);
-extern DXCALL int DrawExtendFormatString(int x, int y,
-                                         double ExRateX, double ExRateY,
-                                         DXCOLOR color,
-                                         const DXCHAR *formatString, ...);
+DXUNICALL_WRAPTO(DrawExtendString,
+                 (int x, int y, double ExRateX, double ExRateY,
+                  const TCHAR *string, DXCOLOR color, DXCOLOR edgeColor = 0),
+                 DrawExtendStringToHandle,
+                 (ExRateX, ExRateY, x, y, string, color,
+                  GetDefaultFontHandle(), edgeColor, FALSE))
+DXUNICALL_VA_WRAPTO(DrawExtendFormatString,
+                    (int x, int y, double ExRateX, double ExRateY,
+                     DXCOLOR color, const TCHAR *formatString, ...),
+                    DrawExtendFormatVStringToHandle,
+                    (ExRateX, ExRateY, x, y, color,
+                     GetDefaultFontHandle(), formatString, args),
+                    formatString)
 
 // - Gets the width of a string using the default font.
-extern DXCALL int GetDrawStringWidth(const DXCHAR *string, int strLen,
-                                     int VerticalFlag = FALSE);
-extern DXCALL int GetDrawFormatStringWidth(const DXCHAR *string, ...);
+DXUNICALL_WRAPTO(GetDrawStringWidth,
+                 (const TCHAR *string, int strLen, int VerticalFlag = DXFALSE),
+                 GetDrawStringWidthToHandle,
+                 (string, strLen, GetDefaultFontHandle(), VerticalFlag))
+DXUNICALL_VA_WRAPTO(GetDrawFormatStringWidth,
+                    (const TCHAR *string, ...),
+                    GetDrawFormatVStringWidthToHandle,
+                    (GetDefaultFontHandle(), string, args),
+                    string)
 
 // - Gets the scaled width of a string using the default font.
-extern DXCALL int GetDrawExtendStringWidth(double ExRateX,
-                                           const DXCHAR *string,
-                                           int strLen,
-                                           int VerticalFlag = FALSE);
-extern DXCALL int GetDrawExtendFormatStringWidth(double ExRateX,
-                                                 const DXCHAR *string, ...);
+DXUNICALL_WRAPTO(GetDrawExtendStringWidth,
+                 (double ExRateX, const TCHAR *string,
+                  int strLen, int VerticalFlag = DXFALSE),
+                 GetDrawExtendStringWidthToHandle,
+                 (ExRateX, string, strLen,
+                  GetDefaultFontHandle(), VerticalFlag))
+
+DXUNICALL_VA_WRAPTO(GetDrawExtendFormatStringWidth,
+                    (double ExRateX, const TCHAR *string, ...),
+                    GetDrawExtendFormatVStringWidthToHandle,
+                    (ExRateX, GetDefaultFontHandle(), string, args),
+                    string)
 
 // - Changes the default font and charset.
-extern DXCALL int ChangeFont(const DXCHAR *fontName, int charSet = -1);
+extern DXCALL int ChangeFontW(const wchar_t *fontName, int charSet = -1);
+extern DXCALL int ChangeFontA(const char *fontName, int charSet = -1);
+DXUNICALL_WRAP(ChangeFont,
+               (const TCHAR *fontName, int charSet = -1),
+               (fontName, charSet))
+
 // - Changes the default font type.
 extern DXCALL int ChangeFontType(int fontType);
 
@@ -767,12 +1060,13 @@ extern DXCALL int SetFontThickness(int fontThickness);
 // - Sets the default font's spacing.
 extern DXCALL int SetFontSpace(int fontSpace);
 // - Sets the default font's name, size, and thickness all at once.
-extern DXCALL int SetDefaultFontState(const DXCHAR *fontName,
-                                      int fontSize, int fontThickness);
-
-// - Gets the current default font handle.
-// NOTICE: This will change if the font is changed.
-extern DXCALL int GetDefaultFontHandle();
+extern DXCALL int SetDefaultFontStateW(const wchar_t *fontName,
+                                       int fontSize, int fontThickness);
+extern DXCALL int SetDefaultFontStateA(const char *fontName,
+                                       int fontSize, int fontThickness);
+DXUNICALL_WRAP(SetDefaultFontState,
+               (const TCHAR *fontName, int fontSize, int fontThickness),
+               (fontName, fontSize, fontThickness))
 
 // - Sets if font textures will be generated with premultiplied alpha.
 // Default is FALSE.
@@ -810,18 +1104,29 @@ extern DXCALL int SetUseOldVolumeCalcFlag(int volumeFlag);
 
 // - Loads a sound file, returning a playable handle.
 // WAV files are loaded whole, OGG files are streamed.
-extern DXCALL int LoadSoundMem(const DXCHAR *filename,
-                               int bufferNum = 3, int unionHandle = -1);
+extern DXCALL int LoadSoundMemW(const wchar_t *filename,
+                                int bufferNum = 3, int unionHandle = -1);
+extern DXCALL int LoadSoundMemA(const char *filename,
+                                int bufferNum = 3, int unionHandle = -1);
+DXUNICALL_WRAP(LoadSoundMem,
+               (const TCHAR *filename, int bufferNum = 3, int unionHandle = -1),
+               (filename, bufferNum, unionHandle))
+
 // - Loads two sound files, an intro segment and then a second segment.
 // If this is played with DX_PLAYTYPE_LOP, only the second part will loop.
-extern DXCALL int LoadSoundMem2(const DXCHAR *filename,
-                                const DXCHAR *filename2);
+extern DXCALL int LoadSoundMem2W(const wchar_t *filename,
+                                 const wchar_t *filename2);
+extern DXCALL int LoadSoundMem2A(const char *filename,
+                                 const char *filename2);
+DXUNICALL_WRAP(LoadSoundMem2,
+               (const TCHAR *filename, const TCHAR *filename2),
+               (filename, filename2))
 
 // - Deletes a sound handle.
-extern DXCALL int DeleteSoundMem(int soundID, int LogOutFlag = FALSE);
+extern DXCALL int DeleteSoundMem(int soundID, int LogOutFlag = DXFALSE);
 
 // - Deletes all sound handles.
-extern DXCALL int InitSoundMem(int LogOutFlag = FALSE);
+extern DXCALL int InitSoundMem(int LogOutFlag = DXFALSE);
 
 // - Sets the data storage type for loaded sounds.
 // NOTICE: DxPortLib currently only supports DX_SOUNDDATATYPE_MEMNOPRESS.

@@ -78,7 +78,7 @@ static DXArchive *s_GetArchive(const char *filename) {
     return archive;
 }
 
-static int s_CloseArchive(const DXCHAR *filename) {
+static int s_CloseArchive(const char *filename) {
     ArchiveListEntry **pEntry = &s_archiveList;
     ArchiveListEntry *entry;
     
@@ -122,11 +122,11 @@ static void s_CloseArchives() {
 
 #else
 
-static DXArchive *s_GetArchive(const DXCHAR *filename) {
+static DXArchive *s_GetArchive(const char *filename) {
     return NULL;
 }
 
-static int s_CloseArchive(const DXCHAR *filename) {
+static int s_CloseArchive(const char *filename) {
     return -1;
 }
 
@@ -163,7 +163,7 @@ static int s_GetArchiveFilename(
         }
         
         if (s_archiveExtension[0] != '\0') {
-            DXCHAR *c = buf + position;
+            char *c = buf + position;
             c += PL_Text_WriteUTF8Char(c, '.', buf + maxLen - c);
             position += PL_Text_Strncpy(c, s_archiveExtension, buf + maxLen - c);
         } else {
@@ -303,7 +303,7 @@ int Dx_File_GetUseDXArchiveFlag() {
 }
 
 int Dx_File_DXArchivePreLoad(const char *dxaFilename, int async) {
-    DXCHAR buf[2048];
+    char buf[2048];
     DXArchive *archive;
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
         archive = s_GetArchive(buf);
@@ -320,7 +320,7 @@ int Dx_File_DXArchiveCheckIdle(const char *dxaFilename) {
     return DXTRUE;
 }
 int Dx_File_DXArchiveRelease(const char *dxaFilename) {
-    DXCHAR buf[2048];
+    char buf[2048];
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
         return s_CloseArchive(buf);
     }
@@ -328,7 +328,7 @@ int Dx_File_DXArchiveRelease(const char *dxaFilename) {
 }
 
 int Dx_File_DXArchiveCheckFile(const char *dxaFilename, const char *filename) {
-    DXCHAR buf[2048];
+    char buf[2048];
     DXArchive *archive;
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
         archive = s_GetArchive(buf);
@@ -475,6 +475,32 @@ int Dx_FileRead_getsA(char *buffer, int bufferSize, int fileHandle) {
     
     return bufferSize - remaining - 1;
 }
+int Dx_FileRead_getsW(wchar_t *buffer, int bufferSize, int fileHandle) {
+    int ch;
+    int remaining = bufferSize - 1;
+    
+    if (Dx_FileRead_eof(fileHandle)) {
+        return -1;
+    }
+    
+    // TODO: support and skip 0xfeff header.
+    
+    while (remaining > 0 && (ch = Dx_FileRead_getWholeChar(fileHandle)) != -1) {
+        if (ch == '\r') {
+            continue;
+        }
+        if (ch == '\n') {
+            break;
+        }
+        *buffer = ch;
+        remaining -= 1;
+        buffer += 1;
+    }
+    
+    *buffer = '\0';
+    
+    return bufferSize - remaining - 1;
+}
 
 char Dx_FileRead_getcA(int fileHandle) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
@@ -482,106 +508,48 @@ char Dx_FileRead_getcA(int fileHandle) {
         SDL_RWops *rwops = handle->rwops;
         char ch;
         if (SDL_RWread(rwops, &ch, sizeof(char), 1) < 1) {
-            return (DXCHAR)-1;
+            return (char)-1;
         }
         
         return ch;
     }
-    return (DXCHAR)-1;
+    return (char)-1;
 }
-
-#if !defined(HAVE_SSCANF) && defined(__WIN32__) && !defined(__GNUC__)
-/* Visual Studio pre-2013 does not have vsscanf for whatever reason.
- *
- * More confusingly, SDL2 has SDL_sscanf, but not SDL_vsscanf. Why?
- *
- * The source to the following code was acquired from:
- * http://www.flipcode.com/archives/vsscanf_for_Win32.shtml
- *
- * And then I cleaned up so it's actually compliant C,
- * supports unicode, and without a silly crash bug with %%.
- *
- * FIXME: remove this entirely and make a proper custom vsscanf function.
- */
-
-/*
- * vsscanf for Win32
- *
- * Written 5/2003 by <mgix@mgix.com>
- *
- * This code is in the Public Domain
- *
- */
-
-static int vsscanf(
-    const char  *buffer,
-    const char  *format,
-    va_list     argPtr
-)
-{
-    size_t count;
-    const TCHAR *p;
-    size_t stackSize;
-    void **newStack;
-    int result;
-    void *savedESP;
-
-    /* Get an upper bound for the # of args */
-    count = 0;
-    p = format;
-
-    while(1)
-    {
-        TCHAR c = *(p++);
-        if(c==0) break;
-        if(c=='%') {
-            if (p[0]!='*' && p[0]!='%') {
-                ++count;
-            } else if (p[0]!=0) {
-                ++p;
-            }
+wchar_t Dx_FileRead_getcW(int fileHandle) {
+    FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
+    if (handle != NULL) {
+        SDL_RWops *rwops = handle->rwops;
+        wchar_t ch;
+        if (SDL_RWread(rwops, &ch, sizeof(wchar_t), 1) < 1) {
+            return (wchar_t)-1;
         }
+        
+        return (wchar_t)ch;
     }
-
-    /* Make a local stack */
-    stackSize = (2+count)*sizeof(void*);
-    newStack = (void**)alloca(stackSize);
-
-    /* Fill local stack the way sscanf likes it */
-    newStack[0] = (void*)buffer;
-    newStack[1] = (void*)format;
-    memcpy(newStack+2, argPtr, count*sizeof(void*));
-
-    /* Warp into system sscanf with new stack */
-    _asm
-    {
-        mov     savedESP, esp;
-        mov     esp, newStack;
-        call    sscanf_s;
-        mov     esp, savedESP;
-        mov     result, eax;
-    }
-    return result;
+    return (wchar_t)-1;
 }
-#endif
 
 int Dx_FileRead_vscanfA(int fileHandle, const char *format, va_list args) {
-    char dxBuffer[4096];
     char buffer[4096];
-    const char *targetBuf;
     int len;
     
-    len = Dx_FileRead_getsA(dxBuffer, 4096, fileHandle);
+    len = Dx_FileRead_getsA(buffer, 4096, fileHandle);
     if (len < 0) {
         return 0;
     }
     
-    targetBuf = PL_Text_ConvertStrncpyIfNecessary(
-                    buffer, -1,
-                    dxBuffer, g_DxUseCharSet,
-                    4096);
+    return PL_Text_Vsscanf(buffer, 4096, g_DxUseCharSet, format, args);
+}
+int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
+    wchar_t buffer[4096];
+    int len;
     
-    return vsscanf(targetBuf, format, args);
+    len = Dx_FileRead_getsW(buffer, 4096, fileHandle);
+    if (len < 0) {
+        return 0;
+    }
+    
+    return PL_Text_Wvsscanf(buffer, 4096, g_DxUseCharSet, format, args);
 }
 
 int Dx_File_OpenRead(const char *filename) {

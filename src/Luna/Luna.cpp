@@ -414,7 +414,7 @@ void Luna::EXTSetOnlyWindowSize(int width, int height, bool isFullscreen, bool i
     s_lunaFullscreenDesktopFlag = newDesktopFlag;
 }
 
-void Luna::EXTSetWindowIconFromFile(const DXCHAR *filename) {
+void Luna::EXTSetWindowIconFromFile(const char *filename) {
     char buf[2048];
     PL_Window_SetIconFromFile(
         PL_Text_ConvertStrncpyIfNecessary(

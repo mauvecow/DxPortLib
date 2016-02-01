@@ -79,8 +79,8 @@ int PL_Platform_GetSaveFolder(char *buffer, int bufferLength,
 
 /* System agnostic message box stuff */
 int PL_Platform_MessageBoxError(
-        const DXCHAR *title,
-        const DXCHAR *text
+        const char *title,
+        const char *text
 ) {
     return SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, text, PL_window);
 }

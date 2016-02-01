@@ -49,7 +49,7 @@ extern int PL_Platform_GetTicks();
 extern void PL_Platform_Wait(int ticks);
 extern int PL_Platform_GetDateTime(DATEDATA *dateBuf);
 
-extern int PL_Platform_FileOpenReadDirect(const DXCHAR *filename);
+extern int PL_Platform_FileOpenReadDirect(const char *filename);
 extern int PL_Platform_GetSaveFolder(char *buffer, int bufferLength,
                                      const char *org, const char *app,
                                      int destEncoding);
@@ -107,6 +107,12 @@ extern int PL_Text_ConvertStrncat(char *dest, int destCharset,
 
 extern int PL_Text_WideCharToString(char *dest, int charset, const wchar_t *srcStr, int bufSize); 
 extern int PL_Text_StringToWideChar(wchar_t *dest, const char *srcStr, int charset, int bufSize);
+
+extern int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, va_list args);
+extern int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
+                              const wchar_t *format, va_list args);
+extern int PL_Text_Vsscanf(const char *buf, int bufSize, int charset, const char *format, va_list args);
+extern int PL_Text_Wvsscanf(const wchar_t *buf, int bufSize, int charset, const wchar_t *format, va_list args);
 
 #define DXVSNPRINTF SDL_vsnprintf
 

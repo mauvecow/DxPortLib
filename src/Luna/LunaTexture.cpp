@@ -28,7 +28,7 @@
 #include "PL/PLInternal.h"
 #include "LunaInternal.h"
 
-LTEXTURE LunaTexture::CreateFromFile(const DXCHAR *pFileName,
+LTEXTURE LunaTexture::CreateFromFile(const char *pFileName,
                                      eSurfaceFormat format,
                                      D3DCOLOR keyColor) {
     char buf[2048];
@@ -54,8 +54,8 @@ LTEXTURE LunaTexture::CreateFromFile(const DXCHAR *pFileName,
     return handle;
 }
 
-LTEXTURE LunaTexture::CreateFromLAG(const DXCHAR *pFileName,
-                                    const DXCHAR *pDataName,
+LTEXTURE LunaTexture::CreateFromLAG(const char *pFileName,
+                                    const char *pDataName,
                                     eSurfaceFormat format) {
     /* Not supported yet. */
     return INVALID_TEXTURE;

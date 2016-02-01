@@ -86,8 +86,8 @@ typedef struct _LunaFontSprData {
 
 static const char lfd_id[4] = { 'L', 'F', 'D', 0x00 };
 
-LFONTSPRITE LunaFontSprite::CreateFromFile(const DXCHAR *pFileName,
-                                 const DXCHAR *pExt, Bool IsAlpha, Uint32 Num,
+LFONTSPRITE LunaFontSprite::CreateFromFile(const char *pFileName,
+                                 const char *pExt, Bool IsAlpha, Uint32 Num,
                                  Bool IsSortZ,
                                  eSurfaceFormat Format) {
     char filebuf[4096];
@@ -241,7 +241,7 @@ static unsigned int s_CharToIndex(LunaFontSprData *fontspr, unsigned int ch) {
     return fontspr->lfdIndex[lookup];
 }
 
-void LunaFontSprite::DrawString(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+void LunaFontSprite::DrawString(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 Px, Sint32 Py, Float Pz, D3DCOLOR Color) {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
     if (fontspr != NULL) {
@@ -295,7 +295,7 @@ void LunaFontSprite::DrawString(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
     }
 }
 
-void LunaFontSprite::DrawStringP(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+void LunaFontSprite::DrawStringP(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 Px, Sint32 Py, Float Pz, D3DCOLOR Color) {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
     if (fontspr != NULL) {
@@ -377,7 +377,7 @@ void LunaFontSprite::Rendering(LFONTSPRITE lFontSpr) {
     }
 }
 
-Bool LunaFontSprite::GetWidth(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+Bool LunaFontSprite::GetWidth(LFONTSPRITE lFontSpr, const char *pStr,
                          Sint32 *pLeft, Sint32 *pCenter, Sint32 *pRight) {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
     if (fontspr != NULL) {

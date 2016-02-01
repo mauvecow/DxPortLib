@@ -30,7 +30,7 @@
 
 extern SDL_RWops *PLSDL2_FileToRWops(int fileHandle);
 extern int PLSDL2_RWopsToFile(SDL_RWops *rwops);
-extern SDL_RWops *PLSDL2_FileOpenReadDirect(const DXCHAR *filename);
+extern SDL_RWops *PLSDL2_FileOpenReadDirect(const char *filename);
 
 /* ------------------------------------------------------------- Screen.c */
 

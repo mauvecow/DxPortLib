@@ -25,10 +25,8 @@
 #include "DxBuildConfig.h"
 
 #include <stdint.h>
-
-#ifdef UNICODE
-#  include <wchar.h>
-#endif
+#include <stdarg.h>
+#include <wchar.h>
 
 #if defined(__GNUC__)
 #  define DXINLINE __inline__
@@ -89,16 +87,40 @@ typedef char TCHAR;
 #endif
 
 #ifndef NULL
-#define NULL (0)
+#  define NULL (0)
 #endif
 
 #ifndef DXINLINE
-#if defined(__GNUC__)
-#define DXINLINE __inline__
+#  if defined(__GNUC__)
+#    define DXINLINE __inline__
+#  else
+#    define DXINLINE __inline
+#  endif
+#endif
+
+#ifdef UNICODE
+#  define DXUNICALL(a) a ## W
 #else
-#define DXINLINE __inline
+#  define DXUNICALL(a) a ## A
 #endif
-#endif
+
+#define DXUNICALL_WRAP(func, params, tparams) \
+    static DXINLINE int func params { \
+        return DXUNICALL(func) tparams; \
+    }
+
+#define DXUNICALL_WRAPTO(func, params, funcTo, tparams) \
+    static DXINLINE int func params { \
+        return DXUNICALL(funcTo) tparams; \
+    }
+#define DXUNICALL_VA_WRAPTO(func, params, funcTo, tparams, argStart) \
+    static DXINLINE int func params { \
+        va_list args; \
+        va_start(args, argStart); \
+        int retval = DXUNICALL(funcTo) tparams; \
+        va_end(args); \
+        return retval; \
+    }
 
 #ifdef __cplusplus
 namespace DxLib {
@@ -109,16 +131,15 @@ namespace DxLib {
 #define DXLIB_VERSION_STR "3.11 "
 
 /* Various type macros and build defines */
-#define DXCHAR char
 #define DXCOLOR int
 #define DXTRUE (1)
 #define DXFALSE (0)
 
 #ifndef TRUE
-#define TRUE (1)
+#  define TRUE (1)
 #endif
 #ifndef FALSE
-#define FALSE (0)
+#  define FALSE (0)
 #endif
 
 /* Specify DLL export for all functions. */
