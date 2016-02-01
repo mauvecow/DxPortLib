@@ -456,6 +456,9 @@ int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
     }
 }
 
+/* Not all platforms have these, so we implement our own, with custom
+ * locale support. Suffering. */
+
 int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, va_list args) {
     return 0;
 }

@@ -483,7 +483,7 @@ int Dx_FileRead_getsW(wchar_t *buffer, int bufferSize, int fileHandle) {
         return -1;
     }
     
-    // TODO: support and skip 0xfeff header.
+    /* TODO: support and skip 0xfeff header. */
     
     while (remaining > 0 && (ch = Dx_FileRead_getWholeChar(fileHandle)) != -1) {
         if (ch == '\r') {
