@@ -78,7 +78,7 @@ static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
     /* PL_BLEND_ONE = s */
     { TEX_PRESET_MODULATE,  PL_BLENDFUNC_DISABLE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE },
     /* ALPHA = (d*(1-a)) + (s*a) */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ONE },
     /* ADD = d + (s*a) */
     { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
     /* SUB = d - (s*a) */
@@ -1237,12 +1237,17 @@ int Dx_Draw_UpdateDrawScreen() {
         PL_Matrix_CreateOrthoOffCenterLH(&s_projectionMatrix,
             0, (float)s_drawScreenWidth, 0, (float)s_drawScreenHeight, -32768, 32767);
         PL_Matrix_CreateIdentity(&s_viewMatrix);
+        
+        s_scissorEnabled = DXFALSE;
+        PLG.DisableScissor(); /* Technically wrong. DxLib clips. */
     }
     return 0;
 }
 
 int Dx_Draw_SetDrawScreen(int graphID) {
     int textureID = Dx_Graph_GetTextureID(graphID, NULL);
+    
+    Dx_Draw_FlushCache();
     
     if (textureID >= 0) {
         s_drawScreenID = textureID;
@@ -1251,6 +1256,8 @@ int Dx_Draw_SetDrawScreen(int graphID) {
         s_drawScreenID = PL_Window_GetFramebuffer();
         s_drawGraphID = -1;
     }
+    
+    Dx_Draw_UpdateDrawScreen();
     
     return 0;
 }
@@ -1270,6 +1277,7 @@ int Dx_Draw_ResetDrawScreen() {
     s_drawGraphID = -1;
     
     Dx_Draw_SetDrawScreen(prevGraphID);
+    
     return 0;
 }
 

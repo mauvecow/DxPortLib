@@ -69,7 +69,6 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
         }
         
         PL_GL.glViewport(0, 0, info->width, info->height);
-        PL_GL.glClear(GL_COLOR_BUFFER_BIT);
     }
     
     return 0;
@@ -194,6 +193,7 @@ typedef struct TextureRef {
     int texHeight;
     
     int framebufferID;
+    int framebufferNeedsClear;
     
     int refCount;
     
@@ -301,13 +301,26 @@ int PLGL_Texture_BindFramebuffer(int textureRefID) {
     int framebufferID = -1;
     GLenum textureTarget = GL_TEXTURE_2D;
     GLuint textureID = 0;
+    int retval;
     if (textureref != NULL) {
         framebufferID = textureref->framebufferID;
         textureID = textureref->textureID;
         textureTarget = textureref->glTarget;
     }
     
-    return s_GLFrameBuffer_Bind(framebufferID, textureTarget, textureID);
+    retval = s_GLFrameBuffer_Bind(framebufferID, textureTarget, textureID);
+    
+    if (retval >= 0 && textureref != NULL && textureref->framebufferNeedsClear == TRUE) {
+        textureref->framebufferNeedsClear = FALSE;
+        if (textureref->hasAlphaChannel == FALSE) {
+            PL_GL.glClearColor(0, 0, 0, 1);
+        } else {
+            PL_GL.glClearColor(0, 0, 0, 0);
+        }
+        PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    }
+    
+    return retval;
 }
 
 int PLGL_Texture_HasAlphaChannel(int textureRefID) {
@@ -452,6 +465,8 @@ int PLGL_Texture_CreateFromDimensions(int width, int height, int hasAlphaChannel
     textureref->drawMode = DX_DRAWMODE_NEAREST;
     textureref->hasAlphaChannel = hasAlphaChannel;
     textureref->wrappableFlag = wrappableFlag;
+    textureref->framebufferID = -1;
+    textureref->framebufferNeedsClear = FALSE;
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (textureTarget == GL_TEXTURE_RECTANGLE_ARB) {
@@ -486,6 +501,7 @@ int PLGL_Texture_CreateFramebuffer(int width, int height, int hasAlphaChannel) {
     }
     
     textureref->framebufferID = framebufferID;
+    textureref->framebufferNeedsClear = TRUE;
     
     return textureRefID;
 }

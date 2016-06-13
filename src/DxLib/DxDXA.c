@@ -70,10 +70,10 @@ struct DXArchive {
 };
 
 typedef struct DXArchiveHeader {
-    unsigned short              DXID;
-    unsigned short              Version;
-    unsigned int                HeaderSize;
-} DXArchiveHeader;
+    uint16_t              DXID;
+    uint16_t              Version;
+    uint32_t              HeaderSize;
+} __attribute__((packed)) DXArchiveHeader;
 
 typedef struct DXArchiveInfo {
     uint64_t          DataAddress;
@@ -82,21 +82,21 @@ typedef struct DXArchiveInfo {
     uint64_t          DirectoryTableAddress;
     
     uint64_t          CodePage;
-} DXArchiveInfo;
+} __attribute__((packed)) DXArchiveInfo;
 
 typedef struct DXArchiveInfoV5 {
-    unsigned int                DataAddress;
-    unsigned int                FileNameTableAddress;
-    unsigned int                FileTableAddress;
-    unsigned int                DirectoryTableAddress;
+    uint32_t                DataAddress;
+    uint32_t                FileNameTableAddress;
+    uint32_t                FileTableAddress;
+    uint32_t                DirectoryTableAddress;
     
-    unsigned int                CodePage;
-} DXArchiveInfoV5;
+    uint32_t                CodePage;
+} __attribute__((packed)) DXArchiveInfoV5;
 
 typedef struct DXArchiveFileNameInfo {
-    unsigned short              Length;
-    unsigned short              Parity;
-} DXArchiveFileNameInfo;
+    uint16_t          Length;
+    uint16_t          Parity;
+} __attribute__((packed)) DXArchiveFileNameInfo;
 
 typedef struct DXArchiveFileInfo {
     uint64_t          NameAddress;
@@ -110,53 +110,53 @@ typedef struct DXArchiveFileInfo {
     
     uint64_t          DataSize;
     uint64_t          CompressedDataSize;
-} DXArchiveFileInfo;
+} __attribute__((packed)) DXArchiveFileInfo;
 
 typedef struct DXArchiveFileInfoV5 {
-    unsigned int                NameAddress;
-    unsigned int                Attributes;
+    uint32_t          NameAddress;
+    uint32_t          Attributes;
 
     uint64_t          CreationTime;
     uint64_t          LastAccessTime;
     uint64_t          LastWriteTime;
     
-    unsigned int                DataAddress;
+    uint32_t          DataAddress;
     
-    unsigned int                DataSize;
-    unsigned int                CompressedDataSize;
-} DXArchiveFileInfoV5;
+    uint32_t          DataSize;
+    uint32_t          CompressedDataSize;
+} __attribute__((packed)) DXArchiveFileInfoV5;
 typedef struct DXArchiveFileInfoV1 {
-    unsigned int                NameAddress;
-    unsigned int                Attributes;
+    uint32_t                NameAddress;
+    uint32_t                Attributes;
 
     uint64_t          CreationTime;
     uint64_t          LastAccessTime;
     uint64_t          LastWriteTime;
     
-    unsigned int                DataAddress;
+    uint32_t                DataAddress;
     
-    unsigned int                DataSize;
-} DXArchiveFileInfoV1;
+    uint32_t                DataSize;
+} __attribute__((packed)) DXArchiveFileInfoV1;
 
 typedef struct DXArchiveDirectoryInfo {
     uint64_t          DirectoryAddress;
     uint64_t          ParentDirectoryAddress;
     uint64_t          FileInfoCount;
     uint64_t          FileInfoAddress;
-} DXArchiveDirectoryInfo;
+} __attribute__((packed)) DXArchiveDirectoryInfo;
 
 typedef struct DXArchiveDirectoryInfoV5 {
-    unsigned int                DirectoryAddress;
-    unsigned int                ParentDirectoryAddress;
-    unsigned int                FileInfoCount;
-    unsigned int                FileInfoAddress;
-} DXArchiveDirectoryInfoV5;
+    uint32_t                DirectoryAddress;
+    uint32_t                ParentDirectoryAddress;
+    uint32_t                FileInfoCount;
+    uint32_t                FileInfoAddress;
+} __attribute__((packed)) DXArchiveDirectoryInfoV5;
 
 typedef struct DXArchiveSearchInfo {
     unsigned char               Filename[1024];
-    unsigned short              Parity;
-    unsigned short              FileInfoID;
-} DXArchiveSearchInfo;
+    uint16_t              Parity;
+    uint16_t              FileInfoID;
+} __attribute__((packed)) DXArchiveSearchInfo;
 
 /* ------------------------------------------------------------ DXARCHIVE FUNCTIONS */
 static int DXA_ReadAndDecode(DXArchive *archive, uint64_t position, void *dest, uint64_t length);
