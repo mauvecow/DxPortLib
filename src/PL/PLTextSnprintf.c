@@ -467,7 +467,7 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
                                 dest += s_printString(dest, end, &params, numBuf);
                                 break;
                             case 2: /* long long */
-                                s_printUint64(numBuf, numBuf + s_numBufSize, &params, va_arg(args, uint64_t));
+                                s_printUint64(numBuf, numBuf + s_numBufSize, &params, (uint64_t)va_arg(args, unsigned long long));
                                 dest += s_printString(dest, end, &params, numBuf);
                                 break;
                         }
@@ -636,13 +636,13 @@ int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
                                 dest += s_printStringW(dest, end, &params, numBuf);
                                 break;
                             case 2: /* long long */
-                                s_printUint64(numBuf, numBuf + s_numBufSize, &params, va_arg(args, uint64_t));
+                                s_printUint64(numBuf, numBuf + s_numBufSize, &params, (uint64_t)va_arg(args, unsigned long long));
                                 dest += s_printStringW(dest, end, &params, numBuf);
                                 break;
                         }
                         break;
                     case 'f': /* float */
-                        s_printDouble(numBuf, numBuf + s_numBufSize, &params, va_arg(args, float));
+                        s_printDouble(numBuf, numBuf + s_numBufSize, &params, va_arg(args, double));
                         dest += s_printStringW(dest, end, &params, numBuf);
                         break;
                     default:
