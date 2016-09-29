@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include "SDL.h"
 
-#ifdef __cplusplus   
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -82,16 +82,27 @@ extern unsigned int PL_Text_ReadChar(const char **textRef, int charset);
 extern int PL_Text_WriteChar(char *buffer, unsigned int ch, int bufSize, int charset);
 
 extern int PL_Text_Strlen(const char *dest);
+extern int PL_Text_StrlenW(const wchar_t *dest);
 extern char *PL_Text_Strdup(const char *dest);
+extern wchar_t *PL_Text_StrdupW(const wchar_t *dest);
 extern int PL_Text_Strncat(char *dest, const char *srcStr, int bufSize);
+extern int PL_Text_StrncatW(wchar_t *dest, const wchar_t *srcStr, int bufSize);
 extern int PL_Text_Strncpy(char *dest, const char *srcStr, int bufSize);
+extern int PL_Text_StrncpyW(wchar_t *str, const wchar_t *cpyStr, int bufSize);
 extern int PL_Text_Strcmp(const char *strA, const char *strB);
+extern int PL_Text_StrcmpW(const wchar_t *strA, const wchar_t *strB);
 extern int PL_Text_Strcasecmp(const char *strA, const char *strB);
+extern int PL_Text_StrcasecmpW(const wchar_t *strA, const wchar_t *strB);
 extern int PL_Text_Strncmp(const char *strA, const char *strB, int bufSize);
+extern int PL_Text_StrncmpW(const wchar_t *strA, const wchar_t *strB, int bufSize);
 extern int PL_Text_Strncasecmp(const char *strA, const char *strB, int bufSize);
+extern int PL_Text_StrncasecmpW(const wchar_t *strA, const wchar_t *strB, int bufSize);
 extern const char *PL_Text_Strstr(const char *strA, const char *strB);
+extern const wchar_t *PL_Text_StrstrW(const wchar_t *strA, const wchar_t *strB);
 extern const char *PL_Text_Strcasestr(const char *strA, const char *strB);
+extern const wchar_t *PL_Text_StrcasestrW(const wchar_t *strA, const wchar_t *strB);
 extern int PL_Text_StrTestExt(const char *str, const char *ext);
+extern int PL_Text_StrTestExtW(const wchar_t *str, const wchar_t *ext);
 
 extern int PL_Text_ConvertStrncpy(char *dest, int destCharset,
                                  const char *src, int srcCharset,
@@ -105,12 +116,16 @@ extern int PL_Text_ConvertStrncat(char *dest, int destCharset,
                                   const char *srcStr, int srcCharset,
                                   int bufSize);
 
-extern int PL_Text_WideCharToString(char *dest, int charset, const wchar_t *srcStr, int bufSize); 
+extern int PL_Text_WideCharToString(char *dest, int charset, const wchar_t *srcStr, int bufSize);
 extern int PL_Text_StringToWideChar(wchar_t *dest, const char *srcStr, int charset, int bufSize);
 
+extern void PL_Text_StrUpper(char *str, int charset);
+extern void PL_Text_StrLower(char *str, int charset);
+extern void PL_Text_StrUpperW(wchar_t *str);
+extern void PL_Text_StrLowerW(wchar_t *str);
+
 extern int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, va_list args);
-extern int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
-                              const wchar_t *format, va_list args);
+extern int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset, const wchar_t *format, va_list args);
 extern int PL_Text_Vsscanf(const char *buf, int bufSize, int charset, const char *format, va_list args);
 extern int PL_Text_Wvsscanf(const wchar_t *buf, int bufSize, int charset, const wchar_t *format, va_list args);
 

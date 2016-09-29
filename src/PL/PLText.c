@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -283,6 +283,15 @@ int PL_Text_Strlen(const char *str) {
     
     return i;
 }
+int PL_Text_StrlenW(const wchar_t *str) {
+    int i = 0;
+    
+    while (str[i] != 0) {
+        ++i;
+    }
+    
+    return i;
+}
 
 char *PL_Text_Strdup(const char *str) {
     int len = PL_Text_Strlen(str);
@@ -296,10 +305,43 @@ char *PL_Text_Strdup(const char *str) {
     
     return dest;
 }
+wchar_t *PL_Text_StrdupW(const wchar_t *str) {
+    int len = PL_Text_StrlenW(str);
+    wchar_t *dest = (wchar_t *)DXALLOC((unsigned int)(len + 1) * sizeof(wchar_t));
+    int i;
+    
+    for (i = 0; i < len; ++i) {
+        dest[i] = str[i];
+    }
+    dest[len] = 0;
+    
+    return dest;
+}
 
 int PL_Text_Strncat(char *str, const char *catStr, int bufSize) {
     int count = 0;
     char ch;
+    
+    if (bufSize <= 0) {
+        return 0;
+    }
+    
+    bufSize -= 1;
+    
+    while (str[count] != 0 && count < bufSize) {
+        count += 1;
+    }
+    
+    while (count < bufSize && (ch = (*catStr++)) != 0) {
+        str[count++] = ch;
+    }
+    
+    str[count] = 0;
+    return count;
+}
+int PL_Text_StrncatW(wchar_t *str, const wchar_t *catStr, int bufSize) {
+    int count = 0;
+    wchar_t ch;
     
     if (bufSize <= 0) {
         return 0;
@@ -336,6 +378,23 @@ int PL_Text_Strncpy(char *str, const char *cpyStr, int bufSize) {
     str[count] = 0;
     return count;
 }
+int PL_Text_StrncpyW(wchar_t *str, const wchar_t *cpyStr, int bufSize) {
+    int count = 0;
+    wchar_t ch;
+    
+    if (bufSize <= 0) {
+        return 0;
+    }
+    
+    bufSize -= 1;
+    
+    while (count < bufSize && (ch = (*cpyStr++)) != 0) {
+        str[count++] = ch;
+    }
+    
+    str[count] = 0;
+    return count;
+}
 
 int PL_Text_ConvertStrncat(char *dest, int destCharset, const char *srcStr, int srcCharset, int bufSize) {
     int len = PL_Text_Strlen(dest);
@@ -344,6 +403,16 @@ int PL_Text_ConvertStrncat(char *dest, int destCharset, const char *srcStr, int 
 }
 
 int PL_Text_Strcmp(const char *strA, const char *strB) {
+    int v;
+    
+    while ((v = (*strB - *strA)) == 0 && *strA != 0) {
+        strA += 1;
+        strB += 1;
+    }
+    
+    return v;
+}
+int PL_Text_StrcmpW(const wchar_t *strA, const wchar_t *strB) {
     int v;
     
     while ((v = (*strB - *strA)) == 0 && *strA != 0) {
@@ -374,6 +443,28 @@ int PL_Text_Strcasecmp(const char *strA, const char *strB) {
     
     return v;
 }
+int PL_Text_StrcasecmpW(const wchar_t *strA, const wchar_t *strB) {
+    unsigned int a, b;
+    int v;
+    
+    do {
+        a = *strA++;
+        b = *strB++;
+        v = b - a;
+        if (v != 0) {
+            if (a >= 'A' && a <= 'Z') {
+                a += 'a' - 'A';
+            }
+            if (b >= 'A' && b <= 'Z') {
+                b += 'a' - 'A';
+            }
+            v = b - a;
+        }
+    } while (v == 0 && a != 0 && b != 0);
+    
+    return v;
+}
+
 int PL_Text_Strncmp(const char *strA, const char *strB, int bufSize) {
     int v = 0;
     const char *end = strA + bufSize;
@@ -385,6 +476,18 @@ int PL_Text_Strncmp(const char *strA, const char *strB, int bufSize) {
     
     return v;
 }
+int PL_Text_StrncmpW(const wchar_t *strA, const wchar_t *strB, int bufSize) {
+    int v = 0;
+    const wchar_t *end = strA + bufSize;
+    
+    while (strA < end && (v = (*strB - *strA)) == 0 && *strA != 0) {
+        strA += 1;
+        strB += 1;
+    }
+    
+    return v;
+}
+
 int PL_Text_Strncasecmp(const char *strA, const char *strB, int bufSize) {
     const char *endA = strA + bufSize;
     unsigned int a, b;
@@ -407,6 +510,29 @@ int PL_Text_Strncasecmp(const char *strA, const char *strB, int bufSize) {
     
     return v;
 }
+int PL_Text_StrncasecmpW(const wchar_t *strA, const wchar_t *strB, int bufSize) {
+    const wchar_t *endA = strA + bufSize;
+    unsigned int a, b;
+    int v;
+    
+    do {
+        a = *strA++;
+        b = *strB++;
+        v = b - a;
+        if (v != 0) {
+            if (a >= 'A' && a <= 'Z') {
+                a += 'a' - 'A';
+            }
+            if (b >= 'A' && b <= 'Z') {
+                b += 'a' - 'A';
+            }
+            v = b - a;
+        }
+    } while (v == 0 && a != 0 && b != 0 && strA < endA);
+    
+    return v;
+}
+
 const char *PL_Text_Strstr(const char *strA, const char *strB) {
     int n = PL_Text_Strlen(strB);
     while (*strA) {
@@ -417,6 +543,16 @@ const char *PL_Text_Strstr(const char *strA, const char *strB) {
     }
     return NULL;
 }
+const wchar_t *PL_Text_StrstrW(const wchar_t *strA, const wchar_t *strB) {
+    int n = PL_Text_StrlenW(strB);
+    while (*strA) {
+        if (!PL_Text_StrncmpW(strA, strB, n)) {
+            return strA;
+        }
+        strA += 1;
+    }
+    return NULL;
+}
 const char *PL_Text_Strcasestr(const char *strA, const char *strB) {
     int n = PL_Text_Strlen(strB);
     while (*strA) {
@@ -424,6 +560,16 @@ const char *PL_Text_Strcasestr(const char *strA, const char *strB) {
             return strA;
         }
         PL_Text_ReadUTF8Char(&strA);
+    }
+    return NULL;
+}
+const wchar_t *PL_Text_StrcasestrW(const wchar_t *strA, const wchar_t *strB) {
+    int n = PL_Text_StrlenW(strB);
+    while (*strA) {
+        if (!PL_Text_StrncasecmpW(strA, strB, n)) {
+            return strA;
+        }
+        strA += 1;
     }
     return NULL;
 }
@@ -448,6 +594,69 @@ int PL_Text_StrTestExt(const char *str, const char *ext) {
     }
     return DXFALSE;
 }
+int PL_Text_StrTestExtW(const wchar_t *str, const wchar_t *ext) {
+    int slen = PL_Text_StrlenW(str);
+    int elen = PL_Text_StrlenW(ext);
+    const wchar_t *target = str + slen - elen;
+    
+    if (slen < elen) {
+        return DXFALSE;
+    }
+    
+    if (PL_Text_StrcasecmpW(target, ext) == 0) {
+        return DXTRUE;
+    }
+    return DXFALSE;
+}
+
+void PL_Text_StrUpper(char *str, int charset) {
+    unsigned int a;
+    
+    do {
+        char *dest = str;
+        a = PL_Text_ReadChar((const char **)&str, charset);
+        
+        if (a >= 'a' && a <= 'z') {
+            a += 'A' - 'a';
+            *dest = a; /* Assumes always one char. */
+        }
+    } while (a != 0);
+}
+
+void PL_Text_StrLower(char *str, int charset) {
+    unsigned int a;
+    
+    do {
+        char *dest = str;
+        a = PL_Text_ReadChar((const char **)&str, charset);
+        if (a >= 'A' && a <= 'Z') {
+            a += 'a' - 'A';
+            *dest = a; /* Assumes always one char. */
+        }
+    } while (a != 0);
+}
+
+void PL_Text_StrUpperW(wchar_t *str) {
+    unsigned int a;
+    
+    while ((a = *str++) != 0) {
+        if (a >= 'a' && a <= 'z') {
+            a += 'A' - 'a';
+            str[-1] = a;
+        }
+    }
+}
+
+void PL_Text_StrLowerW(wchar_t *str) {
+    unsigned int a;
+    
+    while ((a = *str++) != 0) {
+        if (a >= 'A' && a <= 'Z') {
+            a += 'a' - 'A';
+            str[-1] = a;
+        }
+    }
+}
 
 int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
     switch(charset) {
@@ -460,19 +669,3 @@ int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
     }
 }
 
-/* Not all platforms have these, so we implement our own, with custom
- * locale support. Suffering. */
-
-int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, va_list args) {
-    return 0;
-}
-int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
-                       const wchar_t *format, va_list args) {
-    return 0;
-}
-int PL_Text_Vsscanf(const char *buf, int bufSize, int charset, const char *format, va_list args) {
-    return 0;
-}
-int PL_Text_Wvsscanf(const wchar_t *buf, int bufSize, int charset, const wchar_t *format, va_list args) {
-    return 0;
-}
