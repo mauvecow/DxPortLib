@@ -125,7 +125,7 @@ int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int bufSize) {
         }
     }
     
-    return 0;    
+    return 0;
 }
 
 int PL_Text_IsIncompleteUTF8Char(const char *buffer, int length) {
@@ -306,6 +306,10 @@ int PL_Text_Strncat(char *str, const char *catStr, int bufSize) {
     }
     
     bufSize -= 1;
+    
+    while (str[count] != 0 && count < bufSize) {
+        count += 1;
+    }
     
     while (count < bufSize && (ch = (*catStr++)) != 0) {
         str[count++] = ch;
