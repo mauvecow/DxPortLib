@@ -33,6 +33,7 @@ typedef struct s_PrintParams {
     int forceType;
     char pad;
     int caseLevel;
+    int add0x;
 
     int width;
     int precision;
@@ -40,26 +41,53 @@ typedef struct s_PrintParams {
     int charset;
 } s_PrintParams;
 
+/* This is the same code in every variation of print, we just change types */
+#define DOTEXTPAD(strlenfunc) \
+    if (params->width > 0 && params->justifyLeft == 0) { \
+        char filler = params->pad; \
+        int len = strlenfunc(str); \
+        int width = params->width; \
+         \
+        if (params->pad != ' ') { \
+            if ((str[0] == '-' || str[0] == '+') && dest < end) { \
+                *dest++ = '-'; \
+                str += 1; \
+            } \
+            if (params->add0x && (dest + 1) < end) { \
+                *dest++ = '0'; \
+                *dest++ = 'x'; \
+                width -= 2; \
+            } \
+        } \
+         \
+        while (width > len && dest < end) { \
+            *dest++ = filler; \
+            width -= 1; \
+        } \
+    }
+
+#define DOPOSTPAD \
+    if (params->width > 0 && params->justifyLeft == 1) { \
+        int count = params->width - (dest - start); \
+        while (count > 0 && dest < end) { \
+            *dest++ = ' '; \
+            count -= 1; \
+        } \
+    }
+
 static int s_printString(char *dest, const char *end, s_PrintParams *params, const char *str) {
     char *start = dest;
     
-    if (params->width > 0) {
-        char filler = params->pad;
-        int len = PL_Text_Strlen(str);
-        int width = params->width;
-        
-        while (width > len && dest < end) {
-            *dest++ = filler;
-            width -= 1;
-        }
-    }
+    DOTEXTPAD(PL_Text_Strlen)
     
-    PL_Text_Strncpy(dest, str, end - dest + 1);
+    dest += PL_Text_Strncpy(dest, str, end - dest + 1);
+    
+    DOPOSTPAD
     
     if (params->caseLevel == -1) {
-        PL_Text_StrLower(dest, params->charset);
+        PL_Text_StrLower(start, params->charset);
     } else if (params->caseLevel == 1) {
-        PL_Text_StrUpper(dest, params->charset);
+        PL_Text_StrUpper(start, params->charset);
     }
     
     return dest - start;
@@ -68,23 +96,16 @@ static int s_printString(char *dest, const char *end, s_PrintParams *params, con
 static int s_printWString(char *dest, const char *end, s_PrintParams *params, const wchar_t *str) {
     char *start = dest;
     
-    if (params->width > 0) {
-        char filler = params->pad;
-        int len = PL_Text_StrlenW(str);
-        int width = params->width;
-        
-        while (width > len && dest < end) {
-            *dest++ = filler;
-            width -= 1;
-        }
-    }
+    DOTEXTPAD(PL_Text_StrlenW)
     
-    PL_Text_WideCharToString(dest, params->charset, str, end - dest + 1);
+    dest += PL_Text_WideCharToString(dest, params->charset, str, end - dest + 1);
+    
+    DOPOSTPAD
     
     if (params->caseLevel == -1) {
-        PL_Text_StrLower(dest, params->charset);
+        PL_Text_StrLower(start, params->charset);
     } else if (params->caseLevel == 1) {
-        PL_Text_StrUpper(dest, params->charset);
+        PL_Text_StrUpper(start, params->charset);
     }
     
     return dest - start;
@@ -93,23 +114,16 @@ static int s_printWString(char *dest, const char *end, s_PrintParams *params, co
 static int s_printStringW(wchar_t *dest, const wchar_t *end, s_PrintParams *params, const char *str) {
     wchar_t *start = dest;
     
-    if (params->width > 0) {
-        char filler = params->pad;
-        int len = PL_Text_Strlen(str);
-        int width = params->width;
-        
-        while (width > len && dest < end) {
-            *dest++ = filler;
-            width -= 1;
-        }
-    }
+    DOTEXTPAD(PL_Text_Strlen)
     
-    PL_Text_StringToWideChar(dest, str, params->charset, end - dest + 1);
+    dest += PL_Text_StringToWideChar(dest, str, params->charset, end - dest + 1);
+    
+    DOPOSTPAD
     
     if (params->caseLevel == -1) {
-        PL_Text_StrLowerW(dest);
+        PL_Text_StrLowerW(start);
     } else if (params->caseLevel == 1) {
-        PL_Text_StrUpperW(dest);
+        PL_Text_StrUpperW(start);
     }
     
     return dest - start;
@@ -117,23 +131,16 @@ static int s_printStringW(wchar_t *dest, const wchar_t *end, s_PrintParams *para
 static int s_printWStringW(wchar_t *dest, const wchar_t *end, s_PrintParams *params, const wchar_t *str) {
     wchar_t *start = dest;
     
-    if (params->width > 0) {
-        char filler = params->pad;
-        int len = PL_Text_StrlenW(str);
-        int width = params->width;
-        
-        while (width > len && dest < end) {
-            *dest++ = filler;
-            width -= 1;
-        }
-    }
+    DOTEXTPAD(PL_Text_StrlenW)
     
-    PL_Text_StrncpyW(dest, str, end - dest + 1);
+    dest += PL_Text_StrncpyW(dest, str, end - dest + 1);
+    
+    DOPOSTPAD
     
     if (params->caseLevel == -1) {
-        PL_Text_StrLowerW(dest);
+        PL_Text_StrLowerW(start);
     } else if (params->caseLevel == 1) {
-        PL_Text_StrUpperW(dest);
+        PL_Text_StrUpperW(start);
     }
     
     return dest - start;
@@ -167,13 +174,6 @@ static int s_printUnsignedLong(char *dest, const char *end, s_PrintParams *param
     
     if (params->radix < 0 || params->radix >= s_radixTableLen) {
         params->radix = 10;
-    }
-    
-    if (params->radix == 16) {
-        if ((end-dest) >= 2) {
-            *dest++ = '0';
-            *dest++ = 'x';
-        }
     }
     
     if (value == 0) {
@@ -311,10 +311,15 @@ static int s_printDouble(char *dest, const char *end, s_PrintParams *params, dou
             int c;
             value *= radix;
             
-            c = (int)floor(value);
+            if (precision == 1) {
+                c = (int)round(value);
+            } else {
+                c = (int)floor(value);
+            }
             *dest++ = s_radixTable[c];
             
             value -= c;
+            precision -= 1;
         }
     }
     
@@ -348,6 +353,7 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
             params.width = 0;
             params.charset = charset;
             params.radix = 10;
+            params.add0x = 0;
             
             /* Read flags for printing */
             contFlag = 1;
@@ -404,24 +410,26 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
                         } else {
                             dest += s_printWString(dest, end, &params, va_arg(args, const wchar_t *));
                         }
+                        break;
                     case 'S':
                         dest += s_printWString(dest, end, &params, va_arg(args, const wchar_t *));
                         break;
                     
                     case 'h': /* prefix for short */
+                        if (intLevel > -1) {
+                            intLevel -= 1;
+                        }
                         contFlag = 1; /* short becomes int */
-                        format += 1;
                         break;
                     case 'l': /* long prefix, can stack */
                         if (intLevel < 2) {
                             intLevel += 1;
                         }
                         contFlag = 1;
-                        format += 1;
                         break;
                     case 'I': /* I64 prefix */
                         if (PL_Text_Strncmp(format, "I64", 3) == 0) {
-                            format += 3;
+                            format += 2;
                             intLevel = 2;
                             contFlag = 1;
                         }
@@ -430,6 +438,10 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
                     case 'i': /* integer */
                     case 'd': /* also integer */
                         switch(intLevel) {
+                            case -1: /* short */
+                                s_printLong(numBuf, numBuf + s_numBufSize, &params, (short)va_arg(args, int));
+                                dest += s_printString(dest, end, &params, numBuf);
+                                break;
                             case 0: /* int */
                                 s_printLong(numBuf, numBuf + s_numBufSize, &params, (long)va_arg(args, int));
                                 dest += s_printString(dest, end, &params, numBuf);
@@ -448,6 +460,7 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
                     /* Hex, unsigned, octal, etc printing modes, all fall through */
                     case 'p': /* pointer */
                         intLevel = 1; /* pointers are always longs */
+                        params.add0x = 1;
                     case 'x': /* hexadecimal */
                         params.caseLevel = -1;
                     case 'X': /* capitalized hex */
@@ -462,8 +475,11 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
                             params.radix = 8;
                         }
                     case 'u': /* unsigned */
-                        params.pad = '0';
                         switch(intLevel) {
+                            case -1: /* short */
+                                s_printUnsignedLong(numBuf, numBuf + s_numBufSize, &params, (unsigned short)va_arg(args, unsigned int));
+                                dest += s_printString(dest, end, &params, numBuf);
+                                break;
                             case 0: /* int */
                                 s_printUnsignedLong(numBuf, numBuf + s_numBufSize, &params, (unsigned long)va_arg(args, unsigned int));
                                 dest += s_printString(dest, end, &params, numBuf);
@@ -485,6 +501,7 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
                     default:
                         break;
                 }
+                format += 1;
             } while (contFlag != 0);
         }
     }
@@ -492,6 +509,17 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
     *dest = 0;
     
     return dest - start;
+}
+
+int PL_Text_Snprintf(char *dest, int bufSize, int charset, const char *format, ...) {
+    va_list args;
+    int retval;
+    
+    va_start(args, format);
+    retval = PL_Text_Vsnprintf(dest, bufSize, charset, format, args);
+    va_end(args);
+    
+    return retval;
 }
 
 int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
@@ -520,6 +548,7 @@ int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
             params.width = 0;
             params.charset = charset;
             params.radix = 10;
+            params.add0x = 0;
             
             /* Read flags for printing */
             contFlag = 1;
@@ -576,22 +605,26 @@ int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
                         } else {
                             dest += s_printWStringW(dest, end, &params, va_arg(args, const wchar_t *));
                         }
+                        break;
                     case 'S':
                         dest += s_printWStringW(dest, end, &params, va_arg(args, const wchar_t *));
                         break;
                     
                     case 'h': /* prefix for short */
+                        if (intLevel > -1) {
+                            intLevel -= 1;
+                        }
                         contFlag = 1; /* short becomes int */
-                        format += 1;
                         break;
                     case 'l': /* long prefix, can stack */
                         if (intLevel < 2) {
                             intLevel += 1;
                         }
+                        contFlag = 1;
                         break;
                     case 'I': /* I64 prefix */
                         if (PL_Text_StrncmpW(format, L"I64", 3) == 0) {
-                            format += 3;
+                            format += 2;
                             intLevel = 2;
                         }
                         break;
@@ -599,6 +632,10 @@ int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
                     case 'i': /* integer */
                     case 'd': /* also integer */
                         switch(intLevel) {
+                            case -1: /* short */
+                                s_printLong(numBuf, numBuf + s_numBufSize, &params, (short)va_arg(args, int));
+                                dest += s_printStringW(dest, end, &params, numBuf);
+                                break;
                             case 0: /* int */
                                 s_printLong(numBuf, numBuf + s_numBufSize, &params, (long)va_arg(args, int));
                                 dest += s_printStringW(dest, end, &params, numBuf);
@@ -617,6 +654,7 @@ int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
                     /* Hex, unsigned, octal, etc printing modes, all fall through */
                     case 'p': /* pointer */
                         intLevel = 1; /* pointers are always longs */
+                        params.add0x = 1;
                     case 'x': /* hexadecimal */
                         params.caseLevel = -1;
                     case 'X': /* capitalized hex */
@@ -631,8 +669,11 @@ int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
                             params.radix = 8;
                         }
                     case 'u': /* unsigned */
-                        params.pad = '0';
                         switch(intLevel) {
+                            case -1: /* short */
+                                s_printUnsignedLong(numBuf, numBuf + s_numBufSize, &params, (unsigned short)va_arg(args, unsigned int));
+                                dest += s_printStringW(dest, end, &params, numBuf);
+                                break;
                             case 0: /* int */
                                 s_printUnsignedLong(numBuf, numBuf + s_numBufSize, &params, (unsigned long)va_arg(args, unsigned int));
                                 dest += s_printStringW(dest, end, &params, numBuf);
@@ -654,6 +695,7 @@ int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
                     default:
                         break;
                 }
+                format += 1;
             } while (contFlag != 0);
         }
     }
@@ -662,3 +704,15 @@ int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset,
     
     return dest - start;
 }
+
+int PL_Text_Wsnprintf(wchar_t *dest, int bufSize, int charset, const wchar_t *format, ...) {
+    va_list args;
+    int retval;
+    
+    va_start(args, format);
+    retval = PL_Text_Wvsnprintf(dest, bufSize, charset, format, args);
+    va_end(args);
+    
+    return retval;
+}
+
