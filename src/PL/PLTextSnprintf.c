@@ -22,7 +22,10 @@
 #include "PLInternal.h"
 
 /* Not all platforms have these, so we implement our own, with custom
- * locale support. Suffering. */
+ * locale support. Suffering.
+ *
+ * Loosely based on SDL2's code, also MIT license.
+ */
  
 typedef struct s_PrintParams {
     int justifyLeft;
@@ -413,11 +416,14 @@ int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, 
                         if (intLevel < 2) {
                             intLevel += 1;
                         }
+                        contFlag = 1;
+                        format += 1;
                         break;
                     case 'I': /* I64 prefix */
                         if (PL_Text_Strncmp(format, "I64", 3) == 0) {
                             format += 3;
                             intLevel = 2;
+                            contFlag = 1;
                         }
                         break;
                     

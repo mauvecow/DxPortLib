@@ -126,10 +126,8 @@ extern void PL_Text_StrLowerW(wchar_t *str);
 
 extern int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, va_list args);
 extern int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset, const wchar_t *format, va_list args);
-extern int PL_Text_Vsscanf(const char *buf, int bufSize, int charset, const char *format, va_list args);
-extern int PL_Text_Wvsscanf(const wchar_t *buf, int bufSize, int charset, const wchar_t *format, va_list args);
-
-#define DXVSNPRINTF SDL_vsnprintf
+extern int PL_Text_Vsscanf(const char *str, int charset, const char *format, va_list args);
+extern int PL_Text_Wvsscanf(const wchar_t *str, int charset, const wchar_t *format, va_list args);
 
 /* ------------------------------------------------------------ Handle.c */
 typedef enum {

@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -538,7 +538,7 @@ int Dx_FileRead_vscanfA(int fileHandle, const char *format, va_list args) {
         return 0;
     }
     
-    return PL_Text_Vsscanf(buffer, 4096, g_DxUseCharSet, format, args);
+    return PL_Text_Vsscanf(buffer, g_DxUseCharSet, format, args);
 }
 int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
     wchar_t buffer[4096];
@@ -549,7 +549,7 @@ int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
         return 0;
     }
     
-    return PL_Text_Wvsscanf(buffer, 4096, g_DxUseCharSet, format, args);
+    return PL_Text_Wvsscanf(buffer, g_DxUseCharSet, format, args);
 }
 
 int Dx_File_OpenRead(const char *filename) {
