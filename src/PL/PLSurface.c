@@ -259,7 +259,7 @@ int PL_Surface_FlipSurface(int surfaceID) {
     return DXTRUE;
 }
 
-int PL_Surface_Load(const DXCHAR *filename) {
+int PL_Surface_Load(const char *filename) {
     SDL_RWops *file;
     SDL_Surface *sdlSurface;
     int surfaceID;
@@ -275,7 +275,7 @@ int PL_Surface_Load(const DXCHAR *filename) {
     sdlSurface = IMG_Load_RW(file, SDL_FALSE);
     if (sdlSurface == NULL) {
         /* Get around an SDL2_image bug */
-        if (DXSTRTESTEXT(filename, TEXT(".tga"))) {
+        if (PL_Text_StrTestExt(filename, TEXT(".tga"))) {
             sdlSurface = IMG_LoadTGA_RW(file);
         }
     }

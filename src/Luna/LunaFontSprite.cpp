@@ -86,11 +86,15 @@ typedef struct _LunaFontSprData {
 
 static const char lfd_id[4] = { 'L', 'F', 'D', 0x00 };
 
-LFONTSPRITE LunaFontSprite::CreateFromFile(const DXCHAR *pFileName,
-                                 const DXCHAR *pExt, Bool IsAlpha, Uint32 Num,
+LFONTSPRITE LunaFontSprite::CreateFromFile(const char *pFileName,
+                                 const char *pExt, Bool IsAlpha, Uint32 Num,
                                  Bool IsSortZ,
                                  eSurfaceFormat Format) {
-    int file = PL_File_OpenRead(pFileName);
+    char filebuf[4096];
+    int file = PL_File_OpenRead(
+        PL_Text_ConvertStrncpyIfNecessary(
+            filebuf, -1, pFileName, g_lunaUseCharSet, 4096)
+    );
     unsigned char *lfdData = NULL;
     
     do {
@@ -148,9 +152,11 @@ LFONTSPRITE LunaFontSprite::CreateFromFile(const DXCHAR *pFileName,
             memcpy(buf, lfdData + sizeof(LFDHeader) + (sizeof(Uint16) * CODE_TABLE_SIZE) + (32 * i), 32);
             buf[32] = '\0';
             if (pExt != NULL) {
-                DXCHAR newBuf[64];
-                PL_Text_StringToDxString(buf, newBuf, 64, -1);
-                PL_Text_DxStrncat(newBuf, pExt, 64);
+                char newBuf[2048];
+                PL_Text_ConvertStrncpy(
+                    newBuf, -1, buf, g_lunaUseCharSet, 2048);
+                PL_Text_ConvertStrncat(
+                    newBuf, -1, pExt, g_lunaUseCharSet, 2048);
                 
                 int surface = PL_Surface_Load(newBuf);
                 fontspr->sheetGraphs[i] = PL_Surface_ToTexture(surface);
@@ -235,7 +241,7 @@ static unsigned int s_CharToIndex(LunaFontSprData *fontspr, unsigned int ch) {
     return fontspr->lfdIndex[lookup];
 }
 
-void LunaFontSprite::DrawString(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+void LunaFontSprite::DrawString(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 Px, Sint32 Py, Float Pz, D3DCOLOR Color) {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
     if (fontspr != NULL) {
@@ -247,7 +253,8 @@ void LunaFontSprite::DrawString(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
         float fontSize = F(fontspr->lfdHeader->fontSize);
         float spacing = F(fontSize + fontspr->space);
         int sheetCount = fontspr->sheetCount;
-        while ((ch = PL_Text_ReadDxChar(&pStr)) != 0) {
+        int charset = g_lunaUseCharSet;
+        while ((ch = PL_Text_ReadChar(&pStr, charset)) != 0) {
             if (ch == '\n' || ch == '\r') {
                 x = F(Px);
                 y += fontSize;
@@ -288,7 +295,7 @@ void LunaFontSprite::DrawString(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
     }
 }
 
-void LunaFontSprite::DrawStringP(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+void LunaFontSprite::DrawStringP(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 Px, Sint32 Py, Float Pz, D3DCOLOR Color) {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
     if (fontspr != NULL) {
@@ -300,7 +307,8 @@ void LunaFontSprite::DrawStringP(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
         float fontSize = F(fontspr->lfdHeader->fontSize);
         float spacing = F(fontSize + fontspr->space);
         int sheetCount = fontspr->sheetCount;
-        while ((ch = PL_Text_ReadDxChar(&pStr)) != 0) {
+        int charset = g_lunaUseCharSet;
+        while ((ch = PL_Text_ReadChar(&pStr, charset)) != 0) {
             if (ch == '\n' || ch == '\r') {
                 x = F(Px);
                 y += fontSize;
@@ -369,11 +377,11 @@ void LunaFontSprite::Rendering(LFONTSPRITE lFontSpr) {
     }
 }
 
-Bool LunaFontSprite::GetWidth(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+Bool LunaFontSprite::GetWidth(LFONTSPRITE lFontSpr, const char *pStr,
                          Sint32 *pLeft, Sint32 *pCenter, Sint32 *pRight) {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
     if (fontspr != NULL) {
-        int ch = PL_Text_ReadDxChar(&pStr);
+        int ch = PL_Text_ReadChar(&pStr, g_lunaUseCharSet);
         if (ch != 0) {
             unsigned int index = s_CharToIndex(fontspr, ch);
             if (index < fontspr->charMax) {

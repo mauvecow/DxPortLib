@@ -30,10 +30,10 @@
 static int s_initialized = 0;
 int PL_windowWidth = 640;
 int PL_windowHeight = 480;
+SDL_Window *PL_window = NULL;
 static int s_windowRefreshRate = 60;
 static int s_screenRefreshRate = 60;
 static int s_windowDepth = 32;
-static SDL_Window *s_window = NULL;
 static PLRect s_targetRect = { 0, 0, 640, 480 };
 static int s_windowRealWidth = 640;
 static int s_windowRealHeight = 480;
@@ -210,7 +210,7 @@ static void PL_Window_HandleResize(int realWidth, int realHeight) {
 
 static void PL_Window_Refresh() {
     int wWidth, wHeight;
-    SDL_GetWindowSize(s_window, &wWidth, &wHeight);
+    SDL_GetWindowSize(PL_window, &wWidth, &wHeight);
     if (wWidth != s_windowRealWidth || wHeight != s_windowRealHeight) {
         PL_Window_HandleResize(wWidth, wHeight);
     }
@@ -240,9 +240,9 @@ static void PL_Window_Refresh() {
                                    PL_PRIM_TRIANGLESTRIP, 0, 4);
         PLG.ClearPresetProgram();
         
-        SDL_GL_SwapWindow(s_window);
+        SDL_GL_SwapWindow(PL_window);
     } else {
-        SDL_GL_SwapWindow(s_window);
+        SDL_GL_SwapWindow(PL_window);
     }
 }
 
@@ -279,7 +279,7 @@ int PL_Window_Init(void) {
         SDL_WINDOW_OPENGL |
         SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
     
-    s_window = SDL_CreateWindow(
+    PL_window = SDL_CreateWindow(
         windowTitle,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         PL_windowWidth, PL_windowHeight,
@@ -287,16 +287,16 @@ int PL_Window_Init(void) {
         );
     
     if (s_windowIcon != NULL) {
-        SDL_SetWindowIcon(s_window, s_windowIcon);
+        SDL_SetWindowIcon(PL_window, s_windowIcon);
     }
     
     s_UpdateScreenInfo();
     
-    SDL_ShowWindow(s_window);
+    SDL_ShowWindow(PL_window);
     
     SDL_DisableScreenSaver();
     
-    PL_SDL2GL_Init(s_window, PL_windowWidth, PL_windowHeight);
+    PL_SDL2GL_Init(PL_window, PL_windowWidth, PL_windowHeight);
     s_windowVSync = PL_SDL2GL_UpdateVSync(s_windowVSync);
     
     s_offscreenVBO = PLG.VertexBuffer_Create(&s_RectVertexDefinition, NULL, 4, DXFALSE);
@@ -335,8 +335,8 @@ int PL_Window_End(void) {
     
     SDL_EnableScreenSaver();
     
-    SDL_DestroyWindow(s_window);
-    s_window = NULL;
+    SDL_DestroyWindow(PL_window);
+    PL_window = NULL;
     
     return 0;
 }
@@ -368,7 +368,7 @@ int PL_Window_SetFullscreen(int isFullscreen, int fullscreenDesktop) {
     if (newFlags != s_windowFlags) {
         s_windowFlags = newFlags;
         if (s_initialized == DXTRUE) {
-            SDL_SetWindowFullscreen(s_window, newFlags);
+            SDL_SetWindowFullscreen(PL_window, newFlags);
             s_UpdateScreenInfo();
         }
     }
@@ -377,10 +377,10 @@ int PL_Window_SetFullscreen(int isFullscreen, int fullscreenDesktop) {
 }
 
 int PL_Window_ChangeOnlyWindowSize(int width, int height) {
-    if (s_window == NULL) {
+    if (PL_window == NULL) {
         return -1;
     }
-    SDL_SetWindowSize(s_window, width, height);
+    SDL_SetWindowSize(PL_window, width, height);
     s_UpdateScreenInfo();
     s_forceWindowCentered = DXTRUE;
     
@@ -402,7 +402,7 @@ int PL_Window_SetDimensions(int width, int height, int colorDepth, int refreshRa
         if (s_initialized == DXTRUE) {
             /* Remember that we are changing the backbuffer size here, not the
              * window size. (unless it's smaller?) */
-            SDL_SetWindowSize(s_window, width, height);
+            SDL_SetWindowSize(PL_window, width, height);
             s_forceWindowCentered = DXTRUE;
             s_UpdateScreenInfo();
             
@@ -417,21 +417,17 @@ int PL_Window_GetRefreshRate() {
     return s_windowRefreshRate;
 }
 
-int PL_Window_SetTitle(const DXCHAR *titleString) {
+int PL_Window_SetTitle(const char *titleString) {
     if (s_windowTitle != NULL) {
         DXFREE(s_windowTitle);
         s_windowTitle = NULL;
     }
     
     if (titleString != NULL) {
-        char utf8Buf[2048];
+        s_windowTitle = PL_Text_Strdup(titleString);
         
-        if (PL_Text_DxStringToString(titleString, utf8Buf, 2048, DX_CHARSET_EXT_UTF8) > 0) {
-            s_windowTitle = SDL_strdup(utf8Buf);
-            
-            if (s_initialized == DXTRUE) {
-                SDL_SetWindowTitle(s_window, s_windowTitle);
-            }
+        if (s_initialized == DXTRUE) {
+            SDL_SetWindowTitle(PL_window, s_windowTitle);
         }
     }
     return 0;
@@ -524,7 +520,7 @@ int PL_Window_ProcessMessages() {
     if (s_forceWindowCentered) {
         /* Don't recenter the window if it's fullscreen, as this forces a minimize. */
         if ((s_windowFlags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP)) == 0) {
-            SDL_SetWindowPosition(s_window,
+            SDL_SetWindowPosition(PL_window,
                               SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED);
         }
@@ -617,7 +613,7 @@ int PL_Window_SetMousePoint(int xPosition, int yPosition) {
         yPosition = 0;
     }
     
-    SDL_WarpMouseInWindow(s_window, xPosition, yPosition);
+    SDL_WarpMouseInWindow(PL_window, xPosition, yPosition);
     
     return 0;
 }
@@ -654,7 +650,7 @@ int PL_Window_GrabMouse(int flag) {
     return 0;
 }
 
-int PLEXT_Window_SetIconImageFile(const DXCHAR *filename) {
+int PL_Window_SetIconFromFile(const char *filename) {
     SDL_RWops *file = PLSDL2_FileToRWops(PL_File_OpenRead(filename));
     SDL_Surface *surface;
     
@@ -673,7 +669,7 @@ int PLEXT_Window_SetIconImageFile(const DXCHAR *filename) {
     s_windowIcon = surface;
     
     if (s_initialized == DXTRUE) {
-        SDL_SetWindowIcon(s_window, s_windowIcon);
+        SDL_SetWindowIcon(PL_window, s_windowIcon);
     }
     
     return 0;
@@ -698,61 +694,6 @@ int PL_Window_SetAlwaysRunFlag(int flag) {
 
 int PL_Window_GetAlwaysRunFlag() {
     return s_alwaysRunFlag;
-}
-
-/* System agnostic message box stuff */
-int PLEXT_Window_MessageBoxError(
-            const DXCHAR *title,
-            const DXCHAR *text
-) {
-    char titleBuf[1024];
-    char textBuf[1024];
-    
-    PL_Text_DxStringToString(title, titleBuf, 1024, DX_CHARSET_EXT_UTF8);
-    PL_Text_DxStringToString(text, textBuf, 1024, DX_CHARSET_EXT_UTF8);
-    
-    return SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, titleBuf, textBuf, s_window);
-}
-
-int PLEXT_Window_MessageBoxYesNo(
-            const DXCHAR *title,
-            const DXCHAR *text,
-            const DXCHAR *yes,
-            const DXCHAR *no
-) {
-    SDL_MessageBoxButtonData buttons[2];
-    SDL_MessageBoxData data;
-    int resultButton;
-    char titleBuf[1024];
-    char textBuf[1024];
-    char yesBuf[512];
-    char noBuf[512];
-    
-    PL_Text_DxStringToString(title, titleBuf, 1024, DX_CHARSET_EXT_UTF8);
-    PL_Text_DxStringToString(text, textBuf, 1024, DX_CHARSET_EXT_UTF8);
-    PL_Text_DxStringToString(yes, yesBuf, 1024, DX_CHARSET_EXT_UTF8);
-    PL_Text_DxStringToString(no, noBuf, 1024, DX_CHARSET_EXT_UTF8);
-    
-    buttons[0].flags = SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT;
-    buttons[0].buttonid = 1;
-    buttons[0].text = yesBuf;
-    buttons[1].flags = SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT;
-    buttons[1].buttonid = 0;
-    buttons[1].text = noBuf;
-    
-    data.flags = SDL_MESSAGEBOX_INFORMATION;
-    data.window = s_window;
-    data.title = titleBuf;
-    data.message = textBuf;
-    data.numbuttons = 2;
-    data.buttons = buttons;
-    data.colorScheme = NULL;
-    
-    if (SDL_ShowMessageBox(&data, &resultButton) < 0) {
-        return -1;
-    }
-    
-    return resultButton;
 }
 
 #endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */

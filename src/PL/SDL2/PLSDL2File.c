@@ -132,17 +132,11 @@ int PLSDL2_RWopsToFile(SDL_RWops *rwops) {
     }
 }
 
-SDL_RWops *PLSDL2_FileOpenReadDirect(const DXCHAR *filename) {
-    char utf8Buf[2048];
-    
-    if (PL_Text_DxStringToString(filename, utf8Buf, 2048, DX_CHARSET_EXT_UTF8) <= 0) {
-        return NULL;
-    }
-    
-    return SDL_RWFromFile(utf8Buf, "rb");
+SDL_RWops *PLSDL2_FileOpenReadDirect(const char *filename) {
+    return SDL_RWFromFile(filename, "rb");
 }
 
-int PL_Platform_FileOpenReadDirect(const DXCHAR *filename) {
+int PL_Platform_FileOpenReadDirect(const char *filename) {
     SDL_RWops *rwops = PLSDL2_FileOpenReadDirect(filename);
     
     return PLSDL2_RWopsToFile(rwops);

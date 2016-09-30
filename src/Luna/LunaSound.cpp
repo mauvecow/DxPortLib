@@ -27,12 +27,15 @@
 
 #ifndef DX_NON_SOUND
 
-LSOUND LunaSound::CreateFromFile(const DXCHAR *filename, bool IsNoStop,
+LSOUND LunaSound::CreateFromFile(const char *filename, bool IsNoStop,
                                  bool IsAyame, bool IsHardware, Uint32 Layer) {
     /* We don't care about IsAyame or IsHardware. Or even Layer.
      * We do care about IsNoStop. */
-    
-    return PL_LoadSoundMem(filename);
+    char buf[2048];
+    return PL_LoadSoundMem(
+        PL_Text_ConvertStrncpyIfNecessary(
+            buf, -1, filename, g_lunaUseCharSet, 2048)
+    );
 }
 Bool LunaSound::IsPlay(LSOUND lSnd, Uint32 Layer) {
     if (PL_CheckSoundMem((int)lSnd) == DXTRUE) {
@@ -66,7 +69,7 @@ void LunaSound::SetPan(LSOUND lSnd, Float fParam, Uint32 Layer) {
 void LunaSound::SetMax(Uint32 Max) {
     /* Sets maximum number of sounds. Doesn't matter for PL. */
 }
-void LunaSound::SetAyamePath(const DXCHAR *pPath) {
+void LunaSound::SetAyamePath(const char *pPath) {
     /* Stub. Does nothing. */
 }
 void LunaSound::EXTSetLoopSamples(LSOUND lSnd, Uint64 loopTarget, Uint64 loopPoint) {
@@ -79,7 +82,7 @@ void LunaSound::EXTSetLoopTimes(LSOUND lSnd, double loopTarget, double loopTime)
 #else
 /* DX_NON_SOUND */
 
-LSOUND LunaSound::CreateFromFile(const DXCHAR *filename, bool IsNoStop,
+LSOUND LunaSound::CreateFromFile(const char *filename, bool IsNoStop,
                                  bool IsAyame, bool IsHardware, Uint32 Layer) {
     return -1;
 }
@@ -102,7 +105,7 @@ void LunaSound::SetPan(LSOUND lSnd, Float fParam, Uint32 Layer) {
 }
 void LunaSound::SetMax(Uint32 Max) {
 }
-void LunaSound::SetAyamePath(const DXCHAR *pPath) {
+void LunaSound::SetAyamePath(const char *pPath) {
 }
 void LunaSound::EXTSetLoopSamples(LSOUND lSnd, Uint64 loopTarget, Uint64 loopPoint) {
 }

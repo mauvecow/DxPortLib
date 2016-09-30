@@ -44,8 +44,8 @@ typedef struct _ArchiveEntry {
 } ArchiveEntry;
 
 typedef struct _LunaArchive {
-    DXCHAR *filename;
-    DXCHAR *rootPath;
+    char *filename;
+    char *rootPath;
     Uint32 priority;
     
     ArchiveEntry *entries;
@@ -74,12 +74,12 @@ static Uint32 s_CalcCrc(const Uint8 *data, int length) {
     return crc ^ 0xffffffff;
 }
 
-static int s_ProcessFilename(char *targetBuffer, int len, const DXCHAR *src) {
+static int s_ProcessFilename(char *targetBuffer, int len, const char *src) {
     unsigned int ch;
     char *start = targetBuffer;
     char *end = targetBuffer + len - 1;
     
-    while (targetBuffer < end && (ch = PL_Text_ReadDxChar(&src)) != 0) {
+    while (targetBuffer < end && (ch = PL_Text_ReadUTF8Char(&src)) != 0) {
         if (ch >= 'a' && ch <= 'z') {
             ch -= 'a' - 'A';
         } else if (ch == '/') {
@@ -92,7 +92,7 @@ static int s_ProcessFilename(char *targetBuffer, int len, const DXCHAR *src) {
     return targetBuffer - start;
 }
 
-static Uint32 s_CalcCrcOfString(const DXCHAR *string) {
+static Uint32 s_CalcCrcOfString(const char *string) {
     char namebuf[65];
     int namelen;
     
@@ -143,8 +143,8 @@ static int s_FindIndexOfCRC(LunaArchive *archive, Uint32 crc) {
 }
 
 static LunaArchive *LunaArchive_Open(Uint32 priority,
-                                     const DXCHAR *pRootPath,
-                                     const DXCHAR *pFilename) {
+                                     const char *pRootPath,
+                                     const char *pFilename) {
     int fileHandle;
     int entrySize;
     ArchiveHeader header;
@@ -160,11 +160,11 @@ static LunaArchive *LunaArchive_Open(Uint32 priority,
     archive->next = NULL;
 
     if (pRootPath != NULL) {
-        DXCHAR path[4096];
-        DXSTRNCPY(path, pRootPath, 4096);
-        DXSTRNCAT(path, _T("/"), 4096);
+        char path[4096];
+        PL_Text_Strncpy(path, pRootPath, 4096);
+        PL_Text_Strncat(path, "/", 4096);
         
-        archive->rootPath = DXSTRDUP(path);
+        archive->rootPath = PL_Text_Strdup(path);
     }
     
     do {
@@ -195,7 +195,7 @@ static LunaArchive *LunaArchive_Open(Uint32 priority,
             break;
         }
         
-        archive->filename = DXSTRDUP(pFilename);
+        archive->filename = PL_Text_Strdup(pFilename);
         archive->entries = entries;
         archive->entrycount = header.entrycount;
     } while(0);
@@ -236,7 +236,7 @@ static int LunaArchive_OpenFileIndex(LunaArchive *archive, int index) {
                                           DXTRUE);
 }
 
-static int LunaFile_OpenRead(const DXCHAR *filename, int *isPacked) {
+static int LunaFile_OpenRead(const char *filename, int *isPacked) {
     int handle = -1;
     int packed = 0;
     LunaArchive *archive;
@@ -244,12 +244,12 @@ static int LunaFile_OpenRead(const DXCHAR *filename, int *isPacked) {
     
     for (archive = s_archiveList; archive != NULL; archive = archive->next) {
         /* Attempt to open file directly. */
-        DXCHAR pathname[4096];
+        char pathname[4096];
         int index;
         
         if (archive->rootPath != NULL) {
-            DXSTRNCPY(pathname, archive->rootPath, 4096);
-            DXSTRNCAT(pathname, filename, 4096);
+            PL_Text_Strncpy(pathname, archive->rootPath, 4096);
+            PL_Text_Strncat(pathname, filename, 4096);
             handle = PL_Platform_FileOpenReadDirect(pathname);
             if (handle >= 0) {
                 break;
@@ -277,13 +277,13 @@ static int LunaFile_OpenRead(const DXCHAR *filename, int *isPacked) {
     
     return handle;
 }
-static int LunaFile_OpenReadNoPack(const DXCHAR *filename) {
+static int LunaFile_OpenReadNoPack(const char *filename) {
     return LunaFile_OpenRead(filename, NULL);
 }
 
 void LunaFile::SetRootPath(Uint32 Priority,
-                           const DXCHAR *pRootPath,
-                           const DXCHAR *pPackFile) {
+                           const char *pRootPath,
+                           const char *pPackFile) {
     LunaArchive *archive = LunaArchive_Open(Priority, pRootPath, pPackFile);
     if (archive != NULL) {
         LunaArchive **da = &s_archiveList;
@@ -297,15 +297,18 @@ void LunaFile::SetRootPath(Uint32 Priority,
     }
 }
 
-FILEDATA * LunaFile::FileOpen(const DXCHAR *pFile, Bool ReadOnly) {
+FILEDATA * LunaFile::FileOpen(const char *pFile, Bool ReadOnly) {
     /* NOTICE: ReadOnly is ignored. We do not support writing. */
     /* NOTICE: File creation/modification times not supported. */
     int isPacked;
-    int handle = LunaFile_OpenRead(pFile, &isPacked);
+    char filename[4096];
+    const char *filebuf = PL_Text_ConvertStrncpyIfNecessary(
+        filename, -1, pFile, g_lunaUseCharSet, 4096);
+    int handle = LunaFile_OpenRead(filebuf, &isPacked);
     
     if (handle >= 0) {
         FILEDATA *filedata = (FILEDATA *)DXALLOC(sizeof(FILEDATA));
-        int len = DXSTRLEN(pFile);
+        int len = PL_Text_Strlen(filebuf);
         
         memset(filedata, 0, sizeof(FILEDATA));
         filedata->dxPortLibFileHandle = handle;

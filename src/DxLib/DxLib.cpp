@@ -98,12 +98,18 @@ int EXT_FileRead_SetCharSet(int charset) {
     return ::DxLib_EXT_FileRead_SetCharSet(charset);
 }
 
-int FileRead_open(const DXCHAR *filename, int ASync) {
-    return ::DxLib_FileRead_open(filename, ASync);
+int FileRead_openA(const char *filename, int ASync) {
+    return ::DxLib_FileRead_openA(filename, ASync);
+}
+int FileRead_openW(const wchar_t *filename, int ASync) {
+    return ::DxLib_FileRead_openW(filename, ASync);
 }
 
-int64_t FileRead_size(const DXCHAR *filename) {
-    return ::DxLib_FileRead_size(filename);
+int64_t FileRead_sizeA(const char *filename) {
+    return ::DxLib_FileRead_sizeA(filename);
+}
+int64_t FileRead_sizeW(const wchar_t *filename) {
+    return ::DxLib_FileRead_sizeW(filename);
 }
 
 int FileRead_close(int fileHandle) {
@@ -126,47 +132,70 @@ int FileRead_eof(int fileHandle) {
     return ::DxLib_FileRead_eof(fileHandle);
 }
 
-int FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
-    return ::DxLib_FileRead_gets(buffer, bufferSize, fileHandle);
+int FileRead_getsA(char *buffer, int bufferSize, int fileHandle) {
+    return ::DxLib_FileRead_getsA(buffer, bufferSize, fileHandle);
 }
-DXCHAR FileRead_getc(int fileHandle) {
-    return ::DxLib_FileRead_getc(fileHandle);
+int FileRead_getsW(wchar_t *buffer, int bufferSize, int fileHandle) {
+    return ::DxLib_FileRead_getsW(buffer, bufferSize, fileHandle);
 }
-int FileRead_scanf(int fileHandle, const DXCHAR *format, ...) {
-    va_list args;
-    int retval;
-    
-    va_start(args, format);
-    retval = Dx_FileRead_vscanf(fileHandle, format, args);
-    va_end(args);
-    
-    return retval;
+
+char FileRead_getcA(int fileHandle) {
+    return ::DxLib_FileRead_getcA(fileHandle);
+}
+wchar_t FileRead_getcW(int fileHandle) {
+    return ::DxLib_FileRead_getcW(fileHandle);
+}
+
+int FileRead_vscanfA(int fileHandle, const char *format, va_list args) {
+    return ::DxLib_FileRead_vscanfA(fileHandle, format, args);
+}
+int FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
+    return ::DxLib_FileRead_vscanfW(fileHandle, format, args);
 }
 
 // ---------------------------------------------------- DxArchive.cpp
 int SetUseDXArchiveFlag(int flag) {
     return ::DxLib_SetUseDXArchiveFlag(flag);
 }
-int SetDXArchiveKeyString(const DXCHAR *keyString) {
-    return ::DxLib_SetDXArchiveKeyString(keyString);
+int SetDXArchiveKeyStringW(const wchar_t *keyString) {
+    return ::DxLib_SetDXArchiveKeyStringW(keyString);
 }
-int SetDXArchiveExtension(const DXCHAR *extension) {
+int SetDXArchiveKeyStringA(const char *keyString) {
+    return ::DxLib_SetDXArchiveKeyStringA(keyString);
+}
+int SetDXArchiveExtensionW(const wchar_t *extension) {
+    return ::DxLib_SetDXArchiveExtensionW(extension);
+}
+int SetDXArchiveExtensionA(const char *extension) {
     return ::DxLib_SetDXArchiveExtension(extension);
 }
+
 int SetDXArchivePriority(int priority) {
     return ::DxLib_SetDXArchivePriority(priority);
 }
-int DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
-    return ::DxLib_DXArchivePreLoad(dxaFilename, async);
+int DXArchivePreLoadA(const char *dxaFilename, int async) {
+    return ::DxLib_DXArchivePreLoadA(dxaFilename, async);
 }
-int DXArchiveCheckIdle(const DXCHAR *dxaFilename) {
-    return ::DxLib_DXArchiveCheckIdle(dxaFilename);
+int DXArchivePreLoadW(const wchar_t *dxaFilename, int async) {
+    return ::DxLib_DXArchivePreLoadW(dxaFilename, async);
 }
-int DXArchiveRelease(const DXCHAR *dxaFilename) {
-    return ::DxLib_DXArchiveRelease(dxaFilename);
+int DXArchiveCheckIdleA(const char *dxaFilename) {
+    return ::DxLib_DXArchiveCheckIdleA(dxaFilename);
 }
-int DXArchiveCheckFile(const DXCHAR *dxaFilename, const DXCHAR *filename) {
-    return ::DxLib_DXArchiveCheckFile(dxaFilename, filename);
+int DXArchiveCheckIdleW(const wchar_t *dxaFilename) {
+    return ::DxLib_DXArchiveCheckIdleW(dxaFilename);
+}
+int DXArchiveReleaseA(const char *dxaFilename) {
+    return ::DxLib_DXArchiveReleaseA(dxaFilename);
+}
+int DXArchiveReleaseW(const wchar_t *dxaFilename) {
+    return ::DxLib_DXArchiveReleaseW(dxaFilename);
+}
+int DXArchiveCheckFileA(const char *dxaFilename, const char *filename) {
+    return ::DxLib_DXArchiveCheckFileA(dxaFilename, filename);
+}
+int DXArchiveCheckFileW(const wchar_t *dxaFilename, const wchar_t *filename) {
+    return ::DxLib_DXArchiveCheckFileW(dxaFilename, filename);
 }
 
 // ---------------------------------------------------- DxInput.cpp
@@ -252,12 +281,13 @@ int SetWindowSizeChangeEnableFlag(int windowResizeFlag, int fitScreen) {
 #  undef SetWindowText
 #endif
 
-int SetWindowText(const DXCHAR *windowName) {
-    return ::DxLib_SetWindowText(windowName);
+int SetWindowTextA(const char *windowName) {
+    return ::DxLib_SetWindowTextA(windowName);
 }
-int SetMainWindowText(const DXCHAR *windowName) {
-    return ::DxLib_SetMainWindowText(windowName);
+int SetWindowTextW(const wchar_t *windowName) {
+    return ::DxLib_SetWindowTextW(windowName);
 }
+
 int ScreenFlip() {
     return ::DxLib_ScreenFlip();
 }
@@ -290,8 +320,11 @@ int SetMouseDispFlag(int flag) {
 int GetMouseDispFlag() {
     return ::DxLib_GetMouseDispFlag();
 }
-int EXT_SetIconImageFile(const DXCHAR *filename) {
-    return ::DxLib_EXT_SetIconImageFile(filename);
+int EXT_SetIconImageFileA(const char *filename) {
+    return ::DxLib_EXT_SetIconImageFileA(filename);
+}
+int EXT_SetIconImageFileW(const wchar_t *filename) {
+    return ::DxLib_EXT_SetIconImageFileW(filename);
 }
 int SetAlwaysRunFlag(int flag) {
     return ::DxLib_SetAlwaysRunFlag(flag);
@@ -306,12 +339,19 @@ int GetActiveFlag() {
     return ::DxLib_GetActiveFlag();
 }
 
-int EXT_MessageBoxError(const DXCHAR *title, const DXCHAR *text) {
-    return ::DxLib_EXT_MessageBoxError(title, text);
+int EXT_MessageBoxErrorA(const char *title, const char *text) {
+    return ::DxLib_EXT_MessageBoxErrorA(title, text);
 }
-int EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
-                        const DXCHAR *button1, const DXCHAR *button2) {
-    return ::DxLib_EXT_MessageBoxYesNo(title, text, button1, button2);
+int EXT_MessageBoxErrorW(const wchar_t *title, const wchar_t *text) {
+    return ::DxLib_EXT_MessageBoxErrorW(title, text);
+}
+int EXT_MessageBoxYesNoA(const char *title, const char *text,
+                         const char *button1, const char *button2) {
+    return ::DxLib_EXT_MessageBoxYesNoA(title, text, button1, button2);
+}
+int EXT_MessageBoxYesNoW(const wchar_t *title, const wchar_t *text,
+                         const wchar_t *button1, const wchar_t *button2) {
+    return ::DxLib_EXT_MessageBoxYesNoW(title, text, button1, button2);
 }
 
 // ---------------------------------------------------- DxGraphics.cpp
@@ -319,29 +359,54 @@ int EXT_MessageBoxYesNo(const DXCHAR *title, const DXCHAR *text,
 int MakeScreen(int width, int height, int hasAlphaChannel) {
     return ::DxLib_MakeScreen(width, height, hasAlphaChannel);
 }
-int LoadGraph(const DXCHAR *name, int notUse3DFlag) {
-    return ::DxLib_LoadGraph(name, notUse3DFlag);
+int LoadGraphA(const char *name, int notUse3DFlag) {
+    return ::DxLib_LoadGraphA(name, notUse3DFlag);
 }
-int LoadReverseGraph(const DXCHAR *name, int notUse3DFlag) {
-    return ::DxLib_LoadReverseGraph(name, notUse3DFlag);
+int LoadGraphW(const wchar_t *name, int notUse3DFlag) {
+    return ::DxLib_LoadGraphW(name, notUse3DFlag);
 }
-int LoadDivGraph(const DXCHAR *filename, int graphCount,
-                 int xCount, int yCount, int xSize, int ySize,
-                 int *handleBuf, int notUse3DFlag) {
-    return ::DxLib_LoadDivGraph(filename, graphCount, xCount, yCount,
+int LoadReverseGraphA(const char *name, int notUse3DFlag) {
+    return ::DxLib_LoadReverseGraphA(name, notUse3DFlag);
+}
+int LoadReverseGraphW(const wchar_t *name, int notUse3DFlag) {
+    return ::DxLib_LoadReverseGraphW(name, notUse3DFlag);
+}
+int LoadDivGraphA(const char *filename, int graphCount,
+                  int xCount, int yCount, int xSize, int ySize,
+                  int *handleBuf, int notUse3DFlag) {
+    return ::DxLib_LoadDivGraphA(filename, graphCount, xCount, yCount,
                                 xSize, ySize, handleBuf, notUse3DFlag);
 }
-int LoadDivBmpGraph(const DXCHAR *filename, int graphCount,
-                    int xCount, int yCount, int xSize, int ySize,
-                    int *handleBuf, int textureFlag, int flipFlag) {
-    return ::DxLib_LoadDivBmpGraph(filename, graphCount, xCount, yCount,
+int LoadDivGraphW(const wchar_t *filename, int graphCount,
+                  int xCount, int yCount, int xSize, int ySize,
+                  int *handleBuf, int notUse3DFlag) {
+    return ::DxLib_LoadDivGraphW(filename, graphCount, xCount, yCount,
+                                xSize, ySize, handleBuf, notUse3DFlag);
+}
+int LoadDivBmpGraphA(const char *filename, int graphCount,
+                     int xCount, int yCount, int xSize, int ySize,
+                     int *handleBuf, int textureFlag, int flipFlag) {
+    return ::DxLib_LoadDivBmpGraphA(filename, graphCount, xCount, yCount,
                              xSize, ySize, handleBuf,
                              textureFlag, flipFlag);
 }
-int LoadReverseDivGraph(const DXCHAR *filename, int graphCount,
-                              int xCount, int yCount, int xSize, int ySize,
-                              int *handleBuf, int notUse3DFlag) {
-    return ::DxLib_LoadReverseDivGraph(filename, graphCount, xCount, yCount,
+int LoadDivBmpGraphW(const wchar_t *filename, int graphCount,
+                     int xCount, int yCount, int xSize, int ySize,
+                     int *handleBuf, int textureFlag, int flipFlag) {
+    return ::DxLib_LoadDivBmpGraphW(filename, graphCount, xCount, yCount,
+                             xSize, ySize, handleBuf,
+                             textureFlag, flipFlag);
+}
+int LoadReverseDivGraphA(const char *filename, int graphCount,
+                         int xCount, int yCount, int xSize, int ySize,
+                         int *handleBuf, int notUse3DFlag) {
+    return ::DxLib_LoadReverseDivGraphA(filename, graphCount, xCount, yCount,
+                                       xSize, ySize, handleBuf, notUse3DFlag);
+}
+int LoadReverseDivGraphW(const wchar_t *filename, int graphCount,
+                         int xCount, int yCount, int xSize, int ySize,
+                         int *handleBuf, int notUse3DFlag) {
+    return ::DxLib_LoadReverseDivGraphW(filename, graphCount, xCount, yCount,
                                        xSize, ySize, handleBuf, notUse3DFlag);
 }
 int DeleteGraph(int graphID, int LogOutFlag) {
@@ -637,47 +702,74 @@ int ClsDrawScreen() {
     return ::DxLib_ClsDrawScreen();
 }
 
-int SaveDrawScreen(int x1, int y1, int x2, int y2,
-                   const DXCHAR *filename, int saveType,
-                   int jpegQuality, int jpegSample2x1,
-                   int pngCompressionLevel) {
-    return ::DxLib_SaveDrawScreen(x1, y1, x2, y2, filename,
+int SaveDrawScreenA(int x1, int y1, int x2, int y2,
+                    const char *filename, int saveType,
+                    int jpegQuality, int jpegSample2x1,
+                    int pngCompressionLevel) {
+    return ::DxLib_SaveDrawScreenA(x1, y1, x2, y2, filename,
                                   saveType, jpegQuality, jpegSample2x1,
                                   pngCompressionLevel);
 }
-int SaveDrawScreenToBMP(int x1, int y1, int x2, int y2,
-                        const DXCHAR *filename) {
-    return ::DxLib_SaveDrawScreenToBMP(x1, y1, x2, y2, filename);
+int SaveDrawScreenW(int x1, int y1, int x2, int y2,
+                    const wchar_t *filename, int saveType,
+                    int jpegQuality, int jpegSample2x1,
+                    int pngCompressionLevel) {
+    return ::DxLib_SaveDrawScreenW(x1, y1, x2, y2, filename,
+                                  saveType, jpegQuality, jpegSample2x1,
+                                  pngCompressionLevel);
 }
-int SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
-                               const DXCHAR *filename,
-                               int quality, int sample2x1) {
-    return ::DxLib_SaveDrawScreenToJPEG(x1, y1, x2, y2, filename,
+int SaveDrawScreenToBMPA(int x1, int y1, int x2, int y2,
+                        const char *filename) {
+    return ::DxLib_SaveDrawScreenToBMPA(x1, y1, x2, y2, filename);
+}
+int SaveDrawScreenToBMPW(int x1, int y1, int x2, int y2,
+                         const wchar_t *filename) {
+    return ::DxLib_SaveDrawScreenToBMPW(x1, y1, x2, y2, filename);
+}
+int SaveDrawScreenToJPEGA(int x1, int y1, int x2, int y2,
+                          const char *filename,
+                          int quality, int sample2x1) {
+    return ::DxLib_SaveDrawScreenToJPEGA(x1, y1, x2, y2, filename,
                                         quality, sample2x1);
 }
-int SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
-                              const DXCHAR *filename,
-                              int compressionLevel) {
-    return ::DxLib_SaveDrawScreenToPNG(x1, y1, x2, y2, filename,
+int SaveDrawScreenToJPEGW(int x1, int y1, int x2, int y2,
+                          const wchar_t *filename,
+                          int quality, int sample2x1) {
+    return ::DxLib_SaveDrawScreenToJPEGW(x1, y1, x2, y2, filename,
+                                        quality, sample2x1);
+}
+int SaveDrawScreenToPNGA(int x1, int y1, int x2, int y2,
+                         const char *filename,
+                         int compressionLevel) {
+    return ::DxLib_SaveDrawScreenToPNGA(x1, y1, x2, y2, filename,
                                        compressionLevel);
 }
-
-DXCOLOR GetColor(int red, int green, int blue) {
-    return red | (green << 8) | (blue << 16);
+int SaveDrawScreenToPNGW(int x1, int y1, int x2, int y2,
+                         const wchar_t *filename,
+                         int compressionLevel) {
+    return ::DxLib_SaveDrawScreenToPNGW(x1, y1, x2, y2, filename,
+                                       compressionLevel);
 }
 
 // ---------------------------------------------------- DxFont.cpp
 #ifndef DX_NON_FONT
 
-int EXT_MapFontFileToName(const DXCHAR *filename,
-                          const DXCHAR *fontname,
-                          int thickness,
-                          int boldFlag,
-                          double exRateX,
-                          double exRateY
-                         ) {
-    return ::DxLib_EXT_MapFontFileToName(filename,
-                                         fontname,
+int EXT_MapFontFileToNameA(
+        const char *filename, const char *fontname,
+        int thickness,int boldFlag,
+        double exRateX, double exRateY
+) {
+    return ::DxLib_EXT_MapFontFileToNameA(filename, fontname,
+                                         thickness, boldFlag,
+                                         exRateX, exRateY
+                                        );
+}
+int EXT_MapFontFileToNameW(
+        const wchar_t *filename, const wchar_t *fontname,
+        int thickness,int boldFlag,
+        double exRateX, double exRateY
+) {
+    return ::DxLib_EXT_MapFontFileToNameW(filename, fontname,
                                          thickness, boldFlag,
                                          exRateX, exRateY
                                         );
@@ -687,88 +779,125 @@ int EXT_InitFontMappings() {
 }
 
 /* Handle font functions */
-int DrawStringToHandle(int x, int y, const DXCHAR *text,
-                       DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
-                       int verticalFlag) {
-    return ::DxLib_DrawStringToHandle(x, y, text, color, fontHandle,
+int DrawStringToHandleA(int x, int y, const char *text,
+                        DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
+                        int verticalFlag) {
+    return ::DxLib_DrawStringToHandleA(x, y, text, color, fontHandle,
                                       edgeColor, verticalFlag);
 }
-int DrawFormatStringToHandle(
-    int x, int y, DXCOLOR color, int fontHandle,
-    const DXCHAR *formatString, ...
-) {
-    va_list args;
-    int retval;
-    va_start(args, formatString);
-    retval = ::PL_Font_DrawFormatStringToHandle(x, y, color, fontHandle, formatString, args);
-    va_end(args);
-    return retval;
+int DrawStringToHandleW(int x, int y, const wchar_t *text,
+                        DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
+                        int verticalFlag) {
+    return ::DxLib_DrawStringToHandleW(x, y, text, color, fontHandle,
+                                      edgeColor, verticalFlag);
 }
-int DrawExtendStringToHandle(int x, int y, double ExRateX, double ExRateY,
-                             const DXCHAR *text,
+int DrawFormatVStringToHandleA(
+    int x, int y, DXCOLOR color, int fontHandle,
+    const char *formatString, va_list args
+) {
+    return ::DxLib_DrawFormatVStringToHandleA(x, y, color, fontHandle, formatString, args);
+}
+int DrawFormatVStringToHandleW(
+    int x, int y, DXCOLOR color, int fontHandle,
+    const wchar_t *formatString, va_list args
+) {
+    return ::DxLib_DrawFormatVStringToHandleW(x, y, color, fontHandle, formatString, args);
+}
+int DrawExtendStringToHandleA(int x, int y, double ExRateX, double ExRateY,
+                             const char *text,
                              DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
                              int VerticalFlag) {
-    return ::DxLib_DrawExtendStringToHandle(x, y, ExRateX, ExRateY, text, color, fontHandle,
+    return ::DxLib_DrawExtendStringToHandleA(x, y, ExRateX, ExRateY, text, color, fontHandle,
                                             edgeColor, VerticalFlag);
 }
-int DrawExtendFormatStringToHandle(
+int DrawExtendStringToHandleW(int x, int y, double ExRateX, double ExRateY,
+                             const wchar_t *text,
+                             DXCOLOR color, int fontHandle, DXCOLOR edgeColor,
+                             int VerticalFlag) {
+    return ::DxLib_DrawExtendStringToHandleW(x, y, ExRateX, ExRateY, text, color, fontHandle,
+                                            edgeColor, VerticalFlag);
+}
+int DrawExtendFormatVStringToHandleA(
     int x, int y, double ExRateX, double ExRateY,
     DXCOLOR color, int fontHandle,
-    const DXCHAR *formatString, ...
+    const char *formatString, va_list args
 ) {
-    va_list args;
-    int retval;
-    va_start(args, formatString);
-    retval = ::PL_Font_DrawExtendFormatStringToHandle(x, y, ExRateX, ExRateY, color, fontHandle, formatString, args);
-    va_end(args);
-    return retval;
+    return ::DxLib_DrawExtendFormatVStringToHandleA(x, y, ExRateX, ExRateY, color, fontHandle, formatString, args);
+}
+int DrawExtendFormatVStringToHandleW(
+    int x, int y, double ExRateX, double ExRateY,
+    DXCOLOR color, int fontHandle,
+    const wchar_t *formatString, va_list args
+) {
+    return ::DxLib_DrawExtendFormatVStringToHandleW(x, y, ExRateX, ExRateY, color, fontHandle, formatString, args);
 }
 
-int GetDrawStringWidthToHandle(const DXCHAR *string, int strLen, int fontHandle,
+int GetDrawStringWidthToHandleA(const char *string, int strLen, int fontHandle,
                                int VerticalFlag) {
-    return ::DxLib_GetDrawStringWidthToHandle(string, strLen, fontHandle, VerticalFlag);
+    return ::DxLib_GetDrawStringWidthToHandleA(string, strLen, fontHandle, VerticalFlag);
 }
-int GetDrawFormatStringWidthToHandle(
-    int fontHandle, const DXCHAR *formatString, ...
+int GetDrawStringWidthToHandleW(const wchar_t *string, int strLen, int fontHandle,
+                               int VerticalFlag) {
+    return ::DxLib_GetDrawStringWidthToHandleW(string, strLen, fontHandle, VerticalFlag);
+}
+int GetDrawFormatVStringWidthToHandleA(
+    int fontHandle, const char *formatString, va_list args
 ) {
-    va_list args;
-    int retval;
-    va_start(args, formatString);
-    retval = ::PL_Font_GetDrawFormatStringWidthToHandle(fontHandle, formatString, args);
-    va_end(args);
-    return retval;
+    return DxLib_GetDrawFormatVStringWidthToHandleA(fontHandle, formatString, args);
 }
-int GetDrawExtendStringWidthToHandle(double ExRateX, const DXCHAR *string, int strLen,
+int GetDrawFormatVStringWidthToHandleW(
+    int fontHandle, const wchar_t *formatString, va_list args
+) {
+    return DxLib_GetDrawFormatVStringWidthToHandleW(fontHandle, formatString, args);
+}
+int GetDrawExtendStringWidthToHandleA(double ExRateX, const char *string, int strLen,
                                      int fontHandle, int VerticalFlag) {
-    return ::DxLib_GetDrawExtendStringWidthToHandle(ExRateX, string, strLen, fontHandle, VerticalFlag);
+    return ::DxLib_GetDrawExtendStringWidthToHandleA(ExRateX, string, strLen, fontHandle, VerticalFlag);
 }
-int GetDrawExtendFormatStringWidthToHandle(
-    double ExRateX, int fontHandle, const DXCHAR *formatString, ...
+int GetDrawExtendStringWidthToHandleW(double ExRateX, const wchar_t *string, int strLen,
+                                     int fontHandle, int VerticalFlag) {
+    return ::DxLib_GetDrawExtendStringWidthToHandleW(ExRateX, string, strLen, fontHandle, VerticalFlag);
+}
+int GetDrawExtendFormatVStringWidthToHandleA(
+    double ExRateX, int fontHandle, const char *formatString, va_list args
 ) {
-    va_list args;
-    int retval;
-    va_start(args, formatString);
-    retval = ::PL_Font_GetDrawExtendFormatStringWidthToHandle(ExRateX, fontHandle, formatString, args);
-    va_end(args);
-    return retval;
+    return ::DxLib_GetDrawExtendFormatVStringWidthToHandleA(ExRateX, fontHandle, formatString, args);
+}
+int GetDrawExtendFormatVStringWidthToHandleW(
+    double ExRateX, int fontHandle, const wchar_t *formatString, va_list args
+) {
+    return ::DxLib_GetDrawExtendFormatVStringWidthToHandleW(ExRateX, fontHandle, formatString, args);
 }
 
 int GetFontSizeToHandle(int fontHandle) {
     return ::DxLib_GetFontSizeToHandle(fontHandle);
 }
-int GetFontCharInfo(int fontHandle, const DXCHAR *string,
-                          int *xPos, int *yPos, int *advanceX,
-                          int *width, int *height) {
-    return ::DxLib_GetFontCharInfo(fontHandle, string, xPos, yPos, advanceX, width, height);
+int GetFontCharInfoA(int fontHandle, const char *string,
+                     int *xPos, int *yPos, int *advanceX,
+                     int *width, int *height) {
+    return ::DxLib_GetFontCharInfoA(fontHandle, string, xPos, yPos, advanceX, width, height);
+}
+int GetFontCharInfoW(int fontHandle, const wchar_t *string,
+                     int *xPos, int *yPos, int *advanceX,
+                     int *width, int *height) {
+    return ::DxLib_GetFontCharInfoW(fontHandle, string, xPos, yPos, advanceX, width, height);
 }
 int SetFontSpaceToHandle(int fontSpacing, int fontHandle) {
     return ::DxLib_SetFontSpaceToHandle(fontSpacing, fontHandle);
 }
 
-int CreateFontToHandle(const DXCHAR *fontname,
-                       int size, int thickness, int fontType, int charSet,
-                       int edgeSize, int Italic, int handle) {
-    return ::DxLib_CreateFontToHandle(
+int CreateFontToHandleA(const char *fontname,
+                        int size, int thickness, int fontType, int charSet,
+                        int edgeSize, int Italic, int handle) {
+    return ::DxLib_CreateFontToHandleA(
+        fontname, size, thickness, fontType, charSet,
+        edgeSize, Italic, handle
+    );
+}
+int CreateFontToHandleW(const wchar_t *fontname,
+                        int size, int thickness, int fontType, int charSet,
+                        int edgeSize, int Italic, int handle) {
+    return ::DxLib_CreateFontToHandleW(
         fontname, size, thickness, fontType, charSet,
         edgeSize, Italic, handle
     );
@@ -788,65 +917,13 @@ int InitFontToHandle() {
 }
 
 /* "Default" font functions */
-int DrawString(int x, int y, const DXCHAR *string, DXCOLOR color, DXCOLOR edgeColor) {
-    return ::DxLib_DrawString(x, y, string, color, edgeColor);
+int ChangeFontA(const char *string, int charSet) {
+    return ::DxLib_ChangeFontA(string, charSet);
 }
-int DrawFormatString(
-    int x, int y, DXCOLOR color,
-    const DXCHAR *formatString, ...
-) {
-    va_list args;
-    int retval;
-    va_start(args, formatString);
-    retval = ::PL_Font_DrawFormatString(x, y, color, formatString, args);
-    va_end(args);
-    return retval;
+int ChangeFontW(const wchar_t *string, int charSet) {
+    return ::DxLib_ChangeFontW(string, charSet);
 }
-int DrawExtendString(int x, int y, double ExRateX, double ExRateY,
-                     const DXCHAR *string, DXCOLOR color, DXCOLOR edgeColor) {
-    return ::DxLib_DrawExtendString(x, y, ExRateX, ExRateY, string, color, edgeColor);
-}
-int DrawExtendFormatString(
-    int x, int y, double ExRateX, double ExRateY,
-    DXCOLOR color,
-    const DXCHAR *formatString, ...
-) {
-    va_list args;
-    int retval;
-    va_start(args, formatString);
-    retval = ::PL_Font_DrawExtendFormatString(x, y, ExRateX, ExRateY, color, formatString, args);
-    va_end(args);
-    return retval;
-}
-int GetDrawStringWidth(const DXCHAR *string, int strLen, int VerticalFlag) {
-    return ::DxLib_GetDrawStringWidth(string, strLen, VerticalFlag);
-}
-int GetDrawFormatStringWidth(
-    const DXCHAR *formatString, ...
-) {
-    va_list args;
-    int retval;
-    va_start(args, formatString);
-    retval = ::PL_Font_GetDrawFormatStringWidth(formatString, args);
-    va_end(args);
-    return retval;
-}
-int GetDrawExtendStringWidth(double ExRateX, const DXCHAR *string, int strLen, int VerticalFlag) {
-    return ::DxLib_GetDrawExtendStringWidth(ExRateX, string, strLen, VerticalFlag);
-}
-int GetDrawExtendFormatStringWidth(
-    double ExRateX, const DXCHAR *formatString, ...
-) {
-    va_list args;
-    int retval;
-    va_start(args, formatString);
-    retval = ::PL_Font_GetDrawExtendFormatStringWidth(ExRateX, formatString, args);
-    va_end(args);
-    return retval;
-}
-int ChangeFont(const DXCHAR *string, int charSet) {
-    return ::DxLib_ChangeFont(string, charSet);
-}
+
 int ChangeFontType(int fontType) {
     return ::DxLib_ChangeFontType(fontType);
 }
@@ -862,8 +939,11 @@ int SetFontThickness(int fontThickness) {
 int SetFontSpace(int fontSpace) {
     return ::DxLib_SetFontSpace(fontSpace);
 }
-int SetDefaultFontState(const DXCHAR *fontName, int fontSize, int fontThickness) {
-    return ::DxLib_SetDefaultFontState(fontName, fontSize, fontThickness);
+int SetDefaultFontStateA(const char *fontName, int fontSize, int fontThickness) {
+    return ::DxLib_SetDefaultFontStateA(fontName, fontSize, fontThickness);
+}
+int SetDefaultFontStateW(const wchar_t *fontName, int fontSize, int fontThickness) {
+    return ::DxLib_SetDefaultFontStateW(fontName, fontSize, fontThickness);
 }
 int GetDefaultFontHandle() {
     return ::DxLib_GetDefaultFontHandle();
@@ -901,11 +981,17 @@ int SetUseOldVolumeCalcFlag(int volumeFlag) {
     return ::DxLib_SetUseOldVolumeCalcFlag(volumeFlag);
 }
 
-int LoadSoundMem(const DXCHAR *filename, int bufferNum, int unionHandle) {
-    return ::DxLib_LoadSoundMem(filename, bufferNum, unionHandle);
+int LoadSoundMemA(const char *filename, int bufferNum, int unionHandle) {
+    return ::DxLib_LoadSoundMemA(filename, bufferNum, unionHandle);
 }
-int LoadSoundMem2(const DXCHAR *filename, const DXCHAR *filename2) {
-    return ::DxLib_LoadSoundMem2(filename, filename2);
+int LoadSoundMemW(const wchar_t *filename, int bufferNum, int unionHandle) {
+    return ::DxLib_LoadSoundMemW(filename, bufferNum, unionHandle);
+}
+int LoadSoundMem2A(const char *filename, const char *filename2) {
+    return ::DxLib_LoadSoundMem2A(filename, filename2);
+}
+int LoadSoundMem2W(const wchar_t *filename, const wchar_t *filename2) {
+    return ::DxLib_LoadSoundMem2W(filename, filename2);
 }
 int DeleteSoundMem(int soundID, int LogOutFlag) {
     return ::DxLib_DeleteSoundMem(soundID, LogOutFlag);

@@ -164,7 +164,7 @@ static void DXA_Decode(DXArchive *archive, const void *src, void *dest, uint64_t
 
 static int DXA_Decompress(const void *src, void *dest, uint64_t dest_len);
 
-static uint64_t DXA_GetFileAddress(DXArchive *archive, const DXCHAR *filename);
+static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename);
 
 static void DXA_GetFileInfo(DXArchive *archive, uint64_t address, DXArchiveFileInfo *info);
 static void DXA_GetDirectoryInfo(DXArchive *archive, uint64_t address, DXArchiveDirectoryInfo *info);
@@ -173,22 +173,17 @@ static void DXA_GetFileNameInfo(DXArchive *archive, uint64_t address, DXArchiveF
 static int DXA_InitializeArchive(DXArchive *archive);
 
 /* ------------------------------------------------------------ DXARCHIVE IMPLEMENTATION */
-static uint64_t DXA_GetFileAddress(DXArchive *archive, const DXCHAR *filename) {
+static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
     /* So here we have to break up the filename into pieces.
      * 
      * The rules here are:
      * - '/' and '\' are both valid for directory indices.
      * - all filenames must be uppercase.
      */
-    char utf8Buf[2048];
     char fileBuf[2048];
-    const char *src = utf8Buf;
+    const char *src = filename;
     uint64_t directoryAddress = 0;
     int charSet = (int)archive->CharSet;
-    
-    if (PL_Text_DxStringToString(filename, utf8Buf, 2048, charSet) <= 0) {
-        return 0;
-    }
     
     while (*src != '\0') {
         DXArchiveDirectoryInfo dirInfo;
@@ -200,7 +195,7 @@ static uint64_t DXA_GetFileAddress(DXArchive *archive, const DXCHAR *filename) {
         uint64_t i;
         unsigned int parity = 0;
         
-        while ((ch = PL_Text_ReadChar(&src, charSet)) != '\0') {
+        while ((ch = PL_Text_ReadUTF8Char(&src)) != '\0') {
             if (ch == '\\' || ch == '/') {
                 dirAttrib = DXA_ATTRIBUTE_DIRECTORY;
                 break;
@@ -293,7 +288,7 @@ static int DXA_ReadCompressedFile(
     return 0;
 }
 
-int DXA_ReadFile(DXArchive *archive, const DXCHAR *filename, unsigned char **dData, unsigned int *dSize) {
+int DXA_ReadFile(DXArchive *archive, const char *filename, unsigned char **dData, unsigned int *dSize) {
     uint64_t index = DXA_GetFileAddress(archive, filename);
     DXArchiveFileInfo fileInfo;
     if (index == 0) {
@@ -326,7 +321,7 @@ int DXA_ReadFile(DXArchive *archive, const DXCHAR *filename, unsigned char **dDa
     }
 }
 
-int DXA_TestFile(DXArchive *archive, const DXCHAR *filename) {
+int DXA_TestFile(DXArchive *archive, const char *filename) {
     uint64_t index = DXA_GetFileAddress(archive, filename);
     if (index == 0) {
         return -1;
@@ -381,17 +376,13 @@ int DXA_PreloadArchive(DXArchive *archive) {
     return 0;
 }
 
-DXArchive *DXA_OpenArchive(const DXCHAR *filename, const char *keyString) {
+DXArchive *DXA_OpenArchive(const char *filename, const char *keyString) {
     SDL_RWops *rwops;
     char utf8Buf[2048];
     DXArchive *archive;
-
-    if (PL_Text_DxStringToString(filename, utf8Buf, 2048, DX_CHARSET_EXT_UTF8) <= 0) {
-        return NULL;
-    }
     
     /* - Make sure we can open the thing. */
-    rwops = SDL_RWFromFile(utf8Buf, "rb");
+    rwops = SDL_RWFromFile(filename, "rb");
     if (rwops == NULL) {
         return NULL;
     }
@@ -946,7 +937,7 @@ static SDL_RWops *DXA_MemStream_Open(unsigned char *data, size_t length, int fre
     return &memstream->rwops;
 }
 
-SDL_RWops *DXA_OpenStream(DXArchive *archive, const DXCHAR *filename) {
+SDL_RWops *DXA_OpenStream(DXArchive *archive, const char *filename) {
     uint64_t fileAddress = DXA_GetFileAddress(archive, filename);
     DXArchiveFileInfo fileInfo;
     

@@ -554,7 +554,7 @@ public:
     static LUNACALL Bool WaitForMsgLoop(Bool isFullActive = false);
     static LUNACALL void SyncFrame();
     
-    static LUNACALL void SetApplicationName(const DXCHAR *name);
+    static LUNACALL void SetApplicationName(const char *name);
     static LUNACALL void SetScreenInfo(Sint32 width, Sint32 height,
                              Bool isWindow);
     static LUNACALL void SetFrameRate(Sint32 frameRate);
@@ -581,11 +581,11 @@ public:
     // If you want to use anything other than UTF8, use this.
     static LUNACALL void EXTSetUseCharset(int dxCharset);
     
-    static LUNACALL void EXTGetSaveFolder(DXCHAR *buffer, int bufferLength,
-                             const DXCHAR *org, const DXCHAR *app,
+    static LUNACALL void EXTGetSaveFolder(char *buffer, int bufferLength,
+                             const char *org, const char *app,
                              int destEncoding);
-    static LUNACALL int EXTConvertText(DXCHAR *buffer, int bufferLength,
-                            const DXCHAR *string,
+    static LUNACALL int EXTConvertText(char *buffer, int bufferLength,
+                            const char *string,
                             int destEncoding, int srcEncoding);
     
     static LUNACALL void EXTSetFullscreenDesktop(bool flag);
@@ -594,7 +594,7 @@ public:
                                               bool isFullscreen,
                                               bool isFullscreenDesktop);
     
-    static LUNACALL void EXTSetWindowIconFromFile(const DXCHAR *filename);
+    static LUNACALL void EXTSetWindowIconFromFile(const char *filename);
     static LUNACALL void EXTSetVSync(bool vsyncEnabled);
     
     // Supplied by the application.
@@ -621,9 +621,9 @@ public:
 class LunaFile {
 public:
     static LUNACALL void SetRootPath(Uint32 Priority,
-                                     const DXCHAR *pRootPath,
-                                     const DXCHAR *pPackFile);
-    static LUNACALL FILEDATA *FileOpen(const DXCHAR *pFile,
+                                     const char *pRootPath,
+                                     const char *pPackFile);
+    static LUNACALL FILEDATA *FileOpen(const char *pFile,
                                        Bool ReadOnly = false);
     
     static LUNACALL Uint32 FileGetSize( FILEDATA *pFile );
@@ -673,11 +673,11 @@ public:
 /* ------------------------------------------------------ LunaTexture.cpp */
 class LunaTexture {
 public:
-    static LUNACALL LTEXTURE CreateFromFile(const DXCHAR *pFileName,
+    static LUNACALL LTEXTURE CreateFromFile(const char *pFileName,
                               eSurfaceFormat format,
                               D3DCOLOR keyColor = COLORKEY_DISABLE);
-    static LUNACALL LTEXTURE CreateFromLAG(const DXCHAR *pFileName,
-                              const DXCHAR *pDataName,
+    static LUNACALL LTEXTURE CreateFromLAG(const char *pFileName,
+                              const char *pDataName,
                               eSurfaceFormat Format );
     static LUNACALL void Release(LTEXTURE texture);
 };
@@ -712,19 +712,19 @@ public:
 /* --------------------------------------------------- LunaFontSprite.cpp */
 class LunaFontSprite {
 public:
-    static LUNACALL LFONTSPRITE CreateFromFile(const DXCHAR *pFileName,
-                                 const DXCHAR *pExt, Bool IsAlpha, Uint32 Num,
+    static LUNACALL LFONTSPRITE CreateFromFile(const char *pFileName,
+                                 const char *pExt, Bool IsAlpha, Uint32 Num,
                                  Bool IsSortZ = false,
                                  eSurfaceFormat Format = FORMAT_TEXTURE_2D);
     static LUNACALL void Release(LFONTSPRITE lFontSpr);
-    static LUNACALL void DrawString(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+    static LUNACALL void DrawString(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 Px, Sint32 Py, Float Pz, D3DCOLOR Color);
-    static LUNACALL void DrawStringP(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+    static LUNACALL void DrawStringP(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 Px, Sint32 Py, Float Pz, D3DCOLOR Color);
     static LUNACALL void ResetBuffer(LFONTSPRITE lFontSpr, Sint32 Space = 0);
     static LUNACALL void UpdateBuffer(LFONTSPRITE lFontSpr);
     static LUNACALL void Rendering(LFONTSPRITE lFontSpr);
-    static LUNACALL Bool GetWidth(LFONTSPRITE lFontSpr, const DXCHAR *pStr,
+    static LUNACALL Bool GetWidth(LFONTSPRITE lFontSpr, const char *pStr,
                          Sint32 *pLeft, Sint32 *pCenter, Sint32 *pRight);
 };
 
@@ -752,7 +752,7 @@ public:
 /* -------------------------------------------------------- LunaSound.cpp */
 class LunaSound {
 public:
-    static LUNACALL LSOUND CreateFromFile(const DXCHAR *filename,
+    static LUNACALL LSOUND CreateFromFile(const char *filename,
                             bool IsNoStop, bool IsAyame = true,
                             bool IsHardware = false, Uint32 Layer = 1);
     static LUNACALL Bool IsPlay(LSOUND lSnd, Uint32 Layer = 0);
@@ -767,7 +767,7 @@ public:
     static LUNACALL void SetPan(LSOUND lSnd, Float fParam,
                                 Uint32 Layer = 0);
     static LUNACALL void SetMax(Uint32 Max);
-    static LUNACALL void SetAyamePath(const DXCHAR *pPath);
+    static LUNACALL void SetAyamePath(const char *pPath);
     
     static LUNACALL void EXTSetLoopSamples(LSOUND lSnd,
                              Uint64 loopTarget, Uint64 loopPoint);

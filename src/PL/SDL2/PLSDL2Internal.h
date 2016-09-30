@@ -30,7 +30,7 @@
 
 extern SDL_RWops *PLSDL2_FileToRWops(int fileHandle);
 extern int PLSDL2_RWopsToFile(SDL_RWops *rwops);
-extern SDL_RWops *PLSDL2_FileOpenReadDirect(const DXCHAR *filename);
+extern SDL_RWops *PLSDL2_FileOpenReadDirect(const char *filename);
 
 /* ------------------------------------------------------------- Screen.c */
 
@@ -38,6 +38,7 @@ extern void PL_SDL2GL_Init(SDL_Window *window, int width, int height);
 extern int PL_SDL2GL_UpdateVSync(int vsyncFlag);
 extern void PL_SDL2GL_End();
 
+extern SDL_Window *PL_window;
 extern int PL_drawOffscreen;
 
 #endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */

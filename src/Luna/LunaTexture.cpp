@@ -28,10 +28,14 @@
 #include "PL/PLInternal.h"
 #include "LunaInternal.h"
 
-LTEXTURE LunaTexture::CreateFromFile(const DXCHAR *pFileName,
+LTEXTURE LunaTexture::CreateFromFile(const char *pFileName,
                                      eSurfaceFormat format,
                                      D3DCOLOR keyColor) {
-    int surfaceID = PL_Surface_Load(pFileName);
+    char buf[2048];
+    int surfaceID = PL_Surface_Load(
+        PL_Text_ConvertStrncpyIfNecessary(
+            buf, -1, pFileName, g_lunaUseCharSet, 2048)
+    );
     int handle;
     
     if (surfaceID < 0) {
@@ -50,8 +54,8 @@ LTEXTURE LunaTexture::CreateFromFile(const DXCHAR *pFileName,
     return handle;
 }
 
-LTEXTURE LunaTexture::CreateFromLAG(const DXCHAR *pFileName,
-                                    const DXCHAR *pDataName,
+LTEXTURE LunaTexture::CreateFromLAG(const char *pFileName,
+                                    const char *pDataName,
                                     eSurfaceFormat format) {
     /* Not supported yet. */
     return INVALID_TEXTURE;

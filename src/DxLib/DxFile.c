@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -37,7 +37,7 @@
 
 static int s_useArchiveFlag = DXTRUE;
 static char s_defaultArchiveString[DXA_KEY_LENGTH + 1] = { '\0' };
-static DXCHAR s_archiveExtension[64] = { '\0' };
+static char s_archiveExtension[64] = { '\0' };
 static int s_initialized = DXFALSE;
 static int s_filePriorityFlag = DXFALSE;
 static int s_fileUseCharset = DX_CHARSET_DEFAULT;
@@ -46,20 +46,20 @@ static int s_fileUseCharset = DX_CHARSET_DEFAULT;
 #ifndef DX_NON_DXA
 typedef struct ArchiveListEntry {
     DXArchive *archive;
-    DXCHAR *filename;
+    char *filename;
     
     struct ArchiveListEntry *next;
 } ArchiveListEntry;
 
 static ArchiveListEntry *s_archiveList = NULL;
 
-static DXArchive *s_GetArchive(const DXCHAR *filename) {
+static DXArchive *s_GetArchive(const char *filename) {
     /* - Check to see if this archive is already open first. */
     DXArchive *archive;
     ArchiveListEntry *entry;
     
     for (entry = s_archiveList; entry != NULL; entry = entry->next) {
-        if (!DXSTRCMP(entry->filename, filename)) {
+        if (!PL_Text_Strcmp(entry->filename, filename)) {
             return entry->archive;
         }
     }
@@ -70,7 +70,7 @@ static DXArchive *s_GetArchive(const DXCHAR *filename) {
         /* - On success, add to the open list. */
         entry = DXALLOC(sizeof(ArchiveListEntry));
         entry->archive = archive;
-        entry->filename = DXSTRDUP(filename);
+        entry->filename = PL_Text_Strdup(filename);
         entry->next = s_archiveList;
         s_archiveList = entry;
     }
@@ -78,12 +78,12 @@ static DXArchive *s_GetArchive(const DXCHAR *filename) {
     return archive;
 }
 
-static int s_CloseArchive(const DXCHAR *filename) {
+static int s_CloseArchive(const char *filename) {
     ArchiveListEntry **pEntry = &s_archiveList;
     ArchiveListEntry *entry;
     
     while ((entry = *pEntry) != NULL) {
-        if (!DXSTRCMP(entry->filename, filename)) {
+        if (!PL_Text_Strcmp(entry->filename, filename)) {
             ArchiveListEntry *nextEntry = entry->next;
             
             DXA_CloseArchive(entry->archive);
@@ -122,11 +122,11 @@ static void s_CloseArchives() {
 
 #else
 
-static DXArchive *s_GetArchive(const DXCHAR *filename) {
+static DXArchive *s_GetArchive(const char *filename) {
     return NULL;
 }
 
-static int s_CloseArchive(const DXCHAR *filename) {
+static int s_CloseArchive(const char *filename) {
     return -1;
 }
 
@@ -138,16 +138,16 @@ static void s_CloseArchives() {
 #endif
 
 static int s_GetArchiveFilename(
-    const DXCHAR *filename, DXCHAR *buf, int maxLen,
-    const DXCHAR **pEnd
+    const char *filename, char *buf, int maxLen,
+    const char **pEnd
 ) {
     /* Extract the archive name from the filename. */
-    const DXCHAR *end = filename;
-    const DXCHAR *cur = filename;
+    const char *end = filename;
+    const char *cur = filename;
     unsigned int ch;
     int position;
     
-    while ((ch = PL_Text_ReadDxChar(&cur)) != 0) {
+    while ((ch = PL_Text_ReadUTF8Char(&cur)) != 0) {
         if (ch == '/' || ch == '\\') {
             break;
         }
@@ -163,28 +163,30 @@ static int s_GetArchiveFilename(
         }
         
         if (s_archiveExtension[0] != '\0') {
-            DXCHAR *c = buf + position;
-            c += PL_Text_WriteDxChar(c, '.', buf + maxLen - c);
-            DXSTRNCPY(c, s_archiveExtension, buf + maxLen - c);
+            char *c = buf + position;
+            c += PL_Text_WriteUTF8Char(c, '.', buf + maxLen - c);
+            position += PL_Text_Strncpy(c, s_archiveExtension, buf + maxLen - c);
         } else {
-            DXSTRNCPYFROMSTR(buf + position, ".dxa", maxLen - position, DX_CHARSET_EXT_UTF8);
+            position += PL_Text_ConvertStrncat(buf + position, -1,
+                                   ".dxa", DX_CHARSET_EXT_UTF8,
+                                   maxLen - position);
         }
         
         if (pEnd != NULL) {
             *pEnd = end;
         }
         
-        return DXSTRLEN(buf);
+        return position;
     }
     
     return 0;
 }
 
 /* ------------------------------------------------------------ STREAM INTERFACE */
-SDL_RWops *Dx_File_OpenArchiveStream(const DXCHAR *filename) {
+SDL_RWops *Dx_File_OpenArchiveStream(const char *filename) {
     /* Extract the archive name from the filename. */
-    DXCHAR buf[2048];
-    const DXCHAR *end;
+    char buf[2048];
+    const char *end;
     if (s_GetArchiveFilename(filename, buf, 2048, &end) > 0) {
         DXArchive *archive;
         
@@ -201,17 +203,11 @@ SDL_RWops *Dx_File_OpenArchiveStream(const DXCHAR *filename) {
     return NULL;
 }
 
-SDL_RWops *Dx_File_OpenDirectStream(const DXCHAR *filename) {
-    char utf8Buf[2048];
-    
-    if (PL_Text_DxStringToString(filename, utf8Buf, 2048, DX_CHARSET_EXT_UTF8) <= 0) {
-        return NULL;
-    }
-    
-    return SDL_RWFromFile(utf8Buf, "rb");
+SDL_RWops *Dx_File_OpenDirectStream(const char *filename) {
+    return SDL_RWFromFile(filename, "rb");
 }
 
-SDL_RWops *Dx_File_OpenStream(const DXCHAR *filename) {
+SDL_RWops *Dx_File_OpenStream(const char *filename) {
     if (s_useArchiveFlag == DXFALSE) {
         return Dx_File_OpenDirectStream(filename);
     } else if (s_filePriorityFlag == DXTRUE) {
@@ -229,7 +225,7 @@ SDL_RWops *Dx_File_OpenStream(const DXCHAR *filename) {
     }
 }
 
-int Dx_File_ReadFile(const DXCHAR *filename, unsigned char **dData, unsigned int *dSize) {
+int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *dSize) {
     unsigned char *data;
     unsigned int size;
     int retval;
@@ -259,12 +255,12 @@ int Dx_File_ReadFile(const DXCHAR *filename, unsigned char **dData, unsigned int
 
 /* ------------------------------------------------------------ PUBLIC INTERFACE */
 /* Sets the "encryption" key to use for the packfile. */
-int Dx_File_SetDXArchiveKeyString(const DXCHAR *keyString) {
+int Dx_File_SetDXArchiveKeyString(const char *keyString) {
     int n = 0;
     
     if (keyString != 0) {
         unsigned int ch;
-        while ((ch = PL_Text_ReadDxChar(&keyString)) != 0 && n < DXA_KEY_LENGTH) {
+        while ((ch = PL_Text_ReadUTF8Char(&keyString)) != 0 && n < DXA_KEY_LENGTH) {
             s_defaultArchiveString[n] = (char)ch;
             n += 1;
         }
@@ -275,7 +271,7 @@ int Dx_File_SetDXArchiveKeyString(const DXCHAR *keyString) {
     return 0;
 }
 
-int Dx_File_SetDXArchiveExtension(const DXCHAR *extension) {
+int Dx_File_SetDXArchiveExtension(const char *extension) {
     if (extension != 0) {
         s_archiveExtension[0] = '\0';
     } else {
@@ -306,8 +302,8 @@ int Dx_File_GetUseDXArchiveFlag() {
     return s_useArchiveFlag;
 }
 
-int Dx_File_DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
-    DXCHAR buf[2048];
+int Dx_File_DXArchivePreLoad(const char *dxaFilename, int async) {
+    char buf[2048];
     DXArchive *archive;
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
         archive = s_GetArchive(buf);
@@ -318,21 +314,21 @@ int Dx_File_DXArchivePreLoad(const DXCHAR *dxaFilename, int async) {
     }
     return -1;
 }
-int Dx_File_DXArchiveCheckIdle(const DXCHAR *dxaFilename) {
+int Dx_File_DXArchiveCheckIdle(const char *dxaFilename) {
     /* This has no meaning when async is not supported,
      * so it is always idle. */
     return DXTRUE;
 }
-int Dx_File_DXArchiveRelease(const DXCHAR *dxaFilename) {
-    DXCHAR buf[2048];
+int Dx_File_DXArchiveRelease(const char *dxaFilename) {
+    char buf[2048];
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
         return s_CloseArchive(buf);
     }
     return -1;
 }
 
-int Dx_File_DXArchiveCheckFile(const DXCHAR *dxaFilename, const DXCHAR *filename) {
-    DXCHAR buf[2048];
+int Dx_File_DXArchiveCheckFile(const char *dxaFilename, const char *filename) {
+    char buf[2048];
     DXArchive *archive;
     if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
         archive = s_GetArchive(buf);
@@ -353,7 +349,7 @@ int PLEXT_FileRead_SetCharSet(int charset) {
     return 0;
 }
 
-int Dx_FileRead_open(const DXCHAR *filename) {
+int Dx_FileRead_open(const char *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     int fileDataID;
     FileHandle *handle;
@@ -373,7 +369,7 @@ int Dx_FileRead_open(const DXCHAR *filename) {
     
     return fileDataID;
 }
-int64_t Dx_FileRead_size(const DXCHAR *filename) {
+int64_t Dx_FileRead_size(const char *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     if (rwops != NULL) {
         int64_t size = rwops->size(rwops);
@@ -453,7 +449,7 @@ static int Dx_FileRead_getWholeChar(int fileHandle) {
     return -1;
 }
 
-int Dx_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
+int Dx_FileRead_getsA(char *buffer, int bufferSize, int fileHandle) {
     int ch;
     int remaining = bufferSize - 1;
     
@@ -470,7 +466,7 @@ int Dx_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
         if (ch == '\n') {
             break;
         }
-        chSize = PL_Text_WriteDxChar(buffer, ch, remaining);
+        chSize = PL_Text_WriteChar(buffer, ch, remaining, g_DxUseCharSet);
         remaining -= chSize;
         buffer += chSize;
     }
@@ -479,120 +475,84 @@ int Dx_FileRead_gets(DXCHAR *buffer, int bufferSize, int fileHandle) {
     
     return bufferSize - remaining - 1;
 }
+int Dx_FileRead_getsW(wchar_t *buffer, int bufferSize, int fileHandle) {
+    int ch;
+    int remaining = bufferSize - 1;
+    
+    if (Dx_FileRead_eof(fileHandle)) {
+        return -1;
+    }
+    
+    /* TODO: support and skip 0xfeff header. */
+    
+    while (remaining > 0 && (ch = Dx_FileRead_getWholeChar(fileHandle)) != -1) {
+        if (ch == '\r') {
+            continue;
+        }
+        if (ch == '\n') {
+            break;
+        }
+        *buffer = ch;
+        remaining -= 1;
+        buffer += 1;
+    }
+    
+    *buffer = '\0';
+    
+    return bufferSize - remaining - 1;
+}
 
-DXCHAR Dx_FileRead_getc(int fileHandle) {
+char Dx_FileRead_getcA(int fileHandle) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
     if (handle != NULL) {
         SDL_RWops *rwops = handle->rwops;
         char ch;
         if (SDL_RWread(rwops, &ch, sizeof(char), 1) < 1) {
-            return (DXCHAR)-1;
+            return (char)-1;
         }
         
         return ch;
     }
-    return (DXCHAR)-1;
+    return (char)-1;
 }
-
-#if !defined(HAVE_SSCANF) && defined(__WIN32__) && !defined(__GNUC__)
-/* Visual Studio pre-2013 does not have vsscanf for whatever reason.
- *
- * More confusingly, SDL2 has SDL_sscanf, but not SDL_vsscanf. Why?
- *
- * The source to the following code was acquired from:
- * http://www.flipcode.com/archives/vsscanf_for_Win32.shtml
- *
- * And then I cleaned up so it's actually compliant C,
- * supports unicode, and without a silly crash bug with %%.
- *
- * FIXME: move this and other system-specific hacks to their own file.
- */
-
-/*
- * vsscanf for Win32
- *
- * Written 5/2003 by <mgix@mgix.com>
- *
- * This code is in the Public Domain
- *
- */
-
-static int vsscanf(
-    const char  *buffer,
-#ifdef UNICODE
-	const wchar_t *format,
-#else
-    const char  *format,
-#endif
-    va_list     argPtr
-)
-{
-    size_t count;
-    const TCHAR *p;
-    size_t stackSize;
-    void **newStack;
-    int result;
-    void *savedESP;
-
-    /* Get an upper bound for the # of args */
-    count = 0;
-    p = format;
-
-    while(1)
-    {
-        TCHAR c = *(p++);
-        if(c==0) break;
-        if(c=='%') {
-            if (p[0]!='*' && p[0]!='%') {
-                ++count;
-            } else if (p[0]!=0) {
-                ++p;
-            }
+wchar_t Dx_FileRead_getcW(int fileHandle) {
+    FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_FILE);
+    if (handle != NULL) {
+        SDL_RWops *rwops = handle->rwops;
+        wchar_t ch;
+        if (SDL_RWread(rwops, &ch, sizeof(wchar_t), 1) < 1) {
+            return (wchar_t)-1;
         }
+        
+        return (wchar_t)ch;
     }
-
-    /* Make a local stack */
-    stackSize = (2+count)*sizeof(void*);
-    newStack = (void**)alloca(stackSize);
-
-    /* Fill local stack the way sscanf likes it */
-    newStack[0] = (void*)buffer;
-    newStack[1] = (void*)format;
-    memcpy(newStack+2, argPtr, count*sizeof(void*));
-
-    /* Warp into system sscanf with new stack */
-    _asm
-    {
-        mov     savedESP, esp;
-        mov     esp, newStack;
-#ifdef UNICODE
-        call    swscanf_s;
-#else
-        call    sscanf_s;
-#endif
-        mov     esp, savedESP;
-        mov     result, eax;
-    }
-    return result;
+    return (wchar_t)-1;
 }
-#endif
 
-int Dx_FileRead_vscanf(int fileHandle, const DXCHAR *format, va_list args) {
-    DXCHAR dxBuffer[4096];
+int Dx_FileRead_vscanfA(int fileHandle, const char *format, va_list args) {
     char buffer[4096];
     int len;
     
-    len = Dx_FileRead_gets(dxBuffer, 4096, fileHandle);
+    len = Dx_FileRead_getsA(buffer, 4096, fileHandle);
     if (len < 0) {
         return 0;
     }
     
-    len = PL_Text_DxStringToString(dxBuffer, buffer, 4096, PL_Text_GetUseCharSet());
+    return PL_Text_Vsscanf(buffer, g_DxUseCharSet, format, args);
+}
+int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
+    wchar_t buffer[4096];
+    int len;
     
-    return vsscanf(buffer, format, args);
+    len = Dx_FileRead_getsW(buffer, 4096, fileHandle);
+    if (len < 0) {
+        return 0;
+    }
+    
+    return PL_Text_Wvsscanf(buffer, g_DxUseCharSet, format, args);
 }
 
-int Dx_File_OpenRead(const DXCHAR *filename) {
+int Dx_File_OpenRead(const char *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     if (rwops != NULL) {
         return PLSDL2_RWopsToFile(rwops);
