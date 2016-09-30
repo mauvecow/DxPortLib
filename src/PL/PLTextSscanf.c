@@ -196,7 +196,7 @@ static int s_scanDouble(const char *str, int charset, int radix, double *value) 
         tmp = str;
         c = PL_Text_ReadChar(&str, charset);
         int cv = 0;
-        if (c >= '0' || c <= '9') {
+        if (c >= '0' && c <= '9') {
             cv = c - '0';
         } else if (c >= 'a' && c <= 'z') {
             cv = c - 'a' + 10;
@@ -212,7 +212,7 @@ static int s_scanDouble(const char *str, int charset, int radix, double *value) 
             break;
         }
         
-        v = (v * radix) + (cv * 10);
+        v = (v * radix) + cv;
     }
     
     tmp = str;
@@ -224,7 +224,7 @@ static int s_scanDouble(const char *str, int charset, int radix, double *value) 
             tmp = str;
             c = PL_Text_ReadChar(&str, charset);
             int cv = 0;
-            if (c >= '0' || c <= '9') {
+            if (c >= '0' && c <= '9') {
                 cv = c - '0';
             } else if (c >= 'a' && c <= 'z') {
                 cv = c - 'a' + 10;
@@ -268,7 +268,7 @@ int PL_Text_Vsscanf(const char *str, int charset, const char *format, va_list ar
         } else if (ch == '%') {
             int radix = 10;
             int intLevel = 1;
-            long size = 0;
+            long size;
             int contFlag;
             int ignoreFlag = 0;
             
@@ -286,8 +286,8 @@ int PL_Text_Vsscanf(const char *str, int charset, const char *format, va_list ar
             }
             
             format += s_scanLong(format, charset, 10, &size);
-            if (size < 0) {
-                size = 0;
+            if (size <= 0) {
+                size = 1 << 20; /* Just blow it all up */
             }
             
             while (s_isSpace(*str) != 0) {
@@ -300,26 +300,23 @@ int PL_Text_Vsscanf(const char *str, int charset, const char *format, va_list ar
                     case '*':
                         ignoreFlag = 1;
                         contFlag = 1;
-                        format += 1;
                         break;
                     case 'h':
                         if (intLevel > 0) {
                             intLevel -= 1;
                         }
                         contFlag = 1;
-                        format += 1;
                         break;
                     case 'l':
                         if (intLevel < 3) {
                             intLevel += 1;
                         }
                         contFlag = 1;
-                        format += 1;
                         break;
                     case 'I':
                         if (PL_Text_Strncmp(format, "I64", 3) == 0) {
                             intLevel = 3;
-                            format += 3;
+                            format += 2;
                             contFlag = 1;
                         }
                         break;
@@ -454,6 +451,7 @@ int PL_Text_Vsscanf(const char *str, int charset, const char *format, va_list ar
                                     break;
                                 }
                             }
+                            count += 1;
                         }
                         break;
                     case 's':
@@ -468,6 +466,7 @@ int PL_Text_Vsscanf(const char *str, int charset, const char *format, va_list ar
                                 }
                             }
                             *target = '\0';
+                            count += 1;
                             break;
                         }
                         /* Fall through to widechar string / ignore logic */
@@ -493,22 +492,30 @@ int PL_Text_Vsscanf(const char *str, int charset, const char *format, va_list ar
                                 }
                             }
                             *target = '\0';
+                            count += 1;
                         }
                         break;
                     default:
                         break;
                 }
-            } while (contFlag != 0);
-            
-            if (*format) {
                 format += 1;
-            }
+            } while (contFlag != 0);
         }
     }
     
     return count;
 }
 
+int PL_Text_Sscanf(const char *str, int charset, const char *format, ...) {
+    va_list args;
+    int retval;
+    
+    va_start(args, format);
+    retval = PL_Text_Vsscanf(str, charset, format, args);
+    va_end(args);
+    
+    return retval;
+}
 int PL_Text_Wvsscanf(const wchar_t *str, int charset, const wchar_t *format, va_list args) {
     char strbuf[4096];
     char formatbuf[4096];
@@ -518,3 +525,15 @@ int PL_Text_Wvsscanf(const wchar_t *str, int charset, const wchar_t *format, va_
     
     return PL_Text_Vsscanf(strbuf, charset, formatbuf, args);
 }
+
+int PL_Text_Wsscanf(const wchar_t *str, int charset, const wchar_t *format, ...) {
+    va_list args;
+    int retval;
+    
+    va_start(args, format);
+    retval = PL_Text_Wvsscanf(str, charset, format, args);
+    va_end(args);
+    
+    return retval;
+}
+
