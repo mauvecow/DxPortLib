@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -63,6 +63,30 @@ LTEXTURE LunaTexture::CreateFromLAG(const char *pFileName,
 
 void LunaTexture::Release(LTEXTURE texture) {
     PLG.Texture_Release(texture);
+}
+
+LTEXTURE LunaTexture::CreateRenderTarget(Uint32 Width,
+                                         Uint32 Height,
+                                         eSurfaceFormat format)
+{
+    LTEXTURE handle = (int)PLG.Texture_CreateFramebuffer(Width, Height, true);
+    
+    return handle;
+}
+
+int LunaTexture::GetWidth(LTEXTURE texture) {
+    PLRect rect;
+    
+    PLG.Texture_RenderGetTextureInfo(texture, &rect, NULL, NULL);
+    
+    return rect.w;
+}
+int LunaTexture::GetHeight(LTEXTURE texture) {
+    PLRect rect;
+    
+    PLG.Texture_RenderGetTextureInfo(texture, &rect, NULL, NULL);
+    
+    return rect.h;
 }
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

@@ -38,13 +38,36 @@ int g_lunaTexturePreset = TEX_PRESET_MODULATE;
 PLMatrix g_lunaUntransformedProjectionMatrix;
 PLMatrix g_lunaUntransformedViewMatrix;
 
+int s_prevRenderTexture = -2;
+int s_renderTexture = -1;
+
 RECT g_viewportRect;
+
+static void s_UpdateRenderTexture() {
+    if (s_renderTexture != s_prevRenderTexture) {
+        if (s_renderTexture < 0) {
+            PL_Window_BindMainFramebuffer();
+            Luna3D::SetViewport(NULL);
+        } else {
+            PLG.Texture_BindFramebuffer(s_renderTexture);
+            
+            PLRect txr;
+            PLG.Texture_RenderGetTextureInfo(s_renderTexture, &txr, NULL, NULL);
+            
+            RECT r = { 0, 0, txr.w, txr.h };
+            Luna3D::SetViewport(&r);
+        }
+        
+        s_prevRenderTexture = s_renderTexture;
+    }
+}
 
 Bool Luna3D::BeginScene(void) {
     PLG.StartFrame();
+    s_prevRenderTexture = -2;
     
     PLG.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    PL_Window_BindMainFramebuffer();
+    //PL_Window_BindMainFramebuffer();
     return true;
 }
 void Luna3D::EndScene(void) {
@@ -212,6 +235,42 @@ void Luna3D::EXTSetDxBlendingType(int blendMode) {
         blend->srcRGBBlend, blend->destRGBBlend,
         blend->srcAlphaBlend, blend->destAlphaBlend);
     g_lunaTexturePreset = blend->texturePreset;
+}
+
+void Luna3D::SetRenderTargetTexture(LTEXTURE lTex) {
+    if (lTex < 0) {
+        ResetRenderTarget();
+    } else {
+        s_renderTexture = (int)lTex;
+        
+        ResetDepthStencil();
+    }
+}
+
+void Luna3D::ResetRenderTarget() {
+    s_renderTexture = -1;
+    
+    ResetDepthStencil();
+}
+
+void Luna3D::ResetDepthStencil() {
+    s_UpdateRenderTexture();
+    
+    // - Set DepthStencil Surface
+    
+    // - Enable Z testing
+    // - Enable Z writing
+}
+
+void Luna3DStartDraw(int textureID) {
+    s_UpdateRenderTexture();
+    
+    PLG.SetPresetProgram(
+        g_lunaTexturePreset, g_lunaAlphaTestPreset,
+        &g_lunaUntransformedProjectionMatrix,
+        &g_lunaUntransformedViewMatrix,
+        textureID, g_lunaFilterMode,
+        g_lunaAlphaTestValue);
 }
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

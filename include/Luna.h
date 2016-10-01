@@ -716,7 +716,13 @@ public:
     static LUNACALL LTEXTURE CreateFromLAG(const char *pFileName,
                               const char *pDataName,
                               eSurfaceFormat Format );
+    static LUNACALL LTEXTURE CreateRenderTarget(
+                              Uint32 Width, Uint32 Height,
+                              eSurfaceFormat format);
     static LUNACALL void Release(LTEXTURE texture);
+    
+    static LUNACALL int GetWidth(LTEXTURE texture);
+    static LUNACALL int GetHeight(LTEXTURE texture);
 };
 
 /* ------------------------------------------------------- LunaSprite.cpp */
@@ -804,6 +810,10 @@ public:
                           D3DCOLOR Color = 0x00000000, Float Depth = 1.0f,
                           Uint32 Stencil = 0, RECT *pDst = NULL);
     static LUNACALL void SetCamera(LCAMERA lCamera);
+    
+    static LUNACALL void SetRenderTargetTexture(LTEXTURE lTex);
+    static LUNACALL void ResetRenderTarget();
+    static LUNACALL void ResetDepthStencil();
     
     /* Uses a DxLib blending mode, like DX_BLENDMODE_PMA_ALPHA */
     static LUNACALL void EXTSetDxBlendingType(int dxBlendType);

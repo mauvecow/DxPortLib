@@ -228,6 +228,8 @@ extern void LunaFile_End();
 
 extern void LunaMath_Init();
 
+extern void Luna3DStartDraw(int textureID);
+
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */
 
 #endif /* #ifndef DXPORTLIB_LUNAINTERNAL_H */
