@@ -671,6 +671,8 @@ public:
     static LUNACALL Bool FileSeek(FILEDATA *pFile,
                                   Uint32 Offset, eSeekFlag Flag);
     static LUNACALL void FileClose(FILEDATA *pFile);
+
+    static LUNACALL int EXTFileCopy(const char *src, const char *dest, bool dontCopyIfExists);
 };
 
 /* --------------------------------------------------------- LunaMath.cpp */

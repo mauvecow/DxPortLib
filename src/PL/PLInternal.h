@@ -203,6 +203,7 @@ extern int64_t PL_File_Tell(int fileHandle);
 extern int64_t PL_File_Seek(int fileHandle, int64_t position, int origin);
 extern int64_t PL_File_Read(int fileHandle, void *data, int size);
 extern int64_t PL_File_Write(int fileHandle, void *data, int size);
+extern int PL_File_CopyDirect(const char *src, const char *dest, int dontCopyIfExists);
 extern int PL_File_IsEOF(int fileHandle);
 extern int PL_File_Close(int fileHandle);
 extern int PL_File_Init();

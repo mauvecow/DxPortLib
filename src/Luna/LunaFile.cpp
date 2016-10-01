@@ -302,7 +302,7 @@ FILEDATA * LunaFile::FileOpen(const char *pFile, Bool ReadOnly) {
         // In file writing mode, we don't check the archives at all.
         char filename[4096];
         const char *filebuf = PL_Text_ConvertStrncpyIfNecessary(
-            filename, -1, pFile, g_lunaUseCharSet, 4096);
+            filename, DX_CHARSET_EXT_UTF8, pFile, g_lunaUseCharSet, 4096);
         int handle = PL_Platform_FileOpenWriteDirect(filebuf);
         
         if (handle > 0) {
@@ -324,7 +324,7 @@ FILEDATA * LunaFile::FileOpen(const char *pFile, Bool ReadOnly) {
         int isPacked;
         char filename[4096];
         const char *filebuf = PL_Text_ConvertStrncpyIfNecessary(
-            filename, -1, pFile, g_lunaUseCharSet, 4096);
+            filename, DX_CHARSET_EXT_UTF8, pFile, g_lunaUseCharSet, 4096);
         int handle = LunaFile_OpenRead(filebuf, &isPacked);
         
         if (handle > 0) {
@@ -393,6 +393,17 @@ void LunaFile::FileClose(FILEDATA *pFile) {
         PL_File_Close(pFile->dxPortLibFileHandle);
         DXFREE(pFile);
     }
+}
+
+int LunaFile::EXTFileCopy(const char *src, const char *dest, bool dontCopyIfExists) {
+    char srcFilebuf[4096];
+    char destFilebuf[4096];
+    const char *srcFilename = PL_Text_ConvertStrncpyIfNecessary(
+        srcFilebuf, DX_CHARSET_EXT_UTF8, src, g_lunaUseCharSet, 4096);
+    const char *destFilename = PL_Text_ConvertStrncpyIfNecessary(
+        destFilebuf, DX_CHARSET_EXT_UTF8, dest, g_lunaUseCharSet, 4096);
+    
+    return PL_File_CopyDirect(srcFilename, destFilename, dontCopyIfExists ? DXTRUE : DXFALSE);
 }
 
 void LunaFile_Init() {

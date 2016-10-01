@@ -293,6 +293,44 @@ int PL_File_CreateHandle(const PL_FileFunctions *funcs, void *userdata) {
     return fileDataID;
 }
 
+int PL_File_CopyDirect(const char *src, const char *dest, int dontCopyIfExists) {
+    int srcHandle;
+    int destHandle;
+    int retval = -1;
+    
+    if (dontCopyIfExists != DXFALSE) {
+        int handle = PL_Platform_FileOpenReadDirect(dest);
+        if (handle != 0) {
+            PL_File_Close(handle);
+            return -1;
+        }
+    }
+    
+    srcHandle = PL_Platform_FileOpenReadDirect(src);
+    if (srcHandle <= 0) {
+        return -1;
+    }
+    destHandle = PL_Platform_FileOpenWriteDirect(dest);
+    if (destHandle > 0) {
+        uint64_t size = PL_File_GetSize(srcHandle);
+        char buf[4096];
+        
+        while (size > 0) {
+            int amount = size > 4096 ? 4096 : (int)size;
+            size -= amount;
+            
+            PL_File_Read(srcHandle, buf, amount);
+            PL_File_Write(destHandle, buf, amount);
+        }
+        
+        PL_File_Close(destHandle);
+        retval = 0;
+    }
+    PL_File_Close(srcHandle);
+    
+    return retval;
+}
+
 int PL_File_Init() {
     /* nothing to do */
     return 0;
