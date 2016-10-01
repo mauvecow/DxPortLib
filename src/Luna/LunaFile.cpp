@@ -298,33 +298,49 @@ void LunaFile::SetRootPath(Uint32 Priority,
 }
 
 FILEDATA * LunaFile::FileOpen(const char *pFile, Bool ReadOnly) {
-    /* NOTICE: ReadOnly is ignored. We do not support writing. */
-    /* NOTICE: File creation/modification times not supported. */
-    int isPacked;
-    char filename[4096];
-    const char *filebuf = PL_Text_ConvertStrncpyIfNecessary(
-        filename, -1, pFile, g_lunaUseCharSet, 4096);
-    int handle = LunaFile_OpenRead(filebuf, &isPacked);
-    
-    if (handle >= 0) {
-        FILEDATA *filedata = (FILEDATA *)DXALLOC(sizeof(FILEDATA));
-        int len = PL_Text_Strlen(filebuf);
+    if (ReadOnly == false) {
+        // In file writing mode, we don't check the archives at all.
+        char filename[4096];
+        const char *filebuf = PL_Text_ConvertStrncpyIfNecessary(
+            filename, -1, pFile, g_lunaUseCharSet, 4096);
+        int handle = PL_Platform_FileOpenWriteDirect(filebuf);
         
-        memset(filedata, 0, sizeof(FILEDATA));
-        filedata->dxPortLibFileHandle = handle;
-        filedata->IsPack = isPacked;
-        filedata->Start = 0;
-        filedata->Size = (Uint32)PL_File_GetSize(handle);
-        
-        if (len >= MAX_PATH) {
-            len = MAX_PATH - 1;
+        if (handle > 0) {
+            FILEDATA *filedata = (FILEDATA *)DXALLOC(sizeof(FILEDATA));
+            
+            memset(filedata, 0, sizeof(FILEDATA));
+            filedata->dxPortLibFileHandle = handle;
+            filedata->IsPack = 0;
+            filedata->Start = 0;
+            filedata->Size = (Uint32)PL_File_GetSize(handle);
+            
+            PL_Text_Strncpy(filedata->FileName, pFile, MAX_PATH);
+            
+            return filedata;
         }
-        memcpy(filedata->FileName, pFile, len);
-        filedata->FileName[len] = '\0';
+    } else {
+        /* NOTICE: ReadOnly is ignored. We do not support writing. */
+        /* NOTICE: File creation/modification times not supported. */
+        int isPacked;
+        char filename[4096];
+        const char *filebuf = PL_Text_ConvertStrncpyIfNecessary(
+            filename, -1, pFile, g_lunaUseCharSet, 4096);
+        int handle = LunaFile_OpenRead(filebuf, &isPacked);
         
-        return filedata;
+        if (handle > 0) {
+            FILEDATA *filedata = (FILEDATA *)DXALLOC(sizeof(FILEDATA));
+            
+            memset(filedata, 0, sizeof(FILEDATA));
+            filedata->dxPortLibFileHandle = handle;
+            filedata->IsPack = isPacked;
+            filedata->Start = 0;
+            filedata->Size = (Uint32)PL_File_GetSize(handle);
+            
+            PL_Text_Strncpy(filedata->FileName, pFile, MAX_PATH);
+            
+            return filedata;
+        }
     }
-    
     return 0;
 }
 
@@ -345,6 +361,12 @@ Uint32 LunaFile::FileRead(FILEDATA *pFile, Uint32 Size, void *pData) {
         return 0;
     }
     return (Uint32)PL_File_Read(pFile->dxPortLibFileHandle, pData, Size);
+}
+Uint32 LunaFile::FileWrite(FILEDATA *pFile, Uint32 Size, void *pData) {
+    if (pFile == NULL) {
+        return 0;
+    }
+    return (Uint32)PL_File_Write(pFile->dxPortLibFileHandle, pData, Size);
 }
 
 Bool LunaFile::FileSeek(FILEDATA *pFile, Uint32 Offset, eSeekFlag Flag) {

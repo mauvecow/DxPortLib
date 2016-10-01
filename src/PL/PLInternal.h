@@ -50,6 +50,7 @@ extern void PL_Platform_Wait(int ticks);
 extern int PL_Platform_GetDateTime(DATEDATA *dateBuf);
 
 extern int PL_Platform_FileOpenReadDirect(const char *filename);
+extern int PL_Platform_FileOpenWriteDirect(const char *filename);
 extern int PL_Platform_GetSaveFolder(char *buffer, int bufferLength,
                                      const char *org, const char *app,
                                      int destEncoding);
@@ -185,11 +186,13 @@ typedef struct _PL_FileFunctions {
     int64_t (*tell)(void *userdata);
     int (*seek)(void *userdata, int64_t position, int origin);
     int (*read)(void *userdata, void *data, int size);
+    int (*write)(void *userdata, void *data, int size);
     int (*close)(void *userdata);
 } PL_FileFunctions;
 
 extern void PL_File_SetOpenReadFunction(PLFileOpenFileFunction func);
 extern int PL_File_OpenRead(const char *filename);
+extern int PL_File_OpenWrite(const char *filename);
 extern int PL_File_CreateHandle(const PL_FileFunctions *funcs, void *userdata);
 extern int PL_File_CreateHandleFromMemory(void *data, int length, int freeOnClose);
 extern int PL_File_CreateHandleSubsection(int srcFileHandle,
@@ -199,6 +202,7 @@ extern int64_t PL_File_GetSize(int fileHandle);
 extern int64_t PL_File_Tell(int fileHandle);
 extern int64_t PL_File_Seek(int fileHandle, int64_t position, int origin);
 extern int64_t PL_File_Read(int fileHandle, void *data, int size);
+extern int64_t PL_File_Write(int fileHandle, void *data, int size);
 extern int PL_File_IsEOF(int fileHandle);
 extern int PL_File_Close(int fileHandle);
 extern int PL_File_Init();

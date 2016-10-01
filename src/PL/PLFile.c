@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -101,6 +101,7 @@ static const PL_FileFunctions MemoryHandleFuncs = {
     MemoryHandle_Tell,
     MemoryHandle_Seek,
     MemoryHandle_Read,
+    NULL,
     MemoryHandle_Close
 };
 
@@ -180,6 +181,7 @@ static const PL_FileFunctions SubsectionHandleFuncs = {
     SubsectionHandle_Tell,
     SubsectionHandle_Seek,
     SubsectionHandle_Read,
+    NULL,
     SubsectionHandle_Close
 };
 
@@ -227,6 +229,13 @@ int64_t PL_File_Read(int fileHandle, void *data, int size) {
     }
     return -1;
 }
+int64_t PL_File_Write(int fileHandle, void *data, int size) {
+    FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_PLFILE);
+    if (handle != NULL && handle->functions->write != NULL) {
+        return handle->functions->read(handle->userdata, data, size);
+    }
+    return -1;
+}
 
 int PL_File_IsEOF(int fileHandle) {
     return (PL_File_Tell(fileHandle) == PL_File_GetSize(fileHandle)) ? DXTRUE : DXFALSE;
@@ -255,6 +264,10 @@ int PL_File_OpenRead(const char *filename) {
     } else {
         return PL_Platform_FileOpenReadDirect(filename);
     }
+}
+
+int PL_File_OpenWrite(const char *filename) {
+    return PL_Platform_FileOpenWriteDirect(filename);
 }
 
 int PL_File_CreateHandle(const PL_FileFunctions *funcs, void *userdata) {

@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -46,6 +46,10 @@ static int SDLCALL PLSDL2_RWops_Read(void *userdata, void *data, int size) {
     SDL_RWops *rwops = (SDL_RWops *)userdata;
     return SDL_RWread(rwops, data, (size_t)size, 1) * size;
 }
+static int SDLCALL PLSDL2_RWops_Write(void *userdata, void *data, int size) {
+    SDL_RWops *rwops = (SDL_RWops *)userdata;
+    return SDL_RWwrite(rwops, data, (size_t)size, 1) * size;
+}
 static int SDLCALL PLSDL2_RWops_Close(void *userdata) {
     SDL_RWops *rwops = (SDL_RWops *)userdata;
     SDL_RWclose(rwops);
@@ -57,6 +61,7 @@ static const PL_FileFunctions PLSDL2_FileFunctions = {
     PLSDL2_RWops_Tell,
     PLSDL2_RWops_Seek,
     PLSDL2_RWops_Read,
+    PLSDL2_RWops_Write,
     PLSDL2_RWops_Close
 };
 
@@ -84,7 +89,7 @@ static Sint64 SDLCALL PLSDL2_NestedFile_Seek(SDL_RWops *context, Sint64 offset, 
 static size_t SDLCALL PLSDL2_NestedFile_Read(SDL_RWops *context, void *ptr, size_t size, size_t maxnum) {
     NestedRWops *nested = (NestedRWops *)context;
     return (int)PL_File_Read(nested->fileHandle, ptr, size * maxnum) / size;
-} 
+}
 
 static size_t SDLCALL PLSDL2_NestedFile_DisableWrite(SDL_RWops *context, const void *ptr, size_t size, size_t num) {
     return 0; /* writing is not supported. */
@@ -130,6 +135,16 @@ int PLSDL2_RWopsToFile(SDL_RWops *rwops) {
     } else {
         return -1;
     }
+}
+
+SDL_RWops *PLSDL2_FileOpenWriteDirect(const char *filename) {
+    return SDL_RWFromFile(filename, "rb");
+}
+
+int PL_Platform_FileOpenWriteDirect(const char *filename) {
+    SDL_RWops *rwops = PLSDL2_FileOpenWriteDirect(filename);
+    
+    return PLSDL2_RWopsToFile(rwops);
 }
 
 SDL_RWops *PLSDL2_FileOpenReadDirect(const char *filename) {

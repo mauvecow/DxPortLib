@@ -666,6 +666,8 @@ public:
 
     static LUNACALL Uint32 FileRead(FILEDATA *pFile,
                                     Uint32 Size, void *pData);
+    static LUNACALL Uint32 FileWrite(FILEDATA *pFile,
+                                    Uint32 Size, void *pData);
     static LUNACALL Bool FileSeek(FILEDATA *pFile,
                                   Uint32 Offset, eSeekFlag Flag);
     static LUNACALL void FileClose(FILEDATA *pFile);
