@@ -754,7 +754,17 @@ public:
     static LUNACALL void UpdateBuffer(LFONTSPRITE lFontSpr);
     static LUNACALL void Rendering(LFONTSPRITE lFontSpr);
     static LUNACALL Bool GetWidth(LFONTSPRITE lFontSpr, const char *pStr,
-                         Sint32 *pLeft, Sint32 *pCenter, Sint32 *pRight);
+                          Sint32 *pLeft, Sint32 *pCenter, Sint32 *pRight);
+    static LUNACALL Sint32 DrawChara(LFONTSPRITE lFontSpr, const char *pStr,
+                          CLunaRect *pDst, Float Pz, D3DCOLOR Color);
+    static LUNACALL Sint32 DrawCharaRotate(LFONTSPRITE lFontSpr, const char *pStr,
+                          CLunaRect *pDst, Float Pz, D3DCOLOR Color,
+                          Sint32 Angle);
+    static LUNACALL Sint32 DrawCharaRotateXYZ(LFONTSPRITE lFontSpr, const char *pStr,
+                          CLunaRect *pDst, Float Pz, D3DCOLOR Color,
+                          Sint32 AngleX, Sint32 AngleY, Sint32 AngleZ);
+    static LUNACALL Sint32 EXTGetCharaSize(LFONTSPRITE lFontSpr, const char *pStr,
+                          Sint32 *w, Sint32 *h);
 };
 
 /* ----------------------------------------------------------- Luna3D.cpp */
