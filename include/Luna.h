@@ -812,6 +812,11 @@ public:
     static LUNACALL void SetCamera(LCAMERA lCamera);
     
     static LUNACALL void SetRenderTargetTexture(LTEXTURE lTex);
+    static LUNACALL LTEXTURE GetRenderTargetTexture();
+    
+    static LUNACALL void SetRenderTargetSurface(LSURFACE lSurf);
+    static LUNACALL LSURFACE GetRenderTargetSurface();
+    
     static LUNACALL void ResetRenderTarget();
     static LUNACALL void ResetDepthStencil();
     

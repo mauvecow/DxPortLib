@@ -246,6 +246,17 @@ void Luna3D::SetRenderTargetTexture(LTEXTURE lTex) {
         ResetDepthStencil();
     }
 }
+LTEXTURE Luna3D::GetRenderTargetTexture() {
+    return (LTEXTURE)s_renderTexture;
+}
+
+void Luna3D::SetRenderTargetSurface(LSURFACE lSurf) {
+    // stub
+}
+LSURFACE GetRenderTargetSurface() {
+    // stub
+    return INVALID_SURFACE;
+}
 
 void Luna3D::ResetRenderTarget() {
     s_renderTexture = -1;
