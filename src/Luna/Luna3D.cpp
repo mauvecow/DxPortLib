@@ -247,6 +247,16 @@ void Luna3D::EXTSetDxBlendingType(int blendMode) {
     g_lunaTexturePreset = blend->texturePreset;
 }
 
+void Luna3D::EnableFullColorMode() {
+    // stub
+}
+void Luna3D::SetCallbackDeviceReset(void(*pCallback)(void)) {
+    // stub
+}
+void Luna3D::SetCallbackDeviceRestore(void(*pCallback)(void)) {
+    // stub
+}
+
 void Luna3D::SetRenderTargetTexture(LTEXTURE lTex) {
     if (lTex < 0) {
         ResetRenderTarget();

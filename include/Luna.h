@@ -602,11 +602,6 @@ public:
                                           Sint32 height, Bool IsChange);
     static LUNACALL void ChangeScreenMode();
     
-    static LUNACALL void EnableFullColorMode();
-    
-    static LUNACALL void SetCallbackDeviceReset(void(*pCallback)(void));
-    static LUNACALL void SetCallbackDeviceRestore(void(*pCallback)(void));
-    
     // If you want to use anything other than UTF8, use this.
     static LUNACALL void EXTSetUseCharset(int dxCharset);
     
@@ -840,8 +835,13 @@ public:
     static LUNACALL void SetRenderTargetSurface(LSURFACE lSurf);
     static LUNACALL LSURFACE GetRenderTargetSurface();
     
+    static LUNACALL void EnableFullColorMode();
+    
     static LUNACALL void ResetRenderTarget();
     static LUNACALL void ResetDepthStencil();
+    
+    static LUNACALL void SetCallbackDeviceReset(void(*pCallback)(void));
+    static LUNACALL void SetCallbackDeviceRestore(void(*pCallback)(void));
     
     /* Uses a DxLib blending mode, like DX_BLENDMODE_PMA_ALPHA */
     static LUNACALL void EXTSetDxBlendingType(int dxBlendType);

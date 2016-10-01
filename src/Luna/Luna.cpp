@@ -313,16 +313,6 @@ void Luna::ChangeScreenMode() {
         s_lunaFullscreenDesktopFlag == DXTRUE ? true : false);
 }
 
-void Luna::EnableFullColorMode() {
-    // stub
-}
-void Luna::SetCallbackDeviceReset(void(*pCallback)(void)) {
-    // stub
-}
-void Luna::SetCallbackDeviceRestore(void(*pCallback)(void)) {
-    // stub
-}
-
 void Luna::SetFrameRate(Sint32 frameRate) {
     if (frameRate == 0) {
         frameRate = 60;
