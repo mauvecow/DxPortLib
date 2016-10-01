@@ -60,6 +60,8 @@ static float s_lunaBaseVirtualYmult = 1.0f;
 float g_lunaVirtualXmult = 1.0f;
 float g_lunaVirtualYmult = 1.0f;
 
+int g_lunaSyncOffset = 0;
+
 static LunaInitFunc s_LunaInit = NULL;
 static LunaMainFunc s_LunaMain = NULL;
 static LunaMessageProcFunc s_LunaMessageProc = NULL;
@@ -201,7 +203,8 @@ void Luna::SyncFrame() {
     } else {
         int ticks = PL_Platform_GetTicks();
         timer += (ticks - s_timerLastTicks) * 1000;
-        s_timerLastTicks = ticks;
+        s_timerLastTicks = ticks + g_lunaSyncOffset;
+        g_lunaSyncOffset = 0;
     }
     
 #ifndef EMSCRIPTEN

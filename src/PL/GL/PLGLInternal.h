@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -126,8 +126,8 @@ typedef struct GLInfo_t {
                                      GLenum type, const GLvoid *indices );
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    void (APIENTRY *glVertexPointer)( GLint size, GLenum type,  
-                                      GLsizei stride, const GLvoid *ptr );  
+    void (APIENTRY *glVertexPointer)( GLint size, GLenum type,
+                                      GLsizei stride, const GLvoid *ptr );
     void (APIENTRY *glColorPointer)( GLint size, GLenum type,
                                      GLsizei stride, const GLvoid *ptr );
     void (APIENTRY *glTexCoordPointer)( GLint size, GLenum type,
@@ -293,6 +293,8 @@ extern int PLGL_Clear();
 
 extern int PLGL_StartFrame();
 extern int PLGL_EndFrame();
+
+extern int PLGL_Finish();
 
 extern int PLGL_VertexBuffer_CreateBytes(int vertexByteSize,
                                        const char *vertexData, int bufferSize,

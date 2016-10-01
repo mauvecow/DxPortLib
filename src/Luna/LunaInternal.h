@@ -208,6 +208,7 @@ extern int g_luna3DCamera;
 extern float g_lunaVirtualXmult;
 extern float g_lunaVirtualYmult;
 extern int g_lunaUseCharSet;
+extern int g_lunaSyncOffset;
 
 extern int g_lunaAlphaTestPreset;
 extern float g_lunaAlphaTestValue;

@@ -63,6 +63,16 @@ static void s_UpdateRenderTexture() {
 }
 
 Bool Luna3D::BeginScene(void) {
+    if (PL_Window_GetWaitVSyncFlag() == DXTRUE) {
+        int ticks = PL_Platform_GetTicks();
+        PLG.Finish();
+        ticks = PL_Platform_GetTicks() - ticks;
+        
+        if (ticks > 4) {
+            g_lunaSyncOffset = ticks - 4;
+        }
+    }
+    
     PLG.StartFrame();
     s_prevRenderTexture = -2;
     

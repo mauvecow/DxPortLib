@@ -467,6 +467,8 @@ typedef struct _PLIGraphics {
 
     int (*ClearColor)(float r, float g, float b, float a);
     int (*Clear)();
+    
+    int (*Finish)();
 
     int (*StartFrame)();
     int (*EndFrame)();
