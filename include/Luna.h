@@ -608,8 +608,14 @@ public:
                              const char *org, const char *app,
                              int destEncoding);
     static LUNACALL int EXTConvertText(char *buffer, int bufferLength,
-                            const char *string,
-                            int destEncoding, int srcEncoding);
+                             const char *string,
+                             int destEncoding = -1, int srcEncoding =- 1);
+    static LUNACALL int EXTConvertWideCharToChar(
+                             char *buffer, int bufferLength,
+                             const wchar_t *string, int destEncoding = -1);
+    static LUNACALL int EXTConvertCharToWideChar(
+                             wchar_t *buffer, int bufferLength,
+                             const char *string, int srcEncoding = -1);
     
     static LUNACALL void EXTSetFullscreenDesktop(bool flag);
 

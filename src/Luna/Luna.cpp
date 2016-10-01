@@ -377,6 +377,18 @@ int Luna::EXTConvertText(char *buffer, int bufferLength,
             string, srcEncoding,
             bufferLength);
 }
+int Luna::EXTConvertWideCharToChar(
+                         char *buffer, int bufferLength,
+                         const wchar_t *string, int destEncoding)
+{
+    return PL_Text_WideCharToString(buffer, destEncoding, string, bufferLength);
+}
+int Luna::EXTConvertCharToWideChar(
+                         wchar_t *buffer, int bufferLength,
+                         const char *string, int srcEncoding)
+{
+    return PL_Text_StringToWideChar(buffer, string, srcEncoding, bufferLength);
+}
 
 void Luna::EXTSetFullscreenDesktop(bool flag) {
     int newState;
