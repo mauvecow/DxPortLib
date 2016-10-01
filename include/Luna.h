@@ -671,6 +671,18 @@ public:
     static LUNACALL void RotationPoint(CLunaPoint *point, Sint32 Angle);
 };
 
+/* -------------------------------------------------------- LunaChara.cpp */
+class LunaChara {
+public:
+    static LUNACALL void Code2Str(Uint16 Code, char *pStr);
+    
+    static LUNACALL Bool IsKanji(unsigned char Chara);
+    static LUNACALL Bool IsKana(unsigned char Chara);
+    
+    static LUNACALL Uint16 GetCharCode(const unsigned char *pStr);
+    static LUNACALL Sint32 GetCharCodeEx(const unsigned char *pStr, Uint16 *pCode);
+};
+
 /* -------------------------------------------------------- LunaInput.cpp */
 class LunaInput {
 public:

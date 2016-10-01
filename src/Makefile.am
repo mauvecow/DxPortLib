@@ -13,6 +13,7 @@ libDxPortLib_la_SOURCES =	\
 	Luna/Luna.cpp \
 	Luna/Luna3D.cpp \
 	Luna/LunaCamera.cpp \
+	Luna/LunaChara.cpp \
 	Luna/LunaFile.cpp \
 	Luna/LunaFontSprite.cpp \
 	Luna/LunaInput.cpp \
