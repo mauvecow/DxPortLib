@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -93,6 +93,15 @@ void Luna3D::SetFilterEnable(Bool Flag) {
         g_lunaFilterOffset = 0.0f;
     }
 }
+
+Bool Luna3D::GetFilterEnable() {
+    if (g_lunaFilterMode == DX_DRAWMODE_BILINEAR) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void Luna3D::SetColorkeyEnable(Bool Flag) {
     if (Flag) {
         g_lunaAlphaTestPreset = PL_PRESETFLAG_ALPHATEST_GREATER;

@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -446,6 +446,24 @@ typedef enum {
     PAD_BUTTON_MAX = (PAD_BUTTON_48 - PAD_BUTTON_01)
 } ePadSort;
 
+typedef enum {
+    MOUSE_FREE,
+    MOUSE_PULL,
+    MOUSE_PUSH,
+    MOUSE_HOLD,
+} eMouseState;
+
+typedef struct {
+    Sint32 X, Y, W;
+    Sint32 Mx, My;
+    
+    Bool ClickL, ClickR, ClickW;
+    
+    Bool DoubleClickL, DoubleClickR, DoubleClickW;
+    
+    eMouseState StateL, StateR, StateW;
+} MOUSEDATA;
+
 typedef struct CLunaPoint {
     Float Px, Py;
     
@@ -651,7 +669,9 @@ public:
 /* -------------------------------------------------------- LunaInput.cpp */
 class LunaInput {
 public:
+    static LUNACALL void KeyBufferFlush(void);
     static LUNACALL Bool GetKeyData(Uint32 Key);
+    static LUNACALL void GetMouseData(MOUSEDATA *pMouse);
     static LUNACALL Bool GetJoystickData(Sint32 No, JOYSTICKDATA *pJoy);
     static LUNACALL Bool KeyBufferLoop(Uint32 *pKey);
 };
@@ -737,6 +757,7 @@ public:
     static LUNACALL void SetViewport(const RECT *rect);
     static LUNACALL void GetViewport(RECT *rect);
     static LUNACALL void SetFilterEnable(Bool Flag);
+    static LUNACALL bool GetFilterEnable();
     static LUNACALL void SetColorkeyEnable(Bool Flag);
     static LUNACALL void SetBlendingType(eBlendType BlendType);
     static LUNACALL void SetZBufferEnable(Bool Flag);
