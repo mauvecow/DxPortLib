@@ -715,7 +715,7 @@ public:
                           CLunaRect *PDstRect, Float Pz,
                           CLunaRect *pSrcRects, D3DCOLOR Color,
                           Uint32 UvCount = 1);
-    static LUNACALL void DrawSquareEXT(LSPRITE lSpr,
+    static LUNACALL void EXTDrawSquare(LSPRITE lSpr,
                           CLunaRect *PDstRect, Float Pz,
                           CLunaRect *pSrcRects, D3DCOLOR Color,
                           Uint32 UvCount = 1, Bool Mirror = false);
@@ -723,7 +723,7 @@ public:
                           Float Pz, CLunaRect *pSrcRects, D3DCOLOR Color,
                           Uint32 Angle, Uint32 UvCount = 1,
                           Float fCx = 0.0f, Float fCy = 0.0f);
-    static LUNACALL void DrawSquareRotateEXT(LSPRITE lSpr, CLunaRect *PDstRect,
+    static LUNACALL void EXTDrawSquareRotate(LSPRITE lSpr, CLunaRect *PDstRect,
                           Float Pz, CLunaRect *pSrcRects, D3DCOLOR Color,
                           Uint32 Angle, Uint32 UvCount = 1,
                           Float fCx = 0.0f, Float fCy = 0.0f,

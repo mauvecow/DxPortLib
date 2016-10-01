@@ -234,9 +234,9 @@ static void s_drawSquare2D(LunaSpriteData *sprite,
 void LunaSprite::DrawSquare(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
                       CLunaRect *pSrcRects, D3DCOLOR Color,
                       Uint32 UvCount) {
-    DrawSquareEXT(lSpr, pDstRect, Pz, pSrcRects, Color, UvCount, false);
+    EXTDrawSquare(lSpr, pDstRect, Pz, pSrcRects, Color, UvCount, false);
 }
-void LunaSprite::DrawSquareEXT(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
+void LunaSprite::EXTDrawSquare(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
                       CLunaRect *pSrcRects, D3DCOLOR Color,
                       Uint32 UvCount, Bool Mirror)
 {
@@ -257,10 +257,10 @@ void LunaSprite::DrawSquareRotate(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
                             CLunaRect *pSrcRects, D3DCOLOR Color,
                             Uint32 Angle, Uint32 UvCount,
                             float fCx, float fCy) {
-    DrawSquareRotateEXT(lSpr, pDstRect, Pz, pSrcRects, Color, Angle, UvCount, fCx, fCy, false);
+    EXTDrawSquareRotate(lSpr, pDstRect, Pz, pSrcRects, Color, Angle, UvCount, fCx, fCy, false);
 }
 
-void LunaSprite::DrawSquareRotateEXT(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
+void LunaSprite::EXTDrawSquareRotate(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
                             CLunaRect *pSrcRects, D3DCOLOR Color,
                             Uint32 Angle, Uint32 UvCount,
                             float fCx, float fCy, Bool Mirror) {
