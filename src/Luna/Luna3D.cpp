@@ -26,12 +26,15 @@
 #include "LunaInternal.h"
 #include "PL/PLInternal.h"
 
+#include "DxLib/DxBlendModes.h"
+
 float g_lunaFilterOffset = 0.5f;
 int g_lunaFilterMode = DX_DRAWMODE_BILINEAR;
 int g_luna3DCamera = INVALID_CAMERA;
 int g_lunaAlphaTestPreset = PL_PRESETFLAG_ALPHATEST_GREATER;
 float g_lunaAlphaTestValue = 0.0f;
 
+int g_lunaTexturePreset = TEX_PRESET_MODULATE;
 PLMatrix g_lunaUntransformedProjectionMatrix;
 PLMatrix g_lunaUntransformedViewMatrix;
 
@@ -111,6 +114,8 @@ void Luna3D::SetColorkeyEnable(Bool Flag) {
     }
 }
 void Luna3D::SetBlendingType(eBlendType BlendType) {
+    g_lunaTexturePreset = TEX_PRESET_MODULATE;
+    
     switch(BlendType) {
         case BLEND_NONE:
             PLG.DisableBlend();
@@ -193,6 +198,20 @@ void Luna3D::SetCamera(LCAMERA lCamera) {
     LunaCamera_SetDevice(lCamera);
     
     /* Set the global view/perspective matrices here. */
+}
+
+void Luna3D::EXTSetDxBlendingType(int blendMode) {
+    if (blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) {
+        blendMode = DX_BLENDMODE_NOBLEND;
+    }
+    
+    const BlendInfo *blend = &s_blendModeTable[blendMode];
+    
+    PLG.SetBlendModeSeparate(
+        blend->blendEquation,
+        blend->srcRGBBlend, blend->destRGBBlend,
+        blend->srcAlphaBlend, blend->destAlphaBlend);
+    g_lunaTexturePreset = blend->texturePreset;
 }
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -25,6 +25,7 @@
 
 #include "PL/PLInternal.h"
 #include "DxInternal.h"
+#include "DxBlendModes.h"
 
 /* Similar to DxLib, we maintain a rolling vertex buffer that is used to
  * store information in sequence as we go.
@@ -63,71 +64,6 @@ int Dx_Draw_ResetSettings() {
 
 /* ------------------------------------------------------- BLENDING MODES */
 
-typedef struct _BlendInfo {
-    TexturePreset texturePreset;
-    int blendEquation;
-    int srcRGBBlend;
-    int destRGBBlend;
-    int srcAlphaBlend;
-    int destAlphaBlend;
-} BlendInfo;
-
-#define NOBLEND (0xffffffff)
-
-static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
-    /* PL_BLEND_ONE = s */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_DISABLE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE },
-    /* ALPHA = (d*(1-a)) + (s*a) */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ONE },
-    /* ADD = d + (s*a) */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* SUB = d - (s*a) */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_RSUB, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* MUL = (d*s) */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_ZERO, PL_BLEND_SRC_COLOR, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* SUB2 = d + (s*a) */ /* It's the same as ADD. I don't get it, either. */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
-    
-    /* XOR (unsupported) */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_DISABLE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE },
-    /* reserved */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_DISABLE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ONE },
-
-    /* DESTCOLOR = d */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_ZERO, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* INVDESTCOLOR = 1 - d */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_ONE_MINUS_DST_COLOR, PL_BLEND_ZERO, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* INVSRC = (d*(1-a)) + ((1-s)*a) */
-    { TEX_PRESET_DX_INVERT, PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
-    
-    /* MULA = (d*(1-a)) + (s*d*a) */
-    { TEX_PRESET_DX_MULA,   PL_BLENDFUNC_ADD, PL_BLEND_DST_COLOR, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
-    
-    /* ALPHA_X4 = (d*(1-a)) + (clamp(s*4)*a) */
-    { TEX_PRESET_DX_X4,     PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA },
-    /* ADD_X4 = d + ((clamp(s*4)*a) */
-    { TEX_PRESET_DX_X4,     PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* SRCCOLOR = s */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_DISABLE, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE, PL_BLEND_ZERO },
-    /* HALF_ADD = (d*(1-a)) + s */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ONE },
-    /* SUB1 = d - (s*(1-a)) */
-    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_RSUB, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
-    
-    /* PMA_ALPHA = (d*(1-a)) + s */
-    { TEX_PRESET_DX_PMA,    PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* PMA_ADD = d + s */
-    { TEX_PRESET_DX_PMA,    PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* PMA_SUB = d - s */
-    { TEX_PRESET_DX_PMA,    PL_BLENDFUNC_RSUB, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* PMA_INVSRC = d - (1 - s) */
-    { TEX_PRESET_DX_PMA_INVERT,PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* PMA_ALPHA_X4 = (d*(1-a)) + clamp(s*4) */
-    { TEX_PRESET_DX_PMA_X4, PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ZERO, PL_BLEND_ONE },
-    /* PMA_ADD_X4 = d + clamp(s*4) */
-    { TEX_PRESET_DX_PMA_X4, PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE},
-};
-
 static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
     const BlendInfo *blend;
     
@@ -163,7 +99,7 @@ static void s_FinishDrawMode() {
 
 /* Rather than unnecessarily duplicating code, we include vertex
  * definitions for the various kinds we'll use.
- * 
+ *
  * This is not going to be much for now, but if Graph Filters or other
  * shaders ever make their way in here we'll regret not having them.
  */
@@ -249,7 +185,7 @@ static void *s_BeginCache(
 }
 
 /* Helpful start macro.
- * 
+ *
  * Can be called multiple times in the same function to fetch more
  * vertices as needed.
  */
@@ -374,12 +310,12 @@ int Dx_Draw_Line(int x1, int y1, int x2, int y2, DXCOLOR color, int thickness) {
 
 int Dx_Draw_OvalF(float x, float y, float rx, float ry, DXCOLOR color, int fillFlag) {
     /* DxLib's circle/oval drawing functions are not mimiced accurately.
-     * 
+     *
      * DxLib draws them one pixel around the circumference at a time.
      * And filled ellipses are lines extending across the diameter.
-     * 
+     *
      * Yes, really.
-     * 
+     *
      * We may want to adjust the number of points based on the
      * circumference of the ellipse.
      */
@@ -605,15 +541,15 @@ int Dx_Draw_ExtendGraph(int x1, int y1, int x2, int y2, int graphID, int blendFl
 int Dx_Draw_RectGraphF(float dx, float dy, int sx, int sy, int sw, int sh,
                       int graphID, int blendFlag, int turnFlag) {
     /* DxLib has very, very strange behavior for DrawRectGraph.
-     * 
+     *
      * Unlike basically all other drawing functions, it does not
      * simply create a subsection of the graph to draw. Instead,
      * it creates a clip window on screen and then draws the entire
      * graph over it.
-     * 
+     *
      * When it flips horizontally, it flips the whole graph, too,
      * which is where real trouble begins.
-     * 
+     *
      * This is actually important, because it means you can set the
      * source coordinates to be partially outside of the texture and
      * it will still be valid!
@@ -770,7 +706,7 @@ static int s_Draw_RotaGraphMain(
                        int textureRefID,
                        const PLRect *texRect,
                        float xMult, float yMult,
-                       float x, float y, 
+                       float x, float y,
                        float cx, float cy,
                        float xScaleFactor,
                        float yScaleFactor,
@@ -835,7 +771,7 @@ static int s_Draw_RotaGraphMain(
     return 0;
 }
 
-int Dx_Draw_RotaGraphF(float x, float y, 
+int Dx_Draw_RotaGraphF(float x, float y,
                        double scaleFactor, double angle,
                        int graphID, int blendFlag, int turn) {
     int textureRefID;
@@ -851,7 +787,7 @@ int Dx_Draw_RotaGraphF(float x, float y,
                                 (float)scaleFactor, (float)scaleFactor, (float)angle,
                                 graphID, blendFlag, turn);
 }
-int Dx_Draw_RotaGraph(int x, int y, 
+int Dx_Draw_RotaGraph(int x, int y,
                       double scaleFactor, double angle,
                       int graphID, int blendFlag, int turn) {
     return Dx_Draw_RotaGraphF((float)x, (float)y, scaleFactor, angle,
@@ -935,7 +871,7 @@ int Dx_Draw_RectRotaGraphF(float x, float y,
                                 graphID, blendFlag, turn);
 }
 
-int Dx_Draw_RectRotaGraph(int x, int y, 
+int Dx_Draw_RectRotaGraph(int x, int y,
                           int sx, int sy, int sw, int sh,
                           double scaleFactor, double angle,
                           int graphID, int blendFlag, int turn) {

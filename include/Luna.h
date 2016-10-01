@@ -804,6 +804,9 @@ public:
                           D3DCOLOR Color = 0x00000000, Float Depth = 1.0f,
                           Uint32 Stencil = 0, RECT *pDst = NULL);
     static LUNACALL void SetCamera(LCAMERA lCamera);
+    
+    /* Uses a DxLib blending mode, like DX_BLENDMODE_PMA_ALPHA */
+    static LUNACALL void EXTSetDxBlendingType(int dxBlendType);
 };
 
 /* -------------------------------------------------------- LunaSound.cpp */

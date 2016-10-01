@@ -317,7 +317,7 @@ void LunaSprite::Rendering(LSPRITE lSpr) {
     LunaSpriteData *sprite = (LunaSpriteData *)PL_Handle_GetData((int)lSpr, DXHANDLE_LUNASPRITE);
     if (sprite != NULL && sprite->vertexPtr > 0) {
         PLG.SetPresetProgram(
-            TEX_PRESET_MODULATE, g_lunaAlphaTestPreset,
+            g_lunaTexturePreset, g_lunaAlphaTestPreset,
             &g_lunaUntransformedProjectionMatrix,
             &g_lunaUntransformedViewMatrix,
             sprite->textureIDs[0], g_lunaFilterMode,
