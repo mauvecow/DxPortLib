@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -58,6 +58,16 @@ static int s_AllocateSurfaceID(SDL_Surface *sdlSurface, int hasTransparencyFlag)
     s_surfaceCount += 1;
     
     return surfaceID;
+}
+
+int PL_Surface_Create(int width, int height) {
+    SDL_Surface *surface;
+    surface = SDL_CreateRGBSurface(0, width, height, 32, 0xff0000, 0x00ff00, 0x0000ff, 0xff000000);
+    if (surface == NULL) {
+        return -1;
+    }
+    
+    return s_AllocateSurfaceID(surface, DXTRUE);
 }
 
 int PL_Surface_HasTransparency(int surfaceID) {
@@ -218,7 +228,7 @@ int PL_Surface_FlipSurface(int surfaceID) {
                 }
                 
                 pixels += pitch;
-            } 
+            }
             break;
         case 2:
             for (y = h; y > 0; --y) {
@@ -229,7 +239,7 @@ int PL_Surface_FlipSurface(int surfaceID) {
                 }
                 
                 pixels += pitch;
-            } 
+            }
             break;
         case 3:
             for (y = h; y > 0; --y) {
@@ -241,7 +251,7 @@ int PL_Surface_FlipSurface(int surfaceID) {
                 }
                 
                 pixels += pitch;
-            } 
+            }
             break;
         case 4:
             for (y = h; y > 0; --y) {
@@ -252,7 +262,7 @@ int PL_Surface_FlipSurface(int surfaceID) {
                 }
                 
                 pixels += pitch;
-            } 
+            }
             break;
     }
     
@@ -341,6 +351,35 @@ int PL_Surface_Delete(int surfaceID) {
     return 0;
 }
 
+int PL_Surface_FillWithColor(int surfaceID, unsigned int color) {
+    Surface *surface = s_GetSurface(surfaceID);
+    SDL_Surface *s;
+    int x, y;
+    unsigned char *p;
+    
+    if (surface == NULL) {
+        return -1;
+    }
+    
+    s = surface->sdlSurface;
+    
+    if (SDL_LockSurface(s) < 0) {
+        return -1;
+    }
+    
+    p = s->pixels;
+    for (y = 0; y < s->h; ++y) {
+        unsigned int *line = (unsigned int *)(p + y * s->pitch);
+        for (x = 0; x < s->w; ++x) {
+            line[x] = color;
+        }
+    }
+    
+    SDL_UnlockSurface(s);
+    
+    return 0;
+}
+
 int PL_Surface_ToTexture(int surfaceID) {
     Surface *surface = s_GetSurface(surfaceID);
     if (surface == NULL) {
@@ -349,6 +388,15 @@ int PL_Surface_ToTexture(int surfaceID) {
     
     return PLG.Texture_CreateFromSDLSurface(
         surface->sdlSurface, surface->hasTransparencyFlag);
+}
+
+int PL_Surface_DrawToTexture(int surfaceID, int textureID, const PLRect *rect) {
+    Surface *surface = s_GetSurface(surfaceID);
+    if (surface == NULL) {
+        return -1;
+    }
+    
+    return PLG.Texture_BlitSurface(textureID, surface->sdlSurface, rect);
 }
 
 int PL_Surface_GetCount() {

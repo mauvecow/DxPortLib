@@ -492,6 +492,8 @@ extern int PLD3D9_Init();
 #endif
 
 /* ----------------------------------------------------------- Surface.c */
+extern int PL_Surface_Create(int width, int height);
+
 extern int PL_Surface_ApplyTransparentColor(int surfaceID,
                                             unsigned int color);
 extern int PL_Surface_ApplyPMAToSDLSurface(SDL_Surface *sdlSurface);
@@ -505,6 +507,11 @@ extern int PL_Surface_Load(const char *filename);
 extern int PL_Surface_Delete(int surfaceID);
 
 extern int PL_Surface_ToTexture(int surfaceID);
+
+extern int PL_Surface_DrawToTexture(int surfaceID, int textureID,
+                                    const PLRect *rect);
+
+extern int PL_Surface_FillWithColor(int surfaceID, unsigned int color);
 
 extern int PL_Surface_GetCount();
 extern int PL_Surface_InitSurface();

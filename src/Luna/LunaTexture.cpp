@@ -28,6 +28,14 @@
 #include "PL/PLInternal.h"
 #include "LunaInternal.h"
 
+LTEXTURE LunaTexture::Create(Uint32 Width, Uint32 Height,
+                             eSurfaceFormat format)
+{
+    LTEXTURE handle = (int)PLG.Texture_CreateFromDimensions(Width, Height, true);
+    
+    return handle;
+}
+
 LTEXTURE LunaTexture::CreateFromFile(const char *pFileName,
                                      eSurfaceFormat format,
                                      D3DCOLOR keyColor) {
@@ -61,10 +69,6 @@ LTEXTURE LunaTexture::CreateFromLAG(const char *pFileName,
     return INVALID_TEXTURE;
 }
 
-void LunaTexture::Release(LTEXTURE texture) {
-    PLG.Texture_Release(texture);
-}
-
 LTEXTURE LunaTexture::CreateRenderTarget(Uint32 Width,
                                          Uint32 Height,
                                          eSurfaceFormat format)
@@ -72,6 +76,30 @@ LTEXTURE LunaTexture::CreateRenderTarget(Uint32 Width,
     LTEXTURE handle = (int)PLG.Texture_CreateFramebuffer(Width, Height, true);
     
     return handle;
+}
+
+void LunaTexture::Release(LTEXTURE texture) {
+    PLG.Texture_Release(texture);
+}
+
+void LunaTexture::ColorFill(LTEXTURE texture, D3DCOLOR color) {
+    PLRect rect;
+    
+    PLG.Texture_RenderGetTextureInfo(texture, &rect, NULL, NULL);
+    if (rect.w <= 0 || rect.h <= 0) {
+        return;
+    }
+    
+    int surf = PL_Surface_Create(rect.w, rect.h);
+    if (surf < 0) {
+        return;
+    }
+    
+    PL_Surface_FillWithColor(surf, (unsigned int)color);
+    
+    PL_Surface_DrawToTexture(surf, texture, &rect);
+    
+    PL_Surface_Delete(surf);
 }
 
 int LunaTexture::GetWidth(LTEXTURE texture) {

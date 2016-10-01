@@ -710,6 +710,9 @@ public:
 /* ------------------------------------------------------ LunaTexture.cpp */
 class LunaTexture {
 public:
+    static LUNACALL LTEXTURE Create(
+                              Uint32 Width, Uint32 Height,
+                              eSurfaceFormat format);
     static LUNACALL LTEXTURE CreateFromFile(const char *pFileName,
                               eSurfaceFormat format,
                               D3DCOLOR keyColor = COLORKEY_DISABLE);
@@ -720,6 +723,8 @@ public:
                               Uint32 Width, Uint32 Height,
                               eSurfaceFormat format);
     static LUNACALL void Release(LTEXTURE texture);
+    
+    static LUNACALL void ColorFill(LTEXTURE texture, D3DCOLOR color);
     
     static LUNACALL int GetWidth(LTEXTURE texture);
     static LUNACALL int GetHeight(LTEXTURE texture);
