@@ -179,11 +179,7 @@ Bool Luna::WaitForMsgLoop(Bool isFullActive) {
         return false;
     }
     
-    // If VSync is enabled and screen refresh rate == desired refresh rate,
-    // just trust vsync to time us correctly. Otherwise, time manually.
-    if (PL_Window_GetWaitVSyncFlag() != DXTRUE || PL_Window_GetRefreshRate() != s_frameRate) {
-        Luna::SyncFrame();
-    }
+    Luna::SyncFrame();
     
     s_handleAltEnter();
     
