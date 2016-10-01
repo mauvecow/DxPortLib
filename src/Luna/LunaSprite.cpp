@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -21,7 +21,7 @@
 
 /* Both 2D and 3D versions of LunaSprite are handled here because they are
  * almost identical.
- * 
+ *
  * Various vertex effects are not supported because there's no need for
  * them.
  */
@@ -169,7 +169,7 @@ static void s_drawSquare2D(LunaSpriteData *sprite,
                            float x3, float y3,
                            float x4, float y4,
                            float z, CLunaRect *srcRects, unsigned int color,
-                           Uint32 UvCount) {
+                           Uint32 UvCount, Bool Mirror) {
     LunaVertex2DTex4 *v[4];
     char *vertexData = sprite->vertexData;
     int vN = sprite->vertexPtr;
@@ -209,9 +209,14 @@ static void s_drawSquare2D(LunaSpriteData *sprite,
             tx2 = 0; ty2 = 0;
         } else {
             CLunaRect *rect = &srcRects[i];
-            tx1 = (rect->Px + tfs) * xMult;
+            if (Mirror) {
+                tx1 = (rect->Px + rect->Sx - tfs) * xMult;
+                tx2 = (rect->Px + tfs) * xMult;
+            } else {
+                tx1 = (rect->Px + tfs) * xMult;
+                tx2 = (rect->Px + rect->Sx - tfs) * xMult;
+            }
             ty1 = (rect->Py + tfs) * yMult;
-            tx2 = (rect->Px + rect->Sx - tfs) * xMult;
             ty2 = (rect->Py + rect->Sy - tfs) * yMult;
         }
         
@@ -229,6 +234,12 @@ static void s_drawSquare2D(LunaSpriteData *sprite,
 void LunaSprite::DrawSquare(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
                       CLunaRect *pSrcRects, D3DCOLOR Color,
                       Uint32 UvCount) {
+    DrawSquareEXT(lSpr, pDstRect, Pz, pSrcRects, Color, UvCount, false);
+}
+void LunaSprite::DrawSquareEXT(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
+                      CLunaRect *pSrcRects, D3DCOLOR Color,
+                      Uint32 UvCount, Bool Mirror)
+{
     LunaSpriteData *sprite = (LunaSpriteData *)PL_Handle_GetData((int)lSpr, DXHANDLE_LUNASPRITE);
     if (sprite != NULL && (sprite->vertexPtr + 4) <= sprite->vertexMax) {
         float x1 = pDstRect->Px;
@@ -237,17 +248,22 @@ void LunaSprite::DrawSquare(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
         float y2 = pDstRect->Py + pDstRect->Sy;
         
         s_drawSquare2D(sprite,
-                       x1, y1,
-                       x2, y1,
-                       x2, y2,
-                       x1, y2,
-                       Pz, pSrcRects, Color, UvCount);
+                       x1, y1, x2, y1, x2, y2, x1, y2,
+                       Pz, pSrcRects, Color, UvCount, Mirror);
     }
 }
+
 void LunaSprite::DrawSquareRotate(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
                             CLunaRect *pSrcRects, D3DCOLOR Color,
                             Uint32 Angle, Uint32 UvCount,
                             float fCx, float fCy) {
+    DrawSquareRotateEXT(lSpr, pDstRect, Pz, pSrcRects, Color, Angle, UvCount, fCx, fCy, false);
+}
+
+void LunaSprite::DrawSquareRotateEXT(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
+                            CLunaRect *pSrcRects, D3DCOLOR Color,
+                            Uint32 Angle, Uint32 UvCount,
+                            float fCx, float fCy, Bool Mirror) {
     LunaSpriteData *sprite = (LunaSpriteData *)PL_Handle_GetData((int)lSpr, DXHANDLE_LUNASPRITE);
     if (sprite != NULL && (sprite->vertexPtr + 4) < sprite->vertexMax) {
         float cx = (pDstRect->Px + (pDstRect->Sx * 0.5f)) + fCx;
@@ -268,7 +284,7 @@ void LunaSprite::DrawSquareRotate(LSPRITE lSpr, CLunaRect *pDstRect, Float Pz,
                        cy + (exX2 * fSin) + (exY2 * fCos),
                        cx + (exX1 * fCos) - (exY2 * fSin),
                        cy + (exX1 * fSin) + (exY2 * fCos),
-                       Pz, pSrcRects, Color, UvCount);
+                       Pz, pSrcRects, Color, UvCount, Mirror);
     }
 }
 
