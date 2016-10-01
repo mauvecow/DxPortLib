@@ -347,6 +347,25 @@ Uint32 LunaFile::FileRead(FILEDATA *pFile, Uint32 Size, void *pData) {
     return (Uint32)PL_File_Read(pFile->dxPortLibFileHandle, pData, Size);
 }
 
+Bool LunaFile::FileSeek(FILEDATA *pFile, Uint32 Offset, eSeekFlag Flag) {
+    if (pFile == NULL) {
+        return false;
+    }
+    switch(Flag) {
+        case SEEK_FILE_START:
+            PL_File_Seek(pFile->dxPortLibFileHandle, Offset, 0);
+            return true;
+        case SEEK_FILE_CURRENT:
+            PL_File_Seek(pFile->dxPortLibFileHandle, Offset, 1);
+            return true;
+        case SEEK_FILE_END:
+            PL_File_Seek(pFile->dxPortLibFileHandle, Offset, 2);
+            return true;
+        default:
+            return false;
+    }
+}
+
 void LunaFile::FileClose(FILEDATA *pFile) {
     if (pFile != NULL) {
         PL_File_Close(pFile->dxPortLibFileHandle);
