@@ -596,6 +596,11 @@ public:
                                           Sint32 height, Bool IsChange);
     static LUNACALL void ChangeScreenMode();
     
+    static LUNACALL void EnableFullColorMode();
+    
+    static LUNACALL void SetCallbackDeviceReset(void(*pCallback)(void));
+    static LUNACALL void SetCallbackDeviceRestore(void(*pCallback)(void));
+    
     // If you want to use anything other than UTF8, use this.
     static LUNACALL void EXTSetUseCharset(int dxCharset);
     

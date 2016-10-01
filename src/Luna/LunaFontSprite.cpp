@@ -431,7 +431,7 @@ Sint32 LunaFontSprite::EXTGetCharaSize(LFONTSPRITE lFontSpr, const char *pStr,
     return 2; // Full-width
 }
 
-void LunaFontSprite::DrawChara(LFONTSPRITE lFontSpr, const char *pStr,
+Sint32 LunaFontSprite::DrawChara(LFONTSPRITE lFontSpr, const char *pStr,
                     CLunaRect *pDst, Float Pz, D3DCOLOR Color)
 {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
@@ -441,7 +441,7 @@ void LunaFontSprite::DrawChara(LFONTSPRITE lFontSpr, const char *pStr,
             unsigned int index = s_CharToIndex(fontspr, ch);
             if (index < fontspr->charMax) {
                 const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
-                if (entry->sheetNo >= 0 && entry->sheetNo < sheetCount) {
+                if (entry->sheetNo >= 0 && entry->sheetNo < fontspr->sheetCount) {
                     CLunaRect src;
                     float w = F(entry->x2 - entry->x1);
                     float h = F(entry->y2 - entry->y1);
@@ -450,7 +450,7 @@ void LunaFontSprite::DrawChara(LFONTSPRITE lFontSpr, const char *pStr,
                     
                     LunaSprite::DrawSquare(
                         fontspr->sheetSprites[entry->sheetNo],
-                        &dst, z, &src, Color,
+                        pDst, Pz, &src, Color,
                         1);
                 }
             }
@@ -460,9 +460,9 @@ void LunaFontSprite::DrawChara(LFONTSPRITE lFontSpr, const char *pStr,
     return 0;
 }
 
-void LunaFontSprite::DrawCharaRotate(LFONTSPRITE lFontSpr, const char *pStr,
+Sint32 LunaFontSprite::DrawCharaRotate(LFONTSPRITE lFontSpr, const char *pStr,
                     CLunaRect *pDst, Float Pz, D3DCOLOR Color,
-                    Sint32 Angle);
+                    Sint32 Angle)
 {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
     if (fontspr != NULL) {
@@ -471,16 +471,16 @@ void LunaFontSprite::DrawCharaRotate(LFONTSPRITE lFontSpr, const char *pStr,
             unsigned int index = s_CharToIndex(fontspr, ch);
             if (index < fontspr->charMax) {
                 const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
-                if (entry->sheetNo >= 0 && entry->sheetNo < sheetCount) {
+                if (entry->sheetNo >= 0 && entry->sheetNo < fontspr->sheetCount) {
                     CLunaRect src;
                     float w = F(entry->x2 - entry->x1);
                     float h = F(entry->y2 - entry->y1);
                     src.Px = F(entry->x1); src.Py = F(entry->y1);
                     src.Sx = w; src.Sy = h;
                     
-                    LunaSprite::DrawSquare(
+                    LunaSprite::DrawSquareRotate(
                         fontspr->sheetSprites[entry->sheetNo],
-                        &dst, z, &src, Color,
+                        pDst, Pz, &src, Color,
                         Angle, 1);
                 }
             }
@@ -490,9 +490,9 @@ void LunaFontSprite::DrawCharaRotate(LFONTSPRITE lFontSpr, const char *pStr,
     return 0;
 }
 
-void LunaFontSprite::DrawCharaRotateXYZ(LFONTSPRITE lFontSpr, const char *pStr,
+Sint32 LunaFontSprite::DrawCharaRotateXYZ(LFONTSPRITE lFontSpr, const char *pStr,
                     CLunaRect *pDst, Float Pz, D3DCOLOR Color,
-                    Sint32 AngleX, Sint32 AngleY, Sint32 AngleZ);
+                    Sint32 AngleX, Sint32 AngleY, Sint32 AngleZ)
 {
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
     if (fontspr != NULL) {
@@ -501,16 +501,16 @@ void LunaFontSprite::DrawCharaRotateXYZ(LFONTSPRITE lFontSpr, const char *pStr,
             unsigned int index = s_CharToIndex(fontspr, ch);
             if (index < fontspr->charMax) {
                 const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
-                if (entry->sheetNo >= 0 && entry->sheetNo < sheetCount) {
+                if (entry->sheetNo >= 0 && entry->sheetNo < fontspr->sheetCount) {
                     CLunaRect src;
                     float w = F(entry->x2 - entry->x1);
                     float h = F(entry->y2 - entry->y1);
                     src.Px = F(entry->x1); src.Py = F(entry->y1);
                     src.Sx = w; src.Sy = h;
                     
-                    LunaSprite::DrawSquareXYZ(
+                    LunaSprite::DrawSquareRotateXYZ(
                         fontspr->sheetSprites[entry->sheetNo],
-                        &dst, z, &src, Color,
+                        pDst, Pz, &src, Color,
                         AngleX, AngleY, AngleZ, 1);
                 }
             }

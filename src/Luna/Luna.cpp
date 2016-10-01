@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -21,7 +21,7 @@
 
 /* Unlike the rest of the library, this is intended as a replacement for the
  * Luna library used by many doujin games.
- * 
+ *
  * As the two libraries have much in common, this is simply a wrapper to
  * DxLib's functionality.
  */
@@ -200,7 +200,7 @@ void Luna::SyncFrame() {
     int timer = s_timer;
     if (firstFrame) {
         timer = targetTime;
-        s_timerLastTicks = PL_Platform_GetTicks(); 
+        s_timerLastTicks = PL_Platform_GetTicks();
         firstFrame = false;
     } else {
         int ticks = PL_Platform_GetTicks();
@@ -312,6 +312,16 @@ void Luna::ChangeScreenMode() {
     EXTSetOnlyWindowSize(s_realWidth, s_realHeight,
         PL_Window_GetWindowModeFlag() == DXTRUE ? true : false,
         s_lunaFullscreenDesktopFlag == DXTRUE ? true : false);
+}
+
+void Luna::EnableFullColorMode() {
+    // stub
+}
+void Luna::SetCallbackDeviceReset(void(*pCallback)(void)) {
+    // stub
+}
+void Luna::SetCallbackDeviceRestore(void(*pCallback)(void)) {
+    // stub
 }
 
 void Luna::SetFrameRate(Sint32 frameRate) {
