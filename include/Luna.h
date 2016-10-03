@@ -627,6 +627,8 @@ public:
     static LUNACALL void EXTSetWindowIconFromFile(const char *filename);
     static LUNACALL void EXTSetVSync(bool vsyncEnabled);
     
+    static LUNACALL void EXTMessageBoxError(const char *title, const char *text);
+    
     // Supplied by the application.
     //static LUNACALL Bool Init();
     //static LUNACALL void Main(Sint32 argc, char *argv[]);

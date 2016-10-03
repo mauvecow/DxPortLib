@@ -441,4 +441,8 @@ void Luna::EXTSetVSync(bool vsyncEnabled) {
     }
 }
 
+void Luna::EXTMessageBoxError(const char *title, const char *text) {
+    PL_Platform_MessageBoxError(title, text);
+}
+
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */
