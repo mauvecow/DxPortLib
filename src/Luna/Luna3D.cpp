@@ -273,7 +273,7 @@ LTEXTURE Luna3D::GetRenderTargetTexture() {
 void Luna3D::SetRenderTargetSurface(LSURFACE lSurf) {
     // stub
 }
-LSURFACE GetRenderTargetSurface() {
+LSURFACE Luna3D::GetRenderTargetSurface() {
     // stub
     return INVALID_SURFACE;
 }
