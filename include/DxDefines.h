@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -214,6 +214,10 @@ namespace DxLib {
 #define DX_BLENDMODE_PMA_ADD_X4         (22)
 #define DX_BLENDMODE_NUM                (23)
 
+#define DX_BLENDMODE_EXT                (0x1000)
+#define DX_BLENDMODE_EXT_PS_ALPHA       (DX_BLENDMODE_EXT + 0)
+#define DX_BLENDMODE_EXT_END            (DX_BLENDMODE_EXT + 1)
+
 /* Font types. Internally, we only do antialiasing though. */
 #define DX_FONTTYPE_NORMAL                      (0x00)
 #define DX_FONTTYPE_EDGE                        (0x01)
@@ -364,7 +368,7 @@ typedef struct _XINPUT_STATE {
 /* -------------------------------------------------- KEYBOARD DEFINES */
 /* DIK uses a direct ANSI scancode mapping,
  * while SDL uses a USB scancode mapping.
- * 
+ *
  * These are ANSI scancodes, we convert in code as necessary.
  */
 #define KEY_INPUT_ESCAPE        (0x01)
@@ -514,7 +518,7 @@ typedef struct _XINPUT_STATE {
 #define DX_SOUNDDATATYPE_MEMPRESS               (2)
 #define DX_SOUNDDATATYPE_FILE                   (3)
 
-#ifdef __cplusplus   
+#ifdef __cplusplus
 } /* namespace */
 
 /* ------------------------------------------------------------------

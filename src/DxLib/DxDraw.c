@@ -71,13 +71,17 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
         blendMode = DX_BLENDMODE_ALPHA;
     }
     
-    if (blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) {
+    if ((blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) && (blendMode < DX_BLENDMODE_EXT && blendMode >= DX_BLENDMODE_EXT_END)) {
         blendMode = DX_BLENDMODE_NOBLEND;
     }
     
     s_lastBlendMode = blendMode;
     
-    blend = &s_blendModeTable[blendMode];
+    if (blendMode >= DX_BLENDMODE_EXT) {
+        blend = &s_blendModeEXTTable[blendMode - DX_BLENDMODE_EXT];
+    } else {
+        blend = &s_blendModeTable[blendMode];
+    }
     
     PLG.SetBlendModeSeparate(
         blend->blendEquation,

@@ -89,4 +89,9 @@ static const BlendInfo s_blendModeTable[DX_BLENDMODE_NUM] = {
     { TEX_PRESET_DX_PMA_X4, PL_BLENDFUNC_ADD, PL_BLEND_ONE, PL_BLEND_ONE, PL_BLEND_ZERO, PL_BLEND_ONE},
 };
 
+static const BlendInfo s_blendModeEXTTable[DX_BLENDMODE_EXT_END - DX_BLENDMODE_EXT] = {
+    /* PL_BLEND_EXT_PS_ALPHA = (c = (d*(1-a)) + (s*a)), (a = (d*(1-a)) + s) */
+    { TEX_PRESET_MODULATE,  PL_BLENDFUNC_ADD, PL_BLEND_SRC_ALPHA, PL_BLEND_ONE_MINUS_SRC_ALPHA, PL_BLEND_ONE, PL_BLEND_ONE_MINUS_SRC_ALPHA },
+};
+
 #endif

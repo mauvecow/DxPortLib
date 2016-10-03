@@ -222,7 +222,17 @@ void Luna3D::SetRenderState(D3DRENDERSTATETYPE State, Uint32 Param) {
 
 void Luna3D::Clear(Uint32 ClearFlags, D3DCOLOR Color, Float Depth,
                           Uint32 Stencil, RECT *pDst) {
-    /* Ignore for now */
+    if ((ClearFlags & D3DCLEAR_TARGET) != 0) {
+        s_UpdateRenderTexture();
+        
+        PLG.ClearColor(
+            ((Color >> 16) & 0xff) / 255.0f,
+            ((Color >> 8) & 0xff) / 255.0f,
+            ((Color >> 0) & 0xff) / 255.0f,
+            ((Color >> 24) & 0xff) / 255.0f
+        );
+        PLG.Clear();
+    }
 }
 
 void Luna3D::SetCamera(LCAMERA lCamera) {
@@ -234,11 +244,17 @@ void Luna3D::SetCamera(LCAMERA lCamera) {
 }
 
 void Luna3D::EXTSetDxBlendingType(int blendMode) {
-    if (blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) {
+    if ((blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) && (blendMode < DX_BLENDMODE_EXT && blendMode >= DX_BLENDMODE_EXT_END)) {
         blendMode = DX_BLENDMODE_NOBLEND;
     }
     
-    const BlendInfo *blend = &s_blendModeTable[blendMode];
+    const BlendInfo *blend;
+    
+    if (blendMode >= DX_BLENDMODE_EXT) {
+        blend = &s_blendModeEXTTable[blendMode - DX_BLENDMODE_EXT];
+    } else {
+        blend = &s_blendModeTable[blendMode];
+    }
     
     PLG.SetBlendModeSeparate(
         blend->blendEquation,
