@@ -219,9 +219,7 @@ int PLGL_SetPresetProgram(int preset, int flags,
     }
     
     newShaderProgram = PLGL_Shaders_GetStockProgramForID(presetID);
-    if (newShaderProgram != s_activeShaderProgram) {
-        PLGL_Shaders_UseProgram(newShaderProgram);
-    }
+    PLGL_Shaders_UseProgram(newShaderProgram);
     
     s_activeShaderProgram = newShaderProgram;
     if (newShaderProgram > 0) {
