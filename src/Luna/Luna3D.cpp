@@ -41,6 +41,10 @@ PLMatrix g_lunaUntransformedViewMatrix;
 int s_prevRenderTexture = -2;
 int s_renderTexture = -1;
 
+int s_blendType = 0; // 0 = Luna, 1 = DxLib blend
+eBlendType s_blendLunaMode = BLEND_NORMAL;
+int s_blendDxMode = DX_BLENDMODE_ALPHA;
+
 RECT g_viewportRect;
 
 static void s_UpdateRenderTexture() {
@@ -77,6 +81,12 @@ Bool Luna3D::BeginScene(void) {
     s_prevRenderTexture = -2;
     
     PLG.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    if (s_blendType == 0) {
+        Luna3D::SetBlendingType(s_blendLunaMode);
+    } else {
+        Luna3D::EXTSetDxBlendingType(s_blendDxMode);
+    }
+    
     //PL_Window_BindMainFramebuffer();
     return true;
 }
@@ -149,8 +159,12 @@ void Luna3D::SetColorkeyEnable(Bool Flag) {
 void Luna3D::SetBlendingType(eBlendType BlendType) {
     g_lunaTexturePreset = TEX_PRESET_MODULATE;
     
+    s_blendType = 0;
+    s_blendLunaMode = BlendType;
+    
     switch(BlendType) {
         case BLEND_NONE:
+            EXTSetDxBlendingType(DX_BLENDMODE_NOBLEND);
             PLG.DisableBlend();
             break;
         case BLEND_NORMAL:
@@ -256,11 +270,18 @@ void Luna3D::EXTSetDxBlendingType(int blendMode) {
         blend = &s_blendModeTable[blendMode];
     }
     
-    PLG.SetBlendModeSeparate(
-        blend->blendEquation,
-        blend->srcRGBBlend, blend->destRGBBlend,
-        blend->srcAlphaBlend, blend->destAlphaBlend);
+    if (blendMode == DX_BLENDMODE_NOBLEND) {
+        PLG.DisableBlend();
+    } else {
+        PLG.SetBlendModeSeparate(
+            blend->blendEquation,
+            blend->srcRGBBlend, blend->destRGBBlend,
+            blend->srcAlphaBlend, blend->destAlphaBlend);
+    }
     g_lunaTexturePreset = blend->texturePreset;
+    
+    s_blendType = 1;
+    s_blendDxMode = blendMode;
 }
 
 void Luna3D::EnableFullColorMode() {
