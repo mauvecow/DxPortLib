@@ -22,7 +22,7 @@
 #ifndef DXPORTLIB_SDL2_DXINTERNAL_H_HEADER
 #define DXPORTLIB_SDL2_DXINTERNAL_H_HEADER
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
 #ifdef DXPORTLIB_PLATFORM_SDL2
 

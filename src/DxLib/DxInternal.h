@@ -22,7 +22,7 @@
 #ifndef DXPORTLIB_DXINTERNAL_H_HEADER
 #define DXPORTLIB_DXINTERNAL_H_HEADER
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 

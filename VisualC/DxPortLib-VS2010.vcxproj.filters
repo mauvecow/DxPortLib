@@ -30,7 +30,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\DxBuildConfig.h">
+    <ClInclude Include="..\include\DPLBuildConfig.h">
       <Filter>Public Includes</Filter>
     </ClInclude>
     <ClInclude Include="..\include\DxDefines.h">

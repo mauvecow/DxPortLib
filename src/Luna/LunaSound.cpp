@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -25,7 +25,7 @@
 
 #include "LunaInternal.h"
 
-#ifndef DX_NON_SOUND
+#ifndef DXPORTLIB_NO_SOUND
 
 LSOUND LunaSound::CreateFromFile(const char *filename, bool IsNoStop,
                                  bool IsAyame, bool IsHardware, Uint32 Layer) {
@@ -80,7 +80,7 @@ void LunaSound::EXTSetLoopTimes(LSOUND lSnd, double loopTarget, double loopTime)
 }
 
 #else
-/* DX_NON_SOUND */
+/* DXPORTLIB_NO_SOUND */
 
 LSOUND LunaSound::CreateFromFile(const char *filename, bool IsNoStop,
                                  bool IsAyame, bool IsHardware, Uint32 Layer) {
@@ -112,6 +112,6 @@ void LunaSound::EXTSetLoopSamples(LSOUND lSnd, Uint64 loopTarget, Uint64 loopPoi
 void LunaSound::EXTSetLoopTimes(LSOUND lSnd, double loopTarget, double loopTime) {
 }
 
-#endif /* DX_NON_SOUND */
+#endif /* DXPORTLIB_NO_SOUND */
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

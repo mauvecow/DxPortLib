@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -275,7 +275,7 @@ int PL_Window_Init(void) {
      * for no good reason. This deals with that. */
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
     
-    s_windowFlags |= 
+    s_windowFlags |=
         SDL_WINDOW_OPENGL |
         SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_MOUSE_FOCUS;
     
@@ -473,7 +473,7 @@ int PL_Window_ProcessMessages() {
                             break;
                     }
                     break;
-#ifndef DX_NON_INPUT
+#ifndef DXPORTLIB_NO_INPUT
                 case SDL_KEYDOWN:
                     PL_Input_HandleKeyDown(&event.key.keysym);
                     break;
@@ -496,7 +496,7 @@ int PL_Window_ProcessMessages() {
                         s_grabMouseY += event.motion.yrel;
                     }
                     break;
-#endif /* #ifndef DX_NON_INPUT */
+#endif /* #ifndef DXPORTLIB_NO_INPUT */
                 case SDL_QUIT:
                     return -1;
             }

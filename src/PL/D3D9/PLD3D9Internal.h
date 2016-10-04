@@ -22,7 +22,7 @@
 #ifndef DXPORTLIB_OPEND3D9_DXINTERNAL_H_HEADER
 #define DXPORTLIB_OPEND3D9_DXINTERNAL_H_HEADER
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
 #ifdef DXPORTLIB_DRAW_DIRECT3D9
 

@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -29,7 +29,9 @@
 // All UNICODE support is handled in the header, so multiple libraries
 // are not required for different configurations.
 
-#include "DxBuildConfig.h"
+#ifndef DPLBUILDCONFIG_H_HEADER
+#  include "DPLBuildConfig.h"
+#endif
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 
@@ -611,7 +613,7 @@ extern DXCALL int DrawRotaGraph3F(float x, float y, float cx, float cy,
 //   and scales by (scaleFactorX, scaleFactorY).
 // (cx,cy) defaults to the graph's center.
 // For functions where they are not separate, both scaleFactors are equal.
-extern DXCALL int DrawRectRotaGraph(int x, int y, 
+extern DXCALL int DrawRectRotaGraph(int x, int y,
                           int sx, int sy, int sw, int sh,
                           double scaleFactor, double angle,
                           int graphID, int blendFlag, int turn);
@@ -974,7 +976,7 @@ extern DXCALL int InitFontToHandle();
 // Most of these functions do not actually exist in code, and are aliases
 // that grab the current default font handle and use that. The C version
 // includes some basic hardcoded aliases for external linking.
-// 
+//
 // Changing any font information will cause it to refresh that font handle
 // the next time it is used, which is slow.
 //
@@ -989,13 +991,13 @@ extern DXCALL int InitFontToHandle();
 extern DXCALL int GetDefaultFontHandle();
 
 // - Draws a string with the default font to (x,y).
-DXUNICALL_WRAPTO(DrawString, 
+DXUNICALL_WRAPTO(DrawString,
                  (int x, int y, const TCHAR *string,
                   DXCOLOR color, DXCOLOR edgeColor = 0),
                  DrawStringToHandle,
                  (x, y, string, color, GetDefaultFontHandle(),
                   edgeColor, FALSE))
-DXUNICALL_VA_WRAPTO(DrawFormatString, 
+DXUNICALL_VA_WRAPTO(DrawFormatString,
                     (int x, int y, DXCOLOR color, const TCHAR *formatString, ...),
                     DrawFormatVStringToHandle,
                     (x, y, color, GetDefaultFontHandle(), formatString, args),
@@ -1085,7 +1087,7 @@ extern DXCALL int GetFontCacheUsePremulAlphaFlag();
 // If DX_PLAYTYPE_BACK is used, it will play the sound in the background.
 // If DX_PLAYTYPE_LOOP is set, it will loop until it is stopped.
 // If startPositionFlag is TRUE, it will reset the sound's current position.
-extern DXCALL int PlaySoundMem(int soundID, int playType, 
+extern DXCALL int PlaySoundMem(int soundID, int playType,
                                int startPositionFlag = DXTRUE);
 
 // - Stops the playback of a sound handle.

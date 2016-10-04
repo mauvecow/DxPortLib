@@ -22,7 +22,7 @@
 #ifndef DXPORTLIB_PLINTERNAL_H_HEADER
 #define DXPORTLIB_PLINTERNAL_H_HEADER
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 #include "DxDefines.h"
 
 #include <stdlib.h>
@@ -70,12 +70,12 @@ extern unsigned int PL_Text_ReadUTF8Char(const char **textRef);
 extern int PL_Text_WriteUTF8Char(char *buffer, unsigned int ch, int bufSize);
 extern int PL_Text_IsIncompleteUTF8Char(const char *string, int length);
 
-#ifndef DXPORTLIB_NON_SJIS
+#ifndef DXPORTLIB_NO_SJIS
 extern unsigned int PL_Text_ToSJIS(int ch);
 extern unsigned int PL_Text_ReadSJISChar(const char **textRef);
 extern int PL_Text_WriteSJISChar(char *buffer, unsigned int ch, int bufSize);
 extern int PL_Text_IsIncompleteSJISChar(const char *string, int length);
-#endif /* #ifndef DXPORTLIB_NON_SJIS */
+#endif /* #ifndef DXPORTLIB_NO_SJIS */
 
 extern int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset);
 
@@ -536,7 +536,7 @@ extern int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
 
 
 /* --------------------------------------------------------------- Input.c */
-#ifndef DX_NON_INPUT
+#ifndef DXPORTLIB_NO_INPUT
 
 extern void PL_Input_ResetKeyBuffer();
 extern int PL_Input_GetFromKeyBuffer();
@@ -567,7 +567,7 @@ extern void PL_Input_AddController(int controllerIndex);
 extern void PL_Input_RemoveController(int instanceID);
 extern void PL_Input_HandleWheelMotion(int x, int y);
 
-#endif /* #ifndef DX_NON_INPUT */
+#endif /* #ifndef DXPORTLIB_NO_INPUT */
 
 /* --------------------------------------------------------------- Memory.c */
 extern void *PL_DxAlloc(size_t allocationSize, const char *file, int line);
@@ -587,7 +587,7 @@ extern int PL_Random_SeedDx(int randomSeed);
 extern int PL_Random_SeedLuna(int randomSeed);
 
 /* --------------------------------------------------------------- Audio.c */
-#ifndef DX_NON_SOUND
+#ifndef DXPORTLIB_NO_SOUND
 
 extern int PL_LoadSoundMem(const char *filename);
 extern int PL_LoadSoundMem2(const char *filenameA, const char *filenameB);
@@ -614,7 +614,7 @@ extern int PL_Audio_ResetSettings();
 extern int PL_Audio_Init();
 extern int PL_Audio_End();
 
-#endif /* #ifndef DX_NON_SOUND */
+#endif /* #ifndef DXPORTLIB_NO_SOUND */
 
 #ifdef __cplusplus
 }

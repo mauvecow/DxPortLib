@@ -22,81 +22,152 @@
 #ifndef DXLIB_DEFINES_H_HEADER
 #define DXLIB_DEFINES_H_HEADER
 
-#include "DxBuildConfig.h"
+#ifndef DPLBUILDCONFIG_H_HEADER
+#  include "DPLBuildConfig.h"
+#endif
+#ifndef DPLCOMMON_H_HEADER
+#  include "DPLCommon.h"
+#endif
+#ifndef DPLWINTYPES_H_HEADER
+#  include "DPLWinTypes.h"
+#endif
 
 #include <stdint.h>
 #include <stdarg.h>
-#include <wchar.h>
 
-#if defined(__GNUC__)
-#  define DXINLINE __inline__
-#elif defined(_MSC_VER) || defined(__BORLANDC__)
-#  define DXINLINE __inline
-#else
-#  define DXINLINE inline
+/* For C++ builds, we need to make sure all type definitions are in
+ * the namespace DxLib. */
+#ifdef __cplusplus
+namespace DxLib {
 #endif
 
-#if defined _WIN32
-#  define _WIN32_WINNT 0x0400
-#  define WIN32_LEAN_AND_MEAN
-#  include <windows.h>
-#  include <tchar.h>
-#else
-/* On non-Windows, replicate some of the common types used. */
-typedef struct _RECT {
-    int left;
-    int top;
-    int right;
-    int bottom;
-} RECT;
-typedef struct _POINT {
-    int x;
-    int y;
-} POINT;
-
-typedef int BOOL;
-typedef int32_t LONG;
-typedef uint32_t DWORD;
-typedef uint16_t WORD;
-typedef uint8_t BYTE;
-
-#  ifdef UNICODE
-typedef wchar_t TCHAR;
-#  else
-typedef char TCHAR;
-#  endif
+/* ------------------------------------------------------------------------
+ * DxBuildConfig defines, inherited from DPLBuildConfig.
+ */
+/* Disables the DXA archive format. */
+#ifdef DXPORTLIB_NO_DXLIB_DXA
+#  define DX_NON_DXA
 #endif
 
-/* Verify that all text defines exist. */
-#ifndef _TEXT
-#  ifdef UNICODE
-#    define _TEXT(s) L ## s
-#  else
-#    define _TEXT(s) s
-#  endif
+/* Disables the sound backend. */
+#ifdef DXPORTLIB_NO_SOUND
+#  define DX_NON_SOUND
 #endif
 
-#ifndef _T
-#  define _T(s) _TEXT(s)
-#endif
-#ifndef __TEXT
-#  define __TEXT(s) _TEXT(s)
-#endif
-#ifndef TEXT
-#  define TEXT(s) _TEXT(s)
+/* Disables Ogg Vorbis support. (implied by NON_SOUND) */
+#ifdef DXPORTLIB_NO_OGGVORBIS
+#  define DX_NON_OGGVORBIS
 #endif
 
-#ifndef NULL
-#  define NULL (0)
+/* Disables the input backend. */
+#ifdef DXPORTLIB_NO_INPUT
+#  define DX_NON_INPUT
 #endif
 
-#ifndef DXINLINE
-#  if defined(__GNUC__)
-#    define DXINLINE __inline__
-#  else
-#    define DXINLINE __inline
-#  endif
+/* Disables the font backend. */
+#ifdef DXPORTLIB_NO_TTF_FONT
+#  define DX_NON_FONT
 #endif
+
+/* ------------------------------------------------------------------------
+ * These are features not supported by DxPortLib at this time.
+ *
+ * Do not modify these.
+ */
+
+/* There is no inline asm in DxPortLib. */
+#define DX_NON_INLINE_ASM
+
+/* Disables built-in strings. We have none, so. */
+#define DX_NON_LITERAL_STRING
+
+/* Logging is not supported. */
+#define DX_NON_LOG
+
+/* Audio is always multithreaded. */
+/* #define DX_NON_MULTITHREAD */
+
+/* Handle error checking does not exist. */
+#define DX_NON_HANDLE_ERROR_CHECK
+
+/* DxLib normally has thread safety check functions that are enabled by this.
+ * DxPortLib is not thread safe at this time.
+ */
+/* #define DX_THREAD_SAFE */
+
+/* Because we are always thread safe, this is not necessary. */
+/* #define DX_THREAD_SAFE_NETWORK_ONLY */
+
+/* Async loading is not supported. */
+#define DX_NON_ASYNCLOAD
+
+/* Software image management is not supported. */
+#define DX_NON_SOFTIMAGE
+
+/* Movie playback (and thus OGG Theora) is not supported. */
+#define DX_NON_MOVIE
+#define DX_NON_OGGTHEORA
+
+/* SDL2_image always supports these. */
+/* #define DX_NON_TGA */
+/* #define DX_NON_JPEGREAD */
+/* #define DX_NON_PNGREAD */
+
+/* ACM playback is not supported. */
+#define DX_NON_ACM
+
+/* Networking is not supported. */
+#define DX_NON_NETWORK
+
+/* GraphFilter/GraphBlend is not supported. */
+#define DX_NON_FILTER
+
+/* Software rendering is not supported. */
+#define DX_NON_2DDRAW
+
+/* Masking is not supported. */
+#define DX_NON_MASK
+
+/* DirectShow is not supported. */
+#define DX_NON_DSHOW_MP3
+#define DX_NON_DSHOW_MOVIE
+
+/* KEYEX and INPUTSTRING are not currently supported. */
+#define DX_NON_KEYEX
+#define DX_NON_INPUTSTRING
+
+/* Model loading is not supported. */
+#define DX_NON_MODEL
+
+/* FBX Models are not supported. */
+#define DX_LOAD_FBX_MODEL
+
+/* Only Mersenne Twister is supported. */
+/* #define DX_NON_MERSENNE_TWISTER */
+
+/* DxLib memory dumping is not supported. */
+/* #define DX_USE_DXLIB_MEM_DUMP */
+
+/* Bullet Physics is not supported. */
+#define DX_NON_BULLET_PHYSICS
+
+/* Beep sound is not supported. */
+#define DX_NON_BEEP
+
+/* Task switching must always be enabled. */
+/* #define DX_NON_STOPTASKSWITCH */
+
+/* No save functions are supported. */
+#define DX_NON_SAVEFUNCTION
+
+/* printfDx is not currently supported. */
+#define DX_NON_PRINTF_DX
+
+/* ------------------------------------------------------------------------
+ * Common defines.
+ */
+
+#define DXINLINE DPLINLINE
 
 #ifdef UNICODE
 #  define DXUNICALL(a) a ## W
@@ -122,49 +193,27 @@ typedef char TCHAR;
         return retval; \
     }
 
-#ifdef __cplusplus
-namespace DxLib {
-#endif
-
 /* This library is compatible with DxLib v3.11. */
 #define DXLIB_VERSION 0x3110
 #define DXLIB_VERSION_STR "3.11 "
 
 /* Various type macros and build defines */
 #define DXCOLOR int
-#define DXTRUE (1)
-#define DXFALSE (0)
+#define DXTRUE (DPLTRUE)
+#define DXFALSE (DPLFALSE)
 
-#ifndef TRUE
-#  define TRUE (1)
-#endif
-#ifndef FALSE
-#  define FALSE (0)
-#endif
-
-/* Specify DLL export for all functions. */
-#if defined _WIN32
-#  define DXCALL __declspec(dllexport)
-#else
-#  if __GNUC__ >= 4
-#    define DXCALL __attribute__(( visibility("default") ))
-#  elif __GNUC__ >= 2
-#    define DXCALL __declspec(dllexport)
-#  else
-#    define DXCALL
-#  endif
-#endif
+#define DXCALL DPLEXPORTFUNCTION
 
 /* DxPortLib only supports Shift-JIS and UTF8.
  * Please use UTF8 when available. Please.
  */
-#define DX_CHARSET_DEFAULT      (0)
+#define DX_CHARSET_DEFAULT      (DPL_CHARSET_DEFAULT)
 
-#ifndef DXPORTLIB_NON_SJIS
-#  define DX_CHARSET_SHFTJIS    (1)
-#endif /* #ifndef DXPORTLIB_NON_SJIS */
+#ifdef DPL_CHARSET_SHIFTJIS
+#  define DX_CHARSET_SHFTJIS    (DPL_CHARSET_SHIFTJIS)
+#endif /* #ifndef DXPORTLIB_NO_SJIS */
 
-#define DX_CHARSET_EXT_UTF8     (0xff)
+#define DX_CHARSET_EXT_UTF8     (DPL_CHARSET_EXT_UTF8)
 
 /* ---------------------------------------------------- GRAPHICS DEFINES */
 /* These are chosen to match DxLib itself when possible.
@@ -528,4 +577,3 @@ using namespace DxLib;
 #endif
 
 #endif
-

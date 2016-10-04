@@ -13,15 +13,15 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
-#ifndef DX_NON_SOUND
+#ifndef DXPORTLIB_NO_SOUND
 
 /* for log10. */
 #include <math.h>
@@ -29,26 +29,26 @@
 #include "PLInternal.h"
 #include "SDL2/PLSDL2Internal.h"
 
-#ifndef DX_NON_OGGVORBIS
-#include <vorbis/vorbisfile.h>
-#endif /* #ifndef DX_NON_OGGVORBIS */
+#ifndef DXPORTLIB_NO_OGGVORBIS
+#  include <vorbis/vorbisfile.h>
+#endif /* #ifndef DXPORTLIB_NO_OGGVORBIS */
 
 /* SDL_mixer is, unfortunately, not usable for this library,
  * so no easy shortcuts to be had there.
- * 
+ *
  * So we need three parts:
  * - The main mixer and playlist manager.
  * - AudioStream to manage streamed audio.
  * - AudioBuffer to manage whole sound buffers.
- * 
+ *
  * Unsurprisingly I'm using much of the same methodology as
  * SDL_mixer did, as its method of conversion just makes sense.
  */
 
 /* This is the code I am least satisfied with in all of DxPortLib.
- * 
+ *
  * Namely, I do not like the list structure for buffers.
- * 
+ *
  * Other things to do include:
  *   We need to separate the actual buffering information from
  *   the sound instances, as well, to properly implement
@@ -58,14 +58,14 @@
 typedef struct AudioStream {
     SDL_RWops *streamFile;
     
-#ifndef DX_NON_OGGVORBIS
+#ifndef DXPORTLIB_NO_OGGVORBIS
     OggVorbis_File ovfile;
 
     int hasLoopPoint;
     ogg_int64_t loopPoint;
     int hasLoopTarget;
     ogg_int64_t loopTarget;
-#endif /* #ifndef DX_NON_OGGVORBIS */
+#endif /* #ifndef DXPORTLIB_NO_OGGVORBIS */
     
     int active;
     
@@ -124,7 +124,7 @@ static unsigned int s_AudioBufferPlay(Sound *sound, Uint8 *snd, unsigned int len
 /* -------------------------------------------------- PLAYLIST MANAGEMENT */
 static Sound *s_audioPlayingList = NULL;
 
-static void s_StopSound(Sound *sound) {    
+static void s_StopSound(Sound *sound) {
     SDL_LockAudio();
     
     if (sound->playing == DXTRUE) {
@@ -170,7 +170,7 @@ static void s_StartSound(Sound *sound, int playMode, int fromStartFlag) {
 
 /* ------------------------------------------------------ AUDIO STREAMING */
 
-#ifndef DX_NON_OGGVORBIS
+#ifndef DXPORTLIB_NO_OGGVORBIS
 static int s_AudioStreamGet(Sound *sound);
 
 /* Handles ogg streams via vorbisfile. */
@@ -353,7 +353,7 @@ static unsigned int s_AudioStreamPlay(Sound *sound, Uint8 *snd, unsigned int len
     return len;
 }
 
-#else /* #ifndef DX_NON_OGGVORBIS */
+#else /* #ifndef DXPORTLIB_NO_OGGVORBIS */
 
 static int s_AudioStreamOpen(Sound *sound, SDL_RWops *rwops) {
     return -1;
@@ -370,7 +370,7 @@ static unsigned int s_AudioStreamPlay(Sound *sound, Uint8 *snd, unsigned int len
     return len;
 }
 
-#endif /* #ifndef DX_NON_OGGVORBIS */
+#endif /* #ifndef DXPORTLIB_NO_OGGVORBIS */
 
 /* ------------------------------------------------- STATIC AUDIO BUFFERS */
 
@@ -799,7 +799,7 @@ int PL_DeleteSoundMem(int soundID) {
         }
     }
     SDL_UnlockAudio();
-    return 0; 
+    return 0;
 }
 
 int PL_PlaySoundMem(int soundID, int playType, int startPositionFlag) {
@@ -904,7 +904,7 @@ int PL_Audio_SetLoopTimes(int soundID,
     
     sound = (Sound *)PL_Handle_GetData(soundID, DXHANDLE_SOUND);
     if (sound != NULL) {
-#ifndef DX_NON_OGGVORBIS
+#ifndef DXPORTLIB_NO_OGGVORBIS
         vorbis_info *info = ov_info(&sound->stream.ovfile, -1);
         
         sound->stream.hasLoopTarget = DXTRUE;
@@ -1032,7 +1032,7 @@ int PL_ChangeVolumeSoundMem(int volume, int soundID) {
     /* DxLib itself converts to decibels to send to
      * DirectSound's SetVolume call, which of course
      * converts it back to later.
-     * 
+     *
      * Unfortunately, it does it incorrectly, so we can't
      * just map the value directly to a multiplier.
      */
@@ -1101,4 +1101,4 @@ int PL_Audio_End() {
     return 0;
 }
 
-#endif /* #ifndef DX_NON_SOUND */
+#endif /* #ifndef DXPORTLIB_NO_SOUND */

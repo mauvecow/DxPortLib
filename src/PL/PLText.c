@@ -154,7 +154,7 @@ unsigned int PL_Text_ReadChar(const char **textRef, int charset) {
 #ifndef DXPORTLIB_NO_SJIS
         case DX_CHARSET_SHFTJIS:
             return PL_Text_ReadSJISChar(textRef);
-#endif /* #ifndef DXPORTLIB_NON_SJIS */
+#endif /* #ifndef DXPORTLIB_NO_SJIS */
         default: /* case DX_CHARSET_EXT_UTF8: */
             return PL_Text_ReadUTF8Char(textRef);
     }
@@ -165,7 +165,7 @@ int PL_Text_WriteChar(char *text, unsigned int ch, int bufSize, int charset) {
 #ifndef DXPORTLIB_NO_SJIS
         case DX_CHARSET_SHFTJIS:
             return PL_Text_WriteSJISChar(text, ch, bufSize);
-#endif /* #ifndef DXPORTLIB_NON_SJIS */
+#endif /* #ifndef DXPORTLIB_NO_SJIS */
         default: /* case DX_CHARSET_EXT_UTF8: */
             return PL_Text_WriteUTF8Char(text, ch, bufSize);
     }
@@ -176,7 +176,7 @@ int PL_Text_ToCharset(int charset) {
 #ifndef DXPORTLIB_NO_SJIS
         case DX_CHARSET_SHFTJIS:
             return DX_CHARSET_SHFTJIS;
-#endif /* #ifndef DXPORTLIB_NON_SJIS */
+#endif /* #ifndef DXPORTLIB_NO_SJIS */
         case DX_CHARSET_EXT_UTF8:
             return DX_CHARSET_EXT_UTF8;
         default:

@@ -1,7 +1,7 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013-2015 Patrick McCarthy <mauve@sandwich.net>
-  
+  Copyright (C) 2013-2016 Patrick McCarthy <mauve@sandwich.net>
+
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -19,19 +19,31 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#ifndef LUNADX8_H_HEADER
-#define LUNADX8_H_HEADER
+#include "DxPortLib_c.h"
 
-#ifndef DPLBUILDCONFIG_H_HEADER
-#  include "DPLBuildConfig.h"
-#endif
+int DPL_Text_ConvertStringEncoding(
+    char *buffer, int bufferLength,
+    const char *string,
+    int destEncoding, int srcEncoding)
+{
+    return PL_Text_ConvertStrncpy(
+            buffer, destEncoding,
+            string, srcEncoding,
+            bufferLength);
+}
 
-#ifdef DXPORTLIB_LUNA_INTERFACE
+int DPL_Text_ConvertStringToChar(
+    char *buffer, int bufferLength,
+    const wchar_t *string,
+    int destEncoding)
+{
+    return PL_Text_WideCharToString(buffer, destEncoding, string, bufferLength);
+}
 
-#include "Luna.h"
-
-#error "Dx8 interface not implemented yet."
-
-#endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */
-
-#endif /* #ifndef LUNADX8_H_HEADER */
+int DPL_Text_ConvertStringToWideChar(
+    wchar_t *buffer, int bufferLength,
+    const char *string,
+    int srcEncoding)
+{
+    return PL_Text_StringToWideChar(buffer, string, srcEncoding, bufferLength);
+}

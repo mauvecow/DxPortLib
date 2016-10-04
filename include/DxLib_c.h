@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -22,7 +22,9 @@
 #ifndef DXLIB_C_H_HEADER
 #define DXLIB_C_H_HEADER
 
-#include "DxBuildConfig.h"
+#ifndef DPLBUILDCONFIG_H_HEADER
+#  include "DPLBuildConfig.h"
+#endif
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 
@@ -30,13 +32,13 @@
 
 #include <stdlib.h>
 
-#ifdef __cplusplus   
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 /* C interface to DxLib, suitable for C programs or bindings to other
  * languages.
- * 
+ *
  * See DxLib.h for comments on function usage and purpose.
  */
 
@@ -76,7 +78,7 @@ extern DXCALL int DxLib_EXT_FileRead_SetCharSet(int charset);
 
 extern DXCALL int DxLib_FileRead_openW(const wchar_t *filename, int ASync);
 extern DXCALL int DxLib_FileRead_openA(const char *filename, int ASync);
-DXUNICALL_WRAP(DxLib_FileRead_open, 
+DXUNICALL_WRAP(DxLib_FileRead_open,
                (const TCHAR *filename, int ASync),
                (filename, ASync))
 
@@ -440,7 +442,7 @@ extern DXCALL int DxLib_DrawRotaGraph3F(float x, float y,
                                         int graphID,
                                         int blendFlag, int turn);
 
-extern DXCALL int DxLib_DrawRectRotaGraph(int x, int y, 
+extern DXCALL int DxLib_DrawRectRotaGraph(int x, int y,
                           int sx, int sy, int sw, int sh,
                           double scaleFactor, double angle,
                           int graphID, int blendFlag, int turn);
@@ -726,13 +728,13 @@ extern DXCALL int DxLib_InitFontToHandle();
 /* "Default" font functions */
 extern DXCALL int DxLib_GetDefaultFontHandle();
 
-DXUNICALL_WRAPTO(DxLib_DrawString, 
+DXUNICALL_WRAPTO(DxLib_DrawString,
                  (int x, int y, const TCHAR *string,
                   DXCOLOR color, DXCOLOR edgeColor),
                  DxLib_DrawStringToHandle,
                  (x, y, string, color, DxLib_GetDefaultFontHandle(),
                   edgeColor, FALSE))
-DXUNICALL_VA_WRAPTO(DxLib_DrawFormatString, 
+DXUNICALL_VA_WRAPTO(DxLib_DrawFormatString,
                     (int x, int y, DXCOLOR color, const TCHAR *formatString, ...),
                     DxLib_DrawFormatVStringToHandle,
                     (x, y, color, DxLib_GetDefaultFontHandle(), formatString, args),

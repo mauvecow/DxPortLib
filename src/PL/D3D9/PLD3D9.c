@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
 #ifdef DXPORTLIB_DRAW_DIRECT3D9
 

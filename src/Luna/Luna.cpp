@@ -26,7 +26,7 @@
  * DxLib's functionality.
  */
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
 #ifdef DXPORTLIB_LUNA_INTERFACE
 
@@ -105,21 +105,21 @@ Bool Luna::Start() {
         return false;
     }
     
-#ifndef DX_NON_INPUT
+#ifndef DXPORTLIB_NO_INPUT
     if ((s_lunaUseFlags & OPTION_DIRECTINPUT) != 0) {
         PL_Input_Init();
     }
-#endif  /* #ifndef DX_NON_INPUT */
+#endif  /* #ifndef DXPORTLIB_NO_INPUT */
     
     PL_Window_SetMouseDispFlag(s_lunaDrawMouse ? DXTRUE : DXFALSE);
     PL_Window_SetWindowResizeFlag(DXFALSE);
     
     PL_Window_Init();
-#ifndef DX_NON_SOUND
+#ifndef DXPORTLIB_NO_SOUND
     if ((s_lunaUseFlags & OPTION_DIRECTSOUND) != 0) {
         PL_Audio_Init();
     }
-#endif /* #ifndef DX_NON_SOUND */
+#endif /* #ifndef DXPORTLIB_NO_SOUND */
     
     Luna3D::SetViewport(NULL);
     
@@ -134,17 +134,17 @@ void Luna::End() {
     
     s_initialized = DXFALSE;
     
-#ifndef DX_NON_SOUND
+#ifndef DXPORTLIB_NO_SOUND
     if ((s_lunaUseFlags & OPTION_DIRECTSOUND) != 0) {
         PL_Audio_End();
     }
-#endif /* #ifndef DX_NON_SOUND */
+#endif /* #ifndef DXPORTLIB_NO_SOUND */
     PL_Window_End();
-#ifndef DX_NON_INPUT
+#ifndef DXPORTLIB_NO_INPUT
     if ((s_lunaUseFlags & OPTION_DIRECTINPUT) != 0) {
         PL_Input_End();
     }
-#endif /* #ifndef DX_NON_INPUT */
+#endif /* #ifndef DXPORTLIB_NO_INPUT */
 }
 
 void Luna::Exit() {
@@ -357,27 +357,6 @@ void Luna::EXTGetSaveFolder(char *buffer, int bufferLength,
         PL_Text_ConvertStrncpyIfNecessary(
             appbuf, -1, app, g_lunaUseCharSet, 2048),
         destEncoding);
-}
-
-int Luna::EXTConvertText(char *buffer, int bufferLength,
-                         const char *string,
-                         int destEncoding, int srcEncoding) {
-    return PL_Text_ConvertStrncpy(
-            buffer, destEncoding,
-            string, srcEncoding,
-            bufferLength);
-}
-int Luna::EXTConvertWideCharToChar(
-                         char *buffer, int bufferLength,
-                         const wchar_t *string, int destEncoding)
-{
-    return PL_Text_WideCharToString(buffer, destEncoding, string, bufferLength);
-}
-int Luna::EXTConvertCharToWideChar(
-                         wchar_t *buffer, int bufferLength,
-                         const char *string, int srcEncoding)
-{
-    return PL_Text_StringToWideChar(buffer, string, srcEncoding, bufferLength);
 }
 
 void Luna::EXTSetFullscreenDesktop(bool flag) {

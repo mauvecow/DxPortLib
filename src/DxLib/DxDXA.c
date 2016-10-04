@@ -13,13 +13,13 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 
@@ -38,7 +38,7 @@
  * - Streaming of archive data.
  * - Codepage support.
  * - Preloading an entire archive to memory.
- * 
+ *
  * What this does not implement:
  * - Incrementally streaming compressed data. (not immediately necessary.)
  * - Asynchronous loading. (technically the streaming can do it for non-compressed data)
@@ -175,7 +175,7 @@ static int DXA_InitializeArchive(DXArchive *archive);
 /* ------------------------------------------------------------ DXARCHIVE IMPLEMENTATION */
 static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
     /* So here we have to break up the filename into pieces.
-     * 
+     *
      * The rules here are:
      * - '/' and '\' are both valid for directory indices.
      * - all filenames must be uppercase.
@@ -467,9 +467,9 @@ static int DXA_InitializeArchive(DXArchive *archive) {
     }
     
     switch(codepage) {
-#ifndef DXPORTLIB_NON_SJIS
+#ifndef DXPORTLIB_NO_SJIS
         case 932: archive->CharSet = DX_CHARSET_SHFTJIS; break;
-#endif /* #ifndef DXPORTLIB_NON_SJIS */
+#endif /* #ifndef DXPORTLIB_NO_SJIS */
         case 65001: archive->CharSet = DX_CHARSET_EXT_UTF8; break;
         default: archive->CharSet = DX_CHARSET_DEFAULT; break;
     }
@@ -792,7 +792,7 @@ static size_t SDLCALL DXA_Stream_Read(SDL_RWops *context, void *ptr, size_t size
     dxaops->currentPosition += num * size;
     
     return num;
-} 
+}
 
 static size_t SDLCALL DXA_Stream_DisableWrite(SDL_RWops *context, const void *ptr, size_t size, size_t num) {
     return 0; /* writing is not supported. */
@@ -900,7 +900,7 @@ static size_t SDLCALL DXA_MemStream_Read(SDL_RWops *context, void *ptr, size_t s
     memstream->currentPosition += total_size;
     
     return total_size / size; /* return number of objects read */
-} 
+}
 
 static size_t SDLCALL DXA_MemStream_DisableWrite(SDL_RWops *context, const void *ptr, size_t size, size_t num) {
     return 0; /* writing is not supported. */

@@ -213,3 +213,15 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+#local, not to be tracked
+CMakeFiles
+CMakeCache.txt
+autom4te.cache
+autotools
+aclocal.m4
+DxPortLib.pc
+configure
+config.status
+Makefile
+Makefile.in

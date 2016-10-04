@@ -83,7 +83,7 @@
     <Library Include="external\lib\x86\SDL2_ttf.lib" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\DxBuildConfig.h" />
+    <ClInclude Include="..\include\DPLBuildConfig.h" />
     <ClInclude Include="..\include\DxDefines.h" />
     <ClInclude Include="..\include\DxLib.h" />
     <ClInclude Include="..\include\DxLib_c.h" />

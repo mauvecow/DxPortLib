@@ -28,7 +28,7 @@
 
 #ifndef DXPORTLIB_LUNAINTERNAL_H
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
 #ifdef DXPORTLIB_LUNA_INTERFACE
 

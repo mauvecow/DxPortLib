@@ -31,7 +31,7 @@
  * actually necessary to do so.
  */
 
-#include "DxBuildConfig.h"
+#include "DPLBuildConfig.h"
 
 #ifdef DXPORTLIB_DRAW_DIRECT3D9
 

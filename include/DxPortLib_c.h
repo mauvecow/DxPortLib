@@ -1,6 +1,6 @@
 /*
   DxPortLib - A portability library for DxLib-based software.
-  Copyright (C) 2013-2015 Patrick McCarthy <mauve@sandwich.net>
+  Copyright (C) 2013-2016 Patrick McCarthy <mauve@sandwich.net>
   
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,19 +19,43 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
-#ifndef LUNADX8_H_HEADER
-#define LUNADX8_H_HEADER
+/* Front-end to DxPortLib's interface.
+ *
+ * For a C++ interface, see DxPortLib.h.
+ */
 
-#ifndef DPLBUILDCONFIG_H_HEADER
-#  include "DPLBuildConfig.h"
+#ifndef DXPORTLIB_C_H_HEADER
+#define DXPORTLIB_C_H_HEADER
+
+#ifndef DPLCOMMON_H_HEADER
+#  include "DPLCommon.h"
 #endif
 
-#ifdef DXPORTLIB_LUNA_INTERFACE
+#ifndef DXPORTLIB_DPL_INTERFACE
+#  undef DPLCALL
+#endif
 
-#include "Luna.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#error "Dx8 interface not implemented yet."
+int DPLCALL DPL_Text_ConvertStringEncoding(
+    char *buffer, int bufferLength,
+    const char *string,
+    int destEncoding, int srcEncoding);
 
-#endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */
+int DPLCALL DPL_Text_ConvertStringToChar(
+    char *buffer, int bufferLength,
+    const wchar_t *string,
+    int destEncoding);
 
-#endif /* #ifndef LUNADX8_H_HEADER */
+int DPLCALL DPL_Text_ConvertStringToWideChar(
+    wchar_t *buffer, int bufferLength,
+    const char *string,
+    int srcEncoding);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* #ifndef DXPORTLIB_C_H_HEADER */

@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -55,13 +55,13 @@ void PL_Platform_Init() {
     SDL_Init(
         SDL_INIT_VIDEO
         | SDL_INIT_TIMER
-#ifndef DX_NON_INPUT
+#ifndef DXPORTLIB_NO_INPUT
         | SDL_INIT_JOYSTICK
         | SDL_INIT_GAMECONTROLLER
-#endif  /* #ifndef DX_NON_INPUT */
-#ifndef DX_NON_SOUND
+#endif  /* #ifndef DXPORTLIB_NO_INPUT */
+#ifndef DXPORTLIB_NO_SOUND
         | SDL_INIT_AUDIO
-#endif  /* #ifndef DX_NON_SOUND */
+#endif  /* #ifndef DXPORTLIB_NO_SOUND */
     );
 }
 

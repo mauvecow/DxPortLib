@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -23,7 +23,7 @@
 
 #include "SDL.h"
 
-#ifndef DX_NON_INPUT
+#ifndef DXPORTLIB_NO_INPUT
 
 /* ------------------------------------------------------------ INPUT, YAY */
 
@@ -903,4 +903,4 @@ void PL_Input_HandleWheelMotion(int x, int y) {
     s_mouseWheelY += y;
 }
 
-#endif /* #ifndef DX_NON_INPUT */
+#endif /* #ifndef DXPORTLIB_NO_INPUT */
