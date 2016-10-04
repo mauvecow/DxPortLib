@@ -73,7 +73,7 @@ LTEXTURE LunaTexture::CreateRenderTarget(Uint32 Width,
                                          Uint32 Height,
                                          eSurfaceFormat format)
 {
-    LTEXTURE handle = (int)PLG.Texture_CreateFramebuffer(Width, Height, true);
+    LTEXTURE handle = (int)PLG.Texture_CreateFramebuffer(Width, Height, DXTRUE);
     
     return handle;
 }

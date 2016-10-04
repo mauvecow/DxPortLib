@@ -244,7 +244,7 @@ void Luna3D::SetCamera(LCAMERA lCamera) {
 }
 
 void Luna3D::EXTSetDxBlendingType(int blendMode) {
-    if ((blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) && (blendMode < DX_BLENDMODE_EXT && blendMode >= DX_BLENDMODE_EXT_END)) {
+    if ((blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) && (blendMode < DX_BLENDMODE_EXT || blendMode >= DX_BLENDMODE_EXT_END)) {
         blendMode = DX_BLENDMODE_NOBLEND;
     }
     

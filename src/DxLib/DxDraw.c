@@ -71,7 +71,7 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
         blendMode = DX_BLENDMODE_ALPHA;
     }
     
-    if ((blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) && (blendMode < DX_BLENDMODE_EXT && blendMode >= DX_BLENDMODE_EXT_END)) {
+    if ((blendMode < 0 || blendMode >= DX_BLENDMODE_NUM) && (blendMode < DX_BLENDMODE_EXT || blendMode >= DX_BLENDMODE_EXT_END)) {
         blendMode = DX_BLENDMODE_NOBLEND;
     }
     
