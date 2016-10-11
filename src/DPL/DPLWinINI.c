@@ -168,6 +168,7 @@ static s_Section_t *s_FindSection(s_WinINI_t *ini, const char *sectionName, int 
     s = (s_Section_t *)DXALLOC(sizeof(s_Section_t));
     s->name = PL_Text_Strdup(sectionName);
     s->next = ini->sections;
+    s->entries = NULL;
     ini->sections = s;
     
     if (pPrevSection != NULL) {
@@ -198,6 +199,8 @@ static int s_ReadText(char *dest, int maxLen, const char **pText, int encoding, 
         
         last = text;
     }
+    
+    *dest = '\0';
     
     *pText = last;
     
@@ -236,14 +239,12 @@ static int s_ParseText(s_WinINI_t *ini, const char *data, int fileEncoding) {
         }
         
         if (ch == '[') {
-            /* Section name. */
             char sectionName[4096];
             int len = s_ReadText(sectionName, 4096, &t, localEncoding, ']');
             if (len != 0) {
                 section = s_FindSection(ini, sectionName, DPLTRUE, NULL);
             }
         } else if (section != NULL) {
-            /* Probably an entry. */
             char entryName[4096];
             char entryValue[4096];
             int len;
@@ -263,12 +264,10 @@ static int s_ParseText(s_WinINI_t *ini, const char *data, int fileEncoding) {
                     }
                 }
                 
-                start = t;
-                ch = PL_Text_ReadChar(&t, localEncoding);
-                while (ch == ' ') {
+                do {
                     start = t;
                     ch = PL_Text_ReadChar(&t, localEncoding);
-                }
+                } while (ch == ' ');
                 
                 haltChar = ';';
                 if (ch == '\"') {
@@ -328,7 +327,7 @@ int DPL_WinINI_ReadFile(int handle, const char *filename, int fileEncoding) {
         return -1;
     }
     
-    size = PL_File_Tell(fileHandle);
+    size = PL_File_GetSize(fileHandle);
     if (size < (1024*1024)) { /* 1MB limit */
         char *data = DXALLOC(size + 1);
         
