@@ -125,6 +125,8 @@ extern void PL_Text_StrLower(char *str, int charset);
 extern void PL_Text_StrUpperW(wchar_t *str);
 extern void PL_Text_StrLowerW(wchar_t *str);
 
+extern int PL_Text_ReadLine(char *dest, int maxLen, const char **pSrc, int destEncoding, int srcEncoding);
+
 extern int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, va_list args);
 extern int PL_Text_Snprintf(char *dest, int bufSize, int charset, const char *format, ...);
 extern int PL_Text_Wvsnprintf(wchar_t *dest, int bufSize, int charset, const wchar_t *format, va_list args);
@@ -160,6 +162,7 @@ typedef enum {
     DXHANDLE_LUNACAMERA,
 #endif
     
+    DXHANDLE_MISC,
     DXHANDLE_END
 } HandleType;
 

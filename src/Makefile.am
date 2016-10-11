@@ -4,6 +4,8 @@ lib_LTLIBRARIES = libDxPortLib.la
 libDxPortLib_la_SOURCES =	\
   DPL/DPLCppWrapper.cpp \
   DPL/DPLText.c \
+  DPL/DPLInternal.h \
+  DPL/DPLWinINI.c \
 	DxLib/DxDraw.c \
 	DxLib/DxDXA.c \
 	DxLib/DxFile.c \

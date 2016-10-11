@@ -658,6 +658,33 @@ void PL_Text_StrLowerW(wchar_t *str) {
     }
 }
 
+int PL_Text_ReadLine(char *dest, int maxLen, const char **pSrc, int destEncoding, int srcEncoding) {
+    unsigned int ch;
+    char *start = dest;
+    char *end = start + maxLen - 1;
+    const char *src = *pSrc;
+    
+    while ((ch = PL_Text_ReadChar(&src, srcEncoding)) != 0) {
+        if (ch == '\r') {
+            const char *t = src;
+            ch = PL_Text_ReadChar(&src, srcEncoding);
+            if (ch != '\n') {
+                src = t;
+            }
+            break;
+        } else if (ch == '\n') {
+            break;
+        } else {
+            dest += PL_Text_WriteChar(dest, ch, end - dest, destEncoding);
+        }
+    }
+    
+    *pSrc = src;
+    
+    *dest = '\0';
+    return dest - start;
+}
+
 int PL_Text_IsIncompleteMultibyte(const char *string, int length, int charset) {
     switch(charset) {
 #ifndef DXPORTLIB_NO_SJIS

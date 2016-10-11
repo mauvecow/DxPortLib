@@ -34,6 +34,8 @@ namespace DPL {
     
 namespace Text { // DPL::Text
 
+int DPLCALL SetDefaultEncoding(int encoding);
+
 int DPLCALL ConvertStringEncoding(
     char *buffer, int bufferLength,
     const char *string,
@@ -50,6 +52,27 @@ int DPLCALL ConvertStringToWideChar(
     int srcEncoding = -1);
 
 } // namespace DPL::Text
+
+class WinINI {
+public:
+    WinINI();
+    WinINI(const char *inputFilename, int fileEncoding = -1);
+    ~WinINI();
+    
+    int ReadFile(const char *inputFilename, int fileEncoding = -1);
+    int WriteFile(const char *outputFilename, int fileEncoding = -1);
+    
+    int GetInt(const char *section, const char *name, int defaultValue);
+    const char *GetString(const char *section, const char *name, const char *defaultValue);
+    
+    int SetInt(const char *section, const char *name, int value);
+    int SetString(const char *section, const char *name, const char *value);
+    
+    int DeleteValue(const char *section, const char *name);
+    int DeleteSection(const char *section);
+private:
+    int m_handle;
+}; // class WinINI
 
 } // namespace DPL
 

@@ -21,11 +21,26 @@
 
 #include "DxPortLib_c.h"
 
+#include "PL/PLInternal.h"
+
+int g_dplDefaultEncoding = DPL_CHARSET_DEFAULT;
+
+int DPL_Text_SetDefaultEncoding(int encoding) {
+    g_dplDefaultEncoding = encoding;
+    return 0;
+}
+
 int DPL_Text_ConvertStringEncoding(
     char *buffer, int bufferLength,
     const char *string,
     int destEncoding, int srcEncoding)
 {
+    if (destEncoding <= DPL_CHARSET_DEFAULT) {
+        destEncoding = g_dplDefaultEncoding;
+    }
+    if (srcEncoding <= DPL_CHARSET_DEFAULT) {
+        srcEncoding = g_dplDefaultEncoding;
+    }
     return PL_Text_ConvertStrncpy(
             buffer, destEncoding,
             string, srcEncoding,
@@ -37,6 +52,9 @@ int DPL_Text_ConvertStringToChar(
     const wchar_t *string,
     int destEncoding)
 {
+    if (destEncoding <= DPL_CHARSET_DEFAULT) {
+        destEncoding = g_dplDefaultEncoding;
+    }
     return PL_Text_WideCharToString(buffer, destEncoding, string, bufferLength);
 }
 
@@ -45,5 +63,8 @@ int DPL_Text_ConvertStringToWideChar(
     const char *string,
     int srcEncoding)
 {
+    if (srcEncoding <= DPL_CHARSET_DEFAULT) {
+        srcEncoding = g_dplDefaultEncoding;
+    }
     return PL_Text_StringToWideChar(buffer, string, srcEncoding, bufferLength);
 }

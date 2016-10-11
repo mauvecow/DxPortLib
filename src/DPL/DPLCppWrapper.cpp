@@ -29,6 +29,12 @@
 
 namespace DPL {
 
+/* ---------------------------------------------------------------- Text */
+
+int Text::SetDefaultEncoding(int encoding) {
+    return DPL::Text::SetDefaultEncoding(encoding);
+}
+
 int Text::ConvertStringEncoding(
     char *buffer, int bufferLength,
     const char *string,
@@ -55,5 +61,48 @@ int Text::ConvertStringToWideChar(
     return DPL_Text_ConvertStringToWideChar(
         buffer, bufferLength, string, srcEncoding);
 }
+
+/* -------------------------------------------------------------- WinINI */
+
+WinINI::WinINI() {
+    m_handle = DPL_WinINI_Create();
+}
+WinINI::WinINI(const char *inputFilename, int fileEncoding) {
+    m_handle = DPL_WinINI_Create();
+    ReadFile(inputFilename, fileEncoding);
+}
+
+WinINI::~WinINI() {
+    DPL_WinINI_Release(m_handle);
+}
+
+int WinINI::ReadFile(const char *filename, int fileEncoding) {
+    return DPL_WinINI_ReadFile(m_handle, filename, fileEncoding);
+}
+int WinINI::WriteFile(const char *filename, int fileEncoding) {
+    return DPL_WinINI_WriteFile(m_handle, filename, fileEncoding);
+}
+
+int WinINI::GetInt(const char *section, const char *name, int defaultValue) {
+    return DPL_WinINI_GetInt(m_handle, section, name, defaultValue);
+}
+const char *WinINI::GetString(const char *section, const char *name, const char *defaultValue) {
+    return DPL_WinINI_GetString(m_handle, section, name, defaultValue);
+}
+
+int WinINI::SetInt(const char *section, const char *name, int value) {
+    return DPL_WinINI_SetInt(m_handle, section, name, value);
+}
+int WinINI::SetString(const char *section, const char *name, const char *value) {
+    return DPL_WinINI_SetString(m_handle, section, name, value);
+}
+
+int WinINI::DeleteValue(const char *section, const char *name) {
+    return DPL_WinINI_DeleteValue(m_handle, section, name);
+}
+int WinINI::DeleteSection(const char *section) {
+    return DPL_WinINI_DeleteSection(m_handle, section);
+}
+
 
 } // namespace DPL

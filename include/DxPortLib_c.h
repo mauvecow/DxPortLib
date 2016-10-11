@@ -39,20 +39,44 @@
 extern "C" {
 #endif
 
-int DPLCALL DPL_Text_ConvertStringEncoding(
+extern int DPLCALL DPL_Text_SetDefaultEncoding(int encoding);
+
+extern int DPLCALL DPL_Text_ConvertStringEncoding(
     char *buffer, int bufferLength,
     const char *string,
     int destEncoding, int srcEncoding);
 
-int DPLCALL DPL_Text_ConvertStringToChar(
+extern int DPLCALL DPL_Text_ConvertStringToChar(
     char *buffer, int bufferLength,
     const wchar_t *string,
     int destEncoding);
 
-int DPLCALL DPL_Text_ConvertStringToWideChar(
+extern int DPLCALL DPL_Text_ConvertStringToWideChar(
     wchar_t *buffer, int bufferLength,
     const char *string,
     int srcEncoding);
+
+extern DPLCALL int DPL_WinINI_Create();
+extern DPLCALL int DPL_WinINI_CreateAndReadFile(
+    const char *filename, int fileEncoding);
+extern DPLCALL int DPL_WinINI_ReadFile(
+    int handle, const char *filename, int fileEncoding);
+extern DPLCALL int DPL_WinINI_WriteFile(
+    int handle, const char *filename, int fileEncoding);
+extern DPLCALL int DPL_WinINI_Release(
+    int handle);
+extern DPLCALL int DPL_WinINI_GetInt(
+    int handle, const char *sectionName, const char *name, int defaultValue);
+extern DPLCALL const char *DPL_WinINI_GetString(
+    int handle, const char *sectionName, const char *name, const char *defaultValue);
+extern DPLCALL int DPL_WinINI_SetInt(
+    int handle, const char *sectionName, const char *name, int value);
+extern DPLCALL int DPL_WinINI_SetString(
+    int handle, const char *sectionName, const char *name, const char *value);
+extern DPLCALL int DPL_WinINI_DeleteValue(
+    int handle, const char *sectionName, const char *name);
+extern DPLCALL int DPL_WinINI_DeleteSection(
+    int handle, const char *sectionName);
 
 #ifdef __cplusplus
 } /* extern "C" */
