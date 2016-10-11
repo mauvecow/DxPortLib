@@ -55,21 +55,23 @@ int DPLCALL ConvertStringToWideChar(
 
 class WinINI {
 public:
-    WinINI();
-    WinINI(const char *inputFilename, int fileEncoding = -1);
-    ~WinINI();
+    DPLCALL WinINI();
+    DPLCALL WinINI(const char *inputFilename, int fileEncoding = -1);
+    DPLCALL ~WinINI();
     
-    int ReadFile(const char *inputFilename, int fileEncoding = -1);
-    int WriteFile(const char *outputFilename, int fileEncoding = -1);
+    DPLCALL int Clear();
     
-    int GetInt(const char *section, const char *name, int defaultValue);
-    const char *GetString(const char *section, const char *name, const char *defaultValue);
+    DPLCALL int ReadFile(const char *inputFilename, int fileEncoding = -1);
+    DPLCALL int WriteFile(const char *outputFilename, int fileEncoding = -1);
     
-    int SetInt(const char *section, const char *name, int value);
-    int SetString(const char *section, const char *name, const char *value);
+    DPLCALL int GetInt(const char *section, const char *name, int defaultValue);
+    DPLCALL const char * GetString(const char *section, const char *name, const char *defaultValue);
     
-    int DeleteValue(const char *section, const char *name);
-    int DeleteSection(const char *section);
+    DPLCALL int SetInt(const char *section, const char *name, int value);
+    DPLCALL int SetString(const char *section, const char *name, const char *value);
+    
+    DPLCALL int DeleteValue(const char *section, const char *name);
+    DPLCALL int DeleteSection(const char *section);
 private:
     int m_handle;
 }; // class WinINI

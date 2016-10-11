@@ -43,7 +43,7 @@ typedef struct s_Section_t {
 } s_Section_t;
 
 typedef struct s_WinINI_t {
-    uint32_t ID;
+    uint32_t id;
     
     s_Section_t *sections;
 } s_WinINI_t;
@@ -51,7 +51,7 @@ typedef struct s_WinINI_t {
 static s_WinINI_t *s_GetFromHandle(int handle) {
     s_WinINI_t *ini = (s_WinINI_t *)PL_Handle_GetData(handle, DXHANDLE_MISC);
     if (ini != NULL) {
-        if (ini->ID != s_wininiID) {
+        if (ini->id != s_wininiID) {
             return NULL;
         }
     }
@@ -290,7 +290,17 @@ static int s_ParseText(s_WinINI_t *ini, const char *data, int fileEncoding) {
 }
 
 int DPL_WinINI_Create() {
-    return -1;
+    s_WinINI_t *ini;
+    int handle = PL_Handle_AcquireID(DXHANDLE_MISC);
+    if (handle <= 0) {
+        return -1;
+    }
+    
+    ini = (s_WinINI_t *)PL_Handle_AllocateData(handle, sizeof(s_WinINI_t));
+    ini->id = s_wininiID;
+    ini->sections = NULL;
+    
+    return handle;
 }
 
 int DPL_WinINI_CreateAndReadFile(const char *filename, int fileEncoding) {
@@ -383,6 +393,23 @@ int DPL_WinINI_Release(int handle) {
         return -1;
     }
     
+    DPL_WinINI_Clear(handle);
+    
+    PL_Handle_ReleaseID(handle, DPLTRUE);
+    
+    return 0;
+}
+
+int DPL_WinINI_Clear(int handle) {
+    s_WinINI_t *ini = s_GetFromHandle(handle);
+    if (ini == NULL) {
+        return -1;
+    }
+    
+    while (ini->sections != NULL) {
+        s_DeleteSection(ini->sections, ini, NULL);
+    }
+    
     return 0;
 }
 
@@ -391,7 +418,7 @@ int DPL_WinINI_GetInt(int handle, const char *sectionName, const char *name, int
     s_Section_t *section;
     
     if (ini == NULL) {
-        return -1;
+        return defaultValue;
     }
     
     section = s_FindSection(ini, sectionName, DPLFALSE, NULL);
@@ -413,7 +440,7 @@ const char *DPL_WinINI_GetString(int handle, const char *sectionName, const char
     s_Section_t *section;
     
     if (ini == NULL) {
-        return NULL;
+        return defaultValue;
     }
     
     section = s_FindSection(ini, sectionName, DPLFALSE, NULL);

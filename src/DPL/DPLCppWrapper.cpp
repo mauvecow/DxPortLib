@@ -76,7 +76,15 @@ WinINI::~WinINI() {
     DPL_WinINI_Release(m_handle);
 }
 
+int WinINI::Clear() {
+    return DPL_WinINI_Clear(m_handle);
+}
+
 int WinINI::ReadFile(const char *filename, int fileEncoding) {
+    if (m_handle <= 0) {
+        m_handle = DPL_WinINI_Create();
+    }
+    
     return DPL_WinINI_ReadFile(m_handle, filename, fileEncoding);
 }
 int WinINI::WriteFile(const char *filename, int fileEncoding) {
