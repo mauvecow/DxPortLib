@@ -44,11 +44,11 @@ static int SDLCALL PLSDL2_RWops_Seek(void *userdata, int64_t position, int origi
 }
 static int SDLCALL PLSDL2_RWops_Read(void *userdata, void *data, int size) {
     SDL_RWops *rwops = (SDL_RWops *)userdata;
-    return SDL_RWread(rwops, data, (size_t)size, 1) * size;
+    return SDL_RWread(rwops, data, 1, (size_t)size);
 }
 static int SDLCALL PLSDL2_RWops_Write(void *userdata, void *data, int size) {
     SDL_RWops *rwops = (SDL_RWops *)userdata;
-    return SDL_RWwrite(rwops, data, (size_t)size, 1) * size;
+    return SDL_RWwrite(rwops, data, 1, (size_t)size);
 }
 static int SDLCALL PLSDL2_RWops_Close(void *userdata) {
     SDL_RWops *rwops = (SDL_RWops *)userdata;
