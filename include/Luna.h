@@ -570,7 +570,7 @@ public:
                           Sint32 AngleX, Sint32 AngleY, Sint32 AngleZ);
     static LUNACALL Sint32 EXTGetCharaRect(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 *x1, Sint32 *y1, Sint32 *x2, Sint32 *y2,
-                          Sint32 *advance = 0);
+                          Sint32 *advance = 0, Sint32 *xOffset = 0);
 };
 
 /* ----------------------------------------------------------- Luna3D.cpp */

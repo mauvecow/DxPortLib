@@ -403,7 +403,7 @@ Bool LunaFontSprite::GetWidth(LFONTSPRITE lFontSpr, const char *pStr,
 }
 
 Sint32 LunaFontSprite::EXTGetCharaRect(LFONTSPRITE lFontSpr, const char *pStr,
-    Sint32 *x1, Sint32 *y1, Sint32 *x2, Sint32 *y2, Sint32 *advance)
+    Sint32 *x1, Sint32 *y1, Sint32 *x2, Sint32 *y2, Sint32 *advance, Sint32 *xOffset)
 {
     // barf
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
@@ -436,6 +436,9 @@ Sint32 LunaFontSprite::EXTGetCharaRect(LFONTSPRITE lFontSpr, const char *pStr,
     }
     if (advance != 0) {
         *advance = entry->pAdvance;
+    }
+    if (xOffset != 0) {
+        *xOffset = entry->xOffset;
     }
     
     if (ch < 256 || (ch >= 0xff00 && ch < 0xffff)) {
