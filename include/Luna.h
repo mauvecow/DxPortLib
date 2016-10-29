@@ -568,8 +568,9 @@ public:
     static LUNACALL Sint32 DrawCharaRotateXYZ(LFONTSPRITE lFontSpr, const char *pStr,
                           CLunaRect *pDst, Float Pz, D3DCOLOR Color,
                           Sint32 AngleX, Sint32 AngleY, Sint32 AngleZ);
-    static LUNACALL Sint32 EXTGetCharaSize(LFONTSPRITE lFontSpr, const char *pStr,
-                          Sint32 *w, Sint32 *h);
+    static LUNACALL Sint32 EXTGetCharaRect(LFONTSPRITE lFontSpr, const char *pStr,
+                          Sint32 *x1, Sint32 *y1, Sint32 *x2, Sint32 *y2,
+                          Sint32 *advance = 0);
 };
 
 /* ----------------------------------------------------------- Luna3D.cpp */

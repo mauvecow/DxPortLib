@@ -402,8 +402,8 @@ Bool LunaFontSprite::GetWidth(LFONTSPRITE lFontSpr, const char *pStr,
     return false;
 }
 
-Sint32 LunaFontSprite::EXTGetCharaSize(LFONTSPRITE lFontSpr, const char *pStr,
-                      Sint32 *w, Sint32 *h)
+Sint32 LunaFontSprite::EXTGetCharaRect(LFONTSPRITE lFontSpr, const char *pStr,
+    Sint32 *x1, Sint32 *y1, Sint32 *x2, Sint32 *y2, Sint32 *advance)
 {
     // barf
     LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
@@ -422,8 +422,21 @@ Sint32 LunaFontSprite::EXTGetCharaSize(LFONTSPRITE lFontSpr, const char *pStr,
     }
     
     const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
-    *w = entry->x2 - entry->x1;
-    *h = entry->y2 - entry->y1;
+    if (x1 != 0) {
+        *x1 = entry->x1;
+    }
+    if (y1 != 0) {
+        *y1 = entry->y1;
+    }
+    if (x2 != 0) {
+        *x2 = entry->x2;
+    }
+    if (y2 != 0) {
+        *y2 = entry->y2;
+    }
+    if (advance != 0) {
+        *advance = entry->pAdvance;
+    }
     
     if (ch < 256 || (ch >= 0xff00 && ch < 0xffff)) {
         return 1; // Half-width
