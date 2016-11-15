@@ -19,6 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
  */
 
+/* This honestly all needs to be rewritten entirely, with the following goals:
+ * - Platform independence, no requirement for SDL2 (support OpenAL!)
+ * - Just an interface, implementation details go elsewhere.
+ * - Audio sources become split up, ogg code gets split off into its own
+ *   AUdioStream type.
+ */
+
 #include "DPLBuildConfig.h"
 
 #ifndef DXPORTLIB_NO_SOUND
