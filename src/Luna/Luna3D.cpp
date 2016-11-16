@@ -57,8 +57,15 @@ static void s_UpdateRenderTexture() {
         if (s_renderTexture < 0) {
             PL_Window_BindMainFramebuffer();
             Luna3D::SetViewport(NULL);
+            
+            // Force reset ZBuffer state, in case something else modified it.
+            Luna3D::SetZBufferEnable(s_depthRead);
+            Luna3D::SetZWriteEnable(s_depthWrite);
+            PLG.SetDepthFunc(PL_DEPTHFUNC_LEQUAL);
+            PLG.Clear((PLClearType) PL_CLEAR_DEPTH); // I do not know why I have to do this, but it's necessary.
+            
         } else {
-            PLG.Texture_BindFramebuffer(s_renderTexture, s_renderbufferID);
+            PLG.Texture_BindFramebuffer(s_renderTexture, -1);
             
             PLRect txr;
             PLG.Texture_RenderGetTextureInfo(s_renderTexture, &txr, NULL, NULL);
@@ -66,12 +73,6 @@ static void s_UpdateRenderTexture() {
             RECT r = { 0, 0, txr.w, txr.h };
             Luna3D::SetViewport(&r);
         }
-        
-        // Force reset ZBuffer state, in case something else modified it.
-        Luna3D::SetZBufferEnable(s_depthRead);
-        Luna3D::SetZWriteEnable(s_depthWrite);
-        PLG.SetDepthFunc(PL_DEPTHFUNC_LEQUAL);
-        PLG.Clear((PLClearType) (PL_CLEAR_DEPTH)); // I do not know why I have to do this, but it's necessary.
         
         s_prevRenderTexture = s_renderTexture;
     }
