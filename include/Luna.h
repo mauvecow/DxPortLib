@@ -575,6 +575,7 @@ public:
 
 /* ----------------------------------------------------------- LunaSurface.cpp */
 class LunaSurface {
+public:
     static LUNACALL LSURFACE CreateDepthStencil(Uint32 width, Uint32 height,
                                 eSurfaceFormat format);
     static LUNACALL void Release(LSURFACE lSurface);

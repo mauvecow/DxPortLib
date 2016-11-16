@@ -390,6 +390,22 @@ typedef enum _PresetProgramFlags {
     PL_PRESETFLAG_ALPHATEST_MASK = (7 << PL_PRESETFLAG_ALPHATEST_SHIFT)
 } PresetProgramFlags;
 
+typedef enum _PLClearType {
+    PL_CLEAR_NONE = 0,
+    PL_CLEAR_COLOR = (1 << 0),
+    PL_CLEAR_DEPTH = (1 << 1)
+} PLClearType;
+
+typedef enum _PLDepthFunc {
+    PL_DEPTHFUNC_NONE = 0,
+    PL_DEPTHFUNC_LESS = 1,
+    PL_DEPTHFUNC_LEQUAL = 2,
+    PL_DEPTHFUNC_EQUAL = 3,
+    PL_DEPTHFUNC_GEQUAL = 4,
+    PL_DEPTHFUNC_GREATER = 5,
+    PL_DEPTHFUNC_NOTEQUAL = 6,
+} PLDepthFunc;
+
 typedef struct _PLIGraphics {
     void (*SetBlendMode)(
                 int blendEquation,
@@ -405,6 +421,7 @@ typedef struct _PLIGraphics {
     int (*DisableScissor)();
 
     int (*DisableCulling)();
+    int (*SetDepthFunc)(PLDepthFunc depthFunc);
     int (*EnableDepthTest)();
     int (*DisableDepthTest)();
     int (*EnableDepthWrite)();
@@ -481,8 +498,9 @@ typedef struct _PLIGraphics {
     int (*SetZRange)(float nearZ, float farZ);
     int (*SetUntransformedFlag)(int untransformedFlag);
 
+    int (*ClearDepth)(float depth);
     int (*ClearColor)(float r, float g, float b, float a);
-    int (*Clear)();
+    int (*Clear)(PLClearType clearType);
     
     int (*Finish)();
 

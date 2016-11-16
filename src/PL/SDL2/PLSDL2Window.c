@@ -108,10 +108,10 @@ void PL_Window_ResizeBuffer(int width, int height) {
     PLG.ClearColor(0, 0, 0, 1);
     
     PLG.Texture_BindFramebuffer(s_screenFrameBufferB, -1);
-    PLG.Clear();
+    PLG.Clear(PL_CLEAR_COLOR);
     
     PLG.Texture_BindFramebuffer(s_screenFrameBufferA, s_defaultRenderbufferID);
-    PLG.Clear();
+    PLG.Clear(PL_CLEAR_COLOR);
 }
 
 int PL_Window_GetFramebuffer() {
@@ -221,6 +221,7 @@ static void PL_Window_Refresh() {
     PLG.Texture_BindFramebuffer(-1, -1);
     
     PLG.DisableDepthTest();
+    PLG.DisableDepthWrite();
     PLG.DisableCulling();
     PLG.DisableScissor();
     
@@ -229,7 +230,7 @@ static void PL_Window_Refresh() {
     
     if (PL_drawOffscreen == DXTRUE) {
         PLG.ClearColor(0, 0, 0, 1);
-        PLG.Clear();
+        PLG.Clear(PL_CLEAR_COLOR);
         
         PLG.DisableBlend();
         
@@ -311,7 +312,7 @@ int PL_Window_Init(void) {
     PL_Window_ResizeBuffer(PL_windowWidth, PL_windowHeight);
     PL_Window_HandleResize(PL_windowWidth, PL_windowHeight);
     PLG.ClearColor(0, 0, 0, 1);
-    PLG.Clear();
+    PLG.Clear(PL_CLEAR_COLOR);
     
     s_windowRealWidth = 0;
     s_windowRealHeight = 0;

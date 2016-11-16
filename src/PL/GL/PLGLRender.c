@@ -140,6 +140,24 @@ int PLGL_DisableCulling() {
     return 0;
 }
 
+int PLGL_SetDepthFunc(PLDepthFunc depthFunc) {
+    GLenum func;
+    switch(depthFunc) {
+        case PL_DEPTHFUNC_NONE: func = GL_NONE; break;
+        case PL_DEPTHFUNC_LESS: func = GL_LESS; break;
+        case PL_DEPTHFUNC_LEQUAL: func = GL_LEQUAL; break;
+        case PL_DEPTHFUNC_EQUAL: func = GL_EQUAL; break;
+        case PL_DEPTHFUNC_GEQUAL: func = GL_GEQUAL; break;
+        case PL_DEPTHFUNC_GREATER: func = GL_GREATER; break;
+        case PL_DEPTHFUNC_NOTEQUAL: func = GL_NOTEQUAL; break;
+        default: return -1;
+    }
+    
+    PL_GL.glDepthFunc(func);
+    
+    return 0;
+}
+
 int PLGL_EnableDepthTest() {
     PL_GL.glEnable(GL_DEPTH_TEST);
     return 0;
@@ -549,13 +567,27 @@ int PLGL_DrawVertexIndexBuffer(const VertexDefinition *def,
 
 /* ------------------------------------------------- INIT/FINISH/GENERAL */
 
+int PLGL_ClearDepth(float d) {
+    PL_GL.glClearDepth(d);
+    return 0;
+}
+
 int PLGL_ClearColor(float r, float g, float b, float a) {
     PL_GL.glClearColor(r, g, b, a);
     return 0;
 }
 
-int PLGL_Clear() {
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+int PLGL_Clear(PLClearType clearType) {
+    GLbitfield flags = 0;
+    if ((clearType & PL_CLEAR_COLOR) != 0) {
+        flags |= GL_COLOR_BUFFER_BIT;
+    }
+    if ((clearType & PL_CLEAR_DEPTH) != 0) {
+        flags |= GL_DEPTH_BUFFER_BIT;
+    }
+    
+    PL_GL.glClear(flags);
+    PL_GL.glDepthFunc(GL_LEQUAL);
     
     return 0;
 }

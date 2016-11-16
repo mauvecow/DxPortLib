@@ -1075,10 +1075,10 @@ int Dx_Draw_ClearDrawScreen(const RECT *rect) {
     PLG.ClearColor(s_bgColorR / 255.0f, s_bgColorG / 255.0f, s_bgColorB / 255.0f, 1.0f);
     if (rect == NULL) {
         PLG.DisableScissor();
-        PLG.Clear();
+        PLG.Clear(PL_CLEAR_DEPTH | PL_CLEAR_COLOR);
     } else {
         PLG.SetScissor(rect->left, rect->top, rect->right - rect->left, rect->bottom - rect->top);
-        PLG.Clear();
+        PLG.Clear(PL_CLEAR_DEPTH | PL_CLEAR_COLOR);
     }
     
     s_RefreshScissor();

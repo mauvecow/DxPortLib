@@ -81,6 +81,7 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PL_GL.glTexSubImage2D = GetGLFunction("glTexSubImage2D");
     PL_GL.glReadPixels = GetGLFunction("glReadPixels");
     
+    PL_GL.glClearDepth = GetGLFunction("glClearDepth");
     PL_GL.glClearColor = GetGLFunction("glClearColor");
     PL_GL.glClear = GetGLFunction("glClear");
     
@@ -280,6 +281,7 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PLG.SetScissorRect = PLGL_SetScissorRect;
     PLG.DisableScissor = PLGL_DisableScissor;
     PLG.DisableCulling = PLGL_DisableCulling;
+    PLG.SetDepthFunc = PLGL_SetDepthFunc;
     PLG.EnableDepthTest = PLGL_EnableDepthTest;
     PLG.DisableDepthTest = PLGL_DisableDepthTest;
     PLG.EnableDepthWrite = PLGL_EnableDepthWrite;
@@ -324,6 +326,7 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PLG.DrawVertexIndexBuffer = PLGL_DrawVertexIndexBuffer;
     PLG.SetViewport = PLGL_SetViewport;
     PLG.SetZRange = PLGL_SetZRange;
+    PLG.ClearDepth = PLGL_ClearDepth;
     PLG.ClearColor = PLGL_ClearColor;
     PLG.Clear = PLGL_Clear;
     PLG.Finish = PLGL_Finish;

@@ -94,6 +94,7 @@ typedef struct GLInfo_t {
                                    GLvoid *pixels );
 
     /* Drawing functions */
+    void (APIENTRY *glClearDepth)( GLclampd depth );
     void (APIENTRY *glClearColor)( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha );
     void (APIENTRY *glClear)( GLbitfield mask );
     
@@ -267,6 +268,9 @@ extern int PLGL_SetScissorRect(const RECT *rect);
 extern int PLGL_DisableScissor();
 
 extern int PLGL_DisableCulling();
+
+extern int PLGL_SetDepthFunc(PLDepthFunc depthFunc);
+extern int PLGL_ClearDepth(float depth);
 extern int PLGL_EnableDepthTest();
 extern int PLGL_DisableDepthTest();
 extern int PLGL_EnableDepthWrite();
@@ -302,7 +306,7 @@ extern int PLGL_SetViewport(int x, int y, int w, int h);
 extern int PLGL_SetZRange(float nearZ, float farZ);
 
 extern int PLGL_ClearColor(float r, float g, float b, float a);
-extern int PLGL_Clear();
+extern int PLGL_Clear(PLClearType clearType);
 
 extern int PLGL_StartFrame();
 extern int PLGL_EndFrame();

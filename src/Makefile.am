@@ -25,6 +25,7 @@ libDxPortLib_la_SOURCES =	\
 	Luna/LunaRand.cpp \
 	Luna/LunaSound.cpp \
 	Luna/LunaSprite.cpp \
+  Luna/LunaSurface.cpp \
 	Luna/LunaTexture.cpp \
 	Luna/LunaVecMath.cpp \
 	PL/PLAudio.c \

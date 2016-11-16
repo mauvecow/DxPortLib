@@ -68,6 +68,7 @@ static void s_UpdateRenderTexture() {
         // Force reset ZBuffer state, in case something else modified it.
         Luna3D::SetZBufferEnable(s_depthRead);
         Luna3D::SetZWriteEnable(s_depthWrite);
+        PLG.SetDepthFunc(PL_DEPTHFUNC_LEQUAL);
         
         s_prevRenderTexture = s_renderTexture;
     }
@@ -274,13 +275,22 @@ void Luna3D::Clear(Uint32 ClearFlags, D3DCOLOR Color, Float Depth,
     if ((ClearFlags & D3DCLEAR_TARGET) != 0) {
         s_UpdateRenderTexture();
         
-        PLG.ClearColor(
-            ((Color >> 16) & 0xff) / 255.0f,
-            ((Color >> 8) & 0xff) / 255.0f,
-            ((Color >> 0) & 0xff) / 255.0f,
-            ((Color >> 24) & 0xff) / 255.0f
-        );
-        PLG.Clear();
+        PLClearType flags = PL_CLEAR_NONE;
+        if ((ClearFlags & D3DCLEAR_TARGET) != 0) {
+            flags = (PLClearType)(flags | PL_CLEAR_DEPTH);
+            PLG.ClearDepth(Depth);
+        }
+        if ((ClearFlags & D3DCLEAR_ZBUFFER) != 0) {
+            flags = (PLClearType)(flags | PL_CLEAR_COLOR);
+            PLG.ClearColor(
+                ((Color >> 16) & 0xff) / 255.0f,
+                ((Color >> 8) & 0xff) / 255.0f,
+                ((Color >> 0) & 0xff) / 255.0f,
+                ((Color >> 24) & 0xff) / 255.0f
+            );
+        }
+        
+        PLG.Clear(flags);
     }
 }
 

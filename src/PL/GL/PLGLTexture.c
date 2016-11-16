@@ -702,7 +702,7 @@ int PLGL_Renderbuffer_Create(int width, int height) {
         return -1;
     }
     
-    info = (RenderbufferInfo *)PL_Handle_GetData(renderbufferID, DXHANDLE_RENDERBUFFER);
+    info = (RenderbufferInfo *)PL_Handle_AllocateData(renderbufferID, sizeof(RenderbufferInfo));
     PL_GL.glGenRenderbuffers(1, &info->renderbufferID);
     PL_GL.glBindRenderbuffer(GL_RENDERBUFFER, info->renderbufferID);
     PL_GL.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
