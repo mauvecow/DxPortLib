@@ -587,7 +587,6 @@ int PLGL_Clear(PLClearType clearType) {
     }
     
     PL_GL.glClear(flags);
-    PL_GL.glDepthFunc(GL_LEQUAL);
     
     return 0;
 }
