@@ -1162,7 +1162,7 @@ int Dx_Draw_UpdateDrawScreen() {
             PLG.StartFrame();
         }
         s_currentScreenID = s_drawScreenID;
-        PLG.Texture_BindFramebuffer(s_drawScreenID);
+        PLG.Texture_BindFramebuffer(s_drawScreenID, -1);
         
         if (s_currentScreenID >= 0) {
             PLRect screenRect;

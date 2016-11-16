@@ -55,6 +55,8 @@ static int s_mouseVisible = DXTRUE;
 static int s_screenFrameBufferA = -1;
 static int s_screenFrameBufferB = -1;
 
+static int s_defaultRenderbufferID = -1;
+
 int PL_drawScreenWidth = -1;
 int PL_drawScreenHeight = -1;
 
@@ -105,10 +107,10 @@ void PL_Window_ResizeBuffer(int width, int height) {
     
     PLG.ClearColor(0, 0, 0, 1);
     
-    PLG.Texture_BindFramebuffer(s_screenFrameBufferB);
+    PLG.Texture_BindFramebuffer(s_screenFrameBufferB, -1);
     PLG.Clear();
     
-    PLG.Texture_BindFramebuffer(s_screenFrameBufferA);
+    PLG.Texture_BindFramebuffer(s_screenFrameBufferA, s_defaultRenderbufferID);
     PLG.Clear();
 }
 
@@ -216,7 +218,7 @@ static void PL_Window_Refresh() {
     }
     
     /* Set up the main screen for drawing. */
-    PLG.Texture_BindFramebuffer(-1);
+    PLG.Texture_BindFramebuffer(-1, -1);
     
     PLG.DisableDepthTest();
     PLG.DisableCulling();
@@ -261,7 +263,12 @@ static void s_UpdateScreenInfo() {
 }
 
 int PL_Window_BindMainFramebuffer() {
-    PLG.Texture_BindFramebuffer(s_screenFrameBufferA);
+    PLG.Texture_BindFramebuffer(s_screenFrameBufferA, s_defaultRenderbufferID);
+    return 0;
+}
+
+int PL_Window_SetDefaultRenderbuffer(int renderbufferID) {
+    s_defaultRenderbufferID = renderbufferID;
     return 0;
 }
 

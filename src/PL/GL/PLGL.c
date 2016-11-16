@@ -103,6 +103,8 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
 #endif
     PL_GL.glDepthRange = GetGLFunction("glDepthRange");
     PL_GL.glDepthRangef = GetGLFunction("glDepthRangef");
+    PL_GL.glDepthFunc = GetGLFunction("glDepthFunc");
+    PL_GL.glDepthMask = GetGLFunction("glDepthMask");
     
     PL_GL.glViewport = GetGLFunction("glViewport");
     PL_GL.glScissor = GetGLFunction("glScissor");
@@ -116,24 +118,18 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PL_GL.glTexCoordPointer = GetGLFunction("glTexCoordPointer");
 #endif
     
-    PL_GL.glGenBuffers = GetGLFunction("glGenBuffers");
-    PL_GL.glDeleteBuffers = GetGLFunction("glDeleteBuffers");
-    PL_GL.glBufferData = GetGLFunction("glBufferData");
-    PL_GL.glBufferSubData = GetGLFunction("glBufferSubData");
-    
-    PL_GL.glBindBuffer = GetGLFunction("glBindBuffer");
+    if (majorVersion > 1 || (majorVersion == 1 && minorVersion >= 5)) {
+        PL_GL.glGenBuffers = GetGLFunction("glGenBuffers");
+        PL_GL.glDeleteBuffers = GetGLFunction("glDeleteBuffers");
+        PL_GL.glBufferData = GetGLFunction("glBufferData");
+        PL_GL.glBufferSubData = GetGLFunction("glBufferSubData");
+        
+        PL_GL.glBindBuffer = GetGLFunction("glBindBuffer");
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
-    PL_GL.glMapBuffer = GetGLFunction("glMapBuffer");
-    PL_GL.glUnmapBuffer = GetGLFunction("glUnmapBuffer");
+        PL_GL.glMapBuffer = GetGLFunction("glMapBuffer");
+        PL_GL.glUnmapBuffer = GetGLFunction("glUnmapBuffer");
 #endif
-    
-    if (PL_GL.glGenBuffers != 0 && PL_GL.glDeleteBuffers != 0
-        && PL_GL.glBufferData != 0 && PL_GL.glBufferSubData != 0
-        && PL_GL.glBindBuffer != 0
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
-        && PL_GL.glMapBuffer != 0 && PL_GL.glUnmapBuffer != 0
-#endif
-    ) {
+
         PL_GL.hasVBOSupport = DXTRUE;
         s_debugPrint("s_LoadGL: has VBO support");
     }
@@ -152,17 +148,18 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     }
 #endif
 
-    PL_GL.glFramebufferTexture2D = GetGLFunction("glFramebufferTexture2D");
-    PL_GL.glBindFramebuffer = GetGLFunction("glBindFramebuffer");
-    PL_GL.glDeleteFramebuffers = GetGLFunction("glDeleteFramebuffers");
-    PL_GL.glGenFramebuffers = GetGLFunction("glGenFramebuffers");
-    PL_GL.glCheckFramebufferStatus = GetGLFunction("glCheckFramebufferStatus");
-    
-    if (PL_GL.glFramebufferTexture2D != 0 && PL_GL.glBindFramebuffer != 0
-        && PL_GL.glDeleteFramebuffers != 0 && PL_GL.glGenFramebuffers != 0
-        && PL_GL.glCheckFramebufferStatus != 0
-    ) {
+    if (majorVersion >= 3) {
         PL_GL.hasFramebufferSupport = DXTRUE;
+        PL_GL.glFramebufferTexture2D = GetGLFunction("glFramebufferTexture2D");
+        PL_GL.glBindFramebuffer = GetGLFunction("glBindFramebuffer");
+        PL_GL.glDeleteFramebuffers = GetGLFunction("glDeleteFramebuffers");
+        PL_GL.glGenFramebuffers = GetGLFunction("glGenFramebuffers");
+        PL_GL.glCheckFramebufferStatus = GetGLFunction("glCheckFramebufferStatus");
+        PL_GL.glFramebufferRenderbuffer = SDL_GL_GetProcAddress("glFramebufferRenderbuffer");
+        PL_GL.glGenRenderbuffers = SDL_GL_GetProcAddress("glGenRenderbuffers");
+        PL_GL.glDeleteRenderbuffers = SDL_GL_GetProcAddress("glDeleteRenderbuffers");
+        PL_GL.glBindRenderbuffer = SDL_GL_GetProcAddress("glBindRenderbuffer");
+        PL_GL.glRenderbufferStorage = SDL_GL_GetProcAddress("glRenderbufferStorage");
         s_debugPrint("s_LoadGL: has framebuffer support");
     }
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
@@ -174,6 +171,11 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
         PL_GL.glDeleteFramebuffers = GetGLFunction("glDeleteFramebuffersEXT");
         PL_GL.glGenFramebuffers = GetGLFunction("glGenFramebuffersEXT");
         PL_GL.glCheckFramebufferStatus = GetGLFunction("glCheckFramebufferStatusEXT");
+        PL_GL.glFramebufferRenderbuffer = SDL_GL_GetProcAddress("glFramebufferRenderbufferEXT");
+        PL_GL.glGenRenderbuffers = SDL_GL_GetProcAddress("glGenRenderbuffersEXT");
+        PL_GL.glDeleteRenderbuffers = SDL_GL_GetProcAddress("glDeleteRenderbuffersEXT");
+        PL_GL.glBindRenderbuffer = SDL_GL_GetProcAddress("glBindRenderbufferEXT");
+        PL_GL.glRenderbufferStorage = SDL_GL_GetProcAddress("glRenderbufferStorageEXT");
         s_debugPrint("s_LoadGL: using GL_EXT_framebuffer_object");
     }
 #endif
@@ -278,7 +280,10 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PLG.SetScissorRect = PLGL_SetScissorRect;
     PLG.DisableScissor = PLGL_DisableScissor;
     PLG.DisableCulling = PLGL_DisableCulling;
+    PLG.EnableDepthTest = PLGL_EnableDepthTest;
     PLG.DisableDepthTest = PLGL_DisableDepthTest;
+    PLG.EnableDepthWrite = PLGL_EnableDepthWrite;
+    PLG.DisableDepthWrite = PLGL_DisableDepthWrite;
     
     PLG.SetPresetProgram = PLGL_SetPresetProgram;
     PLG.ClearPresetProgram = PLGL_ClearPresetProgram;
@@ -309,6 +314,9 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PLG.Texture_BindFramebuffer = PLGL_Texture_BindFramebuffer;
     PLG.Texture_AddRef = PLGL_Texture_AddRef;
     PLG.Texture_Release = PLGL_Texture_Release;
+    
+    PLG.Renderbuffer_Create = PLGL_Renderbuffer_Create;
+    PLG.Renderbuffer_Release = PLGL_Renderbuffer_Release;
     
     PLG.DrawVertexArray = PLGL_DrawVertexArray;
     PLG.DrawVertexIndexArray = PLGL_DrawVertexIndexArray;

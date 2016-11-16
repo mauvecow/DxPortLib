@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -29,6 +29,9 @@
 
 /* --------------------------------------------------------- Framebuffers */
 
+int s_boundFramebufferID = -1;
+int s_boundRenderbufferID = -1;
+
 /* Framebuffers are reused when it is possible to do so, so we
  * refcount instead.
  */
@@ -41,12 +44,30 @@ typedef struct FramebufferInfo {
     int refCount;
 } FramebufferInfo;
 
-static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textureID) {
+typedef struct RenderbufferInfo {
+    GLuint renderbufferID;
+    
+    int width;
+    int height;
+    
+    int refCount;
+} RenderbufferInfo;
+
+static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textureID, int renderbufferID) {
     FramebufferInfo *info;
     
     if (PL_GL.hasFramebufferSupport == DXFALSE) {
         return -1;
     }
+    
+    if (handleID == s_boundFramebufferID && renderbufferID == s_boundRenderbufferID) {
+        return 0;
+    }
+    
+    PLGL_Texture_Release(s_boundFramebufferID);
+    PLGL_Renderbuffer_Release(s_boundRenderbufferID);
+    s_boundFramebufferID = -1;
+    s_boundRenderbufferID = -1;
     
     info = (FramebufferInfo *)PL_Handle_GetData(handleID, DXHANDLE_FRAMEBUFFER);
     
@@ -54,6 +75,8 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
         /* s_GLFrameBuffer_Bind(-1, ...) is synonymous with 'bind nothing' */
         PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, 0);
     } else {
+        RenderbufferInfo *renderinfo = NULL;
+        
         PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, info->framebufferID);
         
         PL_GL.glFramebufferTexture2D(GL_FRAMEBUFFER,
@@ -62,6 +85,16 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
                                      textureID,
                                      0);
         
+        if (renderbufferID > 0) {
+            renderinfo = (RenderbufferInfo *)PL_Handle_GetData(renderbufferID, DXHANDLE_RENDERBUFFER);
+            
+            if (renderinfo != NULL) {
+                PL_GL.glFramebufferRenderbuffer(
+                    GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                    GL_RENDERBUFFER, renderinfo->renderbufferID);
+            }
+        }
+        
         if (PL_GL.glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             /* uhoh... */
             PL_GL.glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -69,6 +102,14 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
         }
         
         PL_GL.glViewport(0, 0, info->width, info->height);
+        
+        info->refCount += 1;
+        if (renderinfo != NULL) {
+            renderinfo->refCount += 1;
+        }
+        
+        s_boundFramebufferID = handleID;
+        s_boundRenderbufferID = renderbufferID;
     }
     
     return 0;
@@ -296,7 +337,7 @@ int PLGL_Texture_Unbind(int textureRefID) {
     return 0;
 }
 
-int PLGL_Texture_BindFramebuffer(int textureRefID) {
+int PLGL_Texture_BindFramebuffer(int textureRefID, int renderbufferID) {
     TextureRef *textureref = (TextureRef*)PL_Handle_GetData(textureRefID, DXHANDLE_TEXTURE);
     int framebufferID = -1;
     GLenum textureTarget = GL_TEXTURE_2D;
@@ -308,7 +349,7 @@ int PLGL_Texture_BindFramebuffer(int textureRefID) {
         textureTarget = textureref->glTarget;
     }
     
-    retval = s_GLFrameBuffer_Bind(framebufferID, textureTarget, textureID);
+    retval = s_GLFrameBuffer_Bind(framebufferID, textureTarget, textureID, renderbufferID);
     
     if (retval >= 0 && textureref != NULL && textureref->framebufferNeedsClear == TRUE) {
         textureref->framebufferNeedsClear = FALSE;
@@ -653,10 +694,52 @@ int PLGL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMu
     return 0;
 }
 
+int PLGL_Renderbuffer_Create(int width, int height) {
+    int renderbufferID = PL_Handle_AcquireID(DXHANDLE_RENDERBUFFER);
+    RenderbufferInfo *info;
+    
+    if (renderbufferID <= 0) {
+        return -1;
+    }
+    
+    info = (RenderbufferInfo *)PL_Handle_GetData(renderbufferID, DXHANDLE_RENDERBUFFER);
+    PL_GL.glGenRenderbuffers(1, &info->renderbufferID);
+    PL_GL.glBindRenderbuffer(GL_RENDERBUFFER, info->renderbufferID);
+    PL_GL.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    PL_GL.glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    
+    info->width = width;
+    info->height = height;
+    info->refCount = 1;
+    
+    return renderbufferID;
+}
+
+int PLGL_Renderbuffer_Release(int renderbufferID) {
+    RenderbufferInfo *info;
+    info = (RenderbufferInfo *)PL_Handle_GetData(renderbufferID, DXHANDLE_RENDERBUFFER);
+    if (info == NULL) {
+        return -1;
+    }
+    
+    info->refCount -= 1;
+    if (info->refCount > 0) {
+        return 0;
+    }
+    
+    PL_GL.glDeleteRenderbuffers(1, &info->renderbufferID);
+    info->renderbufferID = 0;
+    
+    return 0;
+}
+
 int PLGL_Texture_ClearAllData() {
     /* We can't actually get rid of the handles,
      * but we can toast the data inside. */
     int textureRefID;
+    int renderbufferID;
+    
+    s_GLFrameBuffer_Bind(-1, 0, 0, -1);
     
     textureRefID = PL_Handle_GetFirstIDOf(DXHANDLE_TEXTURE);
     while (textureRefID >= 0) {
@@ -675,6 +758,20 @@ int PLGL_Texture_ClearAllData() {
         }
         
         textureRefID = PL_Handle_GetNextID(textureRefID);
+    }
+    
+    renderbufferID = PL_Handle_GetFirstIDOf(DXHANDLE_RENDERBUFFER);
+    while (renderbufferID >= 0) {
+        RenderbufferInfo *renderInfo = (RenderbufferInfo *)PL_Handle_GetData(renderbufferID, DXHANDLE_RENDERBUFFER);
+        
+        if (renderInfo != NULL) {
+            if (renderInfo->renderbufferID) {
+                PL_GL.glDeleteRenderbuffers(1, &renderInfo->renderbufferID);
+                renderInfo->renderbufferID = 0;
+            }
+        }
+        
+        renderbufferID = PL_Handle_GetNextID(renderbufferID);
     }
     
     return 0;

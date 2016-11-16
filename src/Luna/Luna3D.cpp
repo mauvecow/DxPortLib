@@ -40,6 +40,9 @@ PLMatrix g_lunaUntransformedViewMatrix;
 
 int s_prevRenderTexture = -2;
 int s_renderTexture = -1;
+int s_renderbufferID = -1;
+bool s_depthWrite = false;
+bool s_depthRead = false;
 
 int s_blendType = 0; // 0 = Luna, 1 = DxLib blend
 eBlendType s_blendLunaMode = BLEND_NORMAL;
@@ -53,7 +56,7 @@ static void s_UpdateRenderTexture() {
             PL_Window_BindMainFramebuffer();
             Luna3D::SetViewport(NULL);
         } else {
-            PLG.Texture_BindFramebuffer(s_renderTexture);
+            PLG.Texture_BindFramebuffer(s_renderTexture, s_renderbufferID);
             
             PLRect txr;
             PLG.Texture_RenderGetTextureInfo(s_renderTexture, &txr, NULL, NULL);
@@ -61,6 +64,10 @@ static void s_UpdateRenderTexture() {
             RECT r = { 0, 0, txr.w, txr.h };
             Luna3D::SetViewport(&r);
         }
+        
+        // Force reset ZBuffer state, in case something else modified it.
+        Luna3D::SetZBufferEnable(s_depthRead);
+        Luna3D::SetZWriteEnable(s_depthWrite);
         
         s_prevRenderTexture = s_renderTexture;
     }
@@ -228,9 +235,37 @@ void Luna3D::SetBlendingType(eBlendType BlendType) {
 }
 
 void Luna3D::SetZBufferEnable(Bool Flag) {
-    /* Ignore */
+    s_depthRead = Flag;
+    if (Flag) {
+        PLG.EnableDepthTest();
+    } else {
+        PLG.DisableDepthTest();
+    }
 }
+
+void Luna3D::SetZWriteEnable(Bool Flag) {
+    s_depthWrite = Flag;
+    if (Flag) {
+        PLG.EnableDepthWrite();
+    } else {
+        PLG.DisableDepthWrite();
+    }
+}
+
 void Luna3D::SetRenderState(D3DRENDERSTATETYPE State, Uint32 Param) {
+    switch(State) {
+        case D3DRS_ZENABLE:
+            SetZBufferEnable(Param > 0 ? true : false);
+            break;
+        case D3DRS_ZWRITEENABLE:
+            SetZWriteEnable(Param > 0 ? true : false);
+            break;
+        case D3DRS_CULLMODE:
+            // uhoh
+            break;
+        case D3DRS_FILLMODE:
+            break;
+    }
     return;
 }
 
@@ -315,6 +350,16 @@ LSURFACE Luna3D::GetRenderTargetSurface() {
     return INVALID_SURFACE;
 }
 
+void Luna3D::SetDepthStencilSurface(LSURFACE lSurf) {
+    s_renderbufferID = (int)lSurf;
+    
+    PL_Window_SetDefaultRenderbuffer(s_renderbufferID);
+    
+    s_prevRenderTexture = -9999;
+    
+    s_UpdateRenderTexture();
+}
+
 void Luna3D::ResetRenderTarget() {
     s_renderTexture = -1;
     
@@ -324,10 +369,8 @@ void Luna3D::ResetRenderTarget() {
 void Luna3D::ResetDepthStencil() {
     s_UpdateRenderTexture();
     
-    // - Set DepthStencil Surface
-    
-    // - Enable Z testing
-    // - Enable Z writing
+    SetZBufferEnable(s_depthRead);
+    SetZWriteEnable(s_depthWrite);
 }
 
 void Luna3DStartDraw(int textureID) {

@@ -117,6 +117,8 @@ typedef struct GLInfo_t {
 #endif
     void (APIENTRY *glDepthRange)( GLclampd nearVal, GLclampd farVal );
     void (APIENTRY *glDepthRangef)( GLclampf nearVal, GLclampf farVal );
+    void (APIENTRY *glDepthFunc)( GLenum func );
+    void (APIENTRY *glDepthMask)( GLboolean flag );
     
     void (APIENTRY *glViewport)( GLint x, GLint y, GLsizei width, GLsizei height );
     void (APIENTRY *glScissor)( GLint x, GLint y, GLsizei width, GLsizei height );
@@ -158,6 +160,14 @@ typedef struct GLInfo_t {
     void (APIENTRY *glGenFramebuffers)(GLsizei n, GLuint *framebuffers);
     GLenum (APIENTRY *glCheckFramebufferStatus)(GLenum target);
     
+    void (APIENTRY *glFramebufferRenderbuffer)(GLenum target, GLenum attachment,
+                                           GLenum renderbuffertarget, GLuint renderbuffer);
+    void (APIENTRY *glGenRenderbuffers)(GLsizei n, GLuint *renderbuffers);
+    void (APIENTRY *glDeleteRenderbuffers)(GLsizei n, const GLuint *renderbuffers);
+    void (APIENTRY *glBindRenderbuffer)(GLenum target, GLuint renderbuffer);
+    void (APIENTRY *glRenderbufferStorage)(GLenum target, GLenum internalformat,
+                                           GLsizei width, GLsizei height);
+
     /* Shader functions */
     int hasShaderSupport;
     
@@ -257,7 +267,10 @@ extern int PLGL_SetScissorRect(const RECT *rect);
 extern int PLGL_DisableScissor();
 
 extern int PLGL_DisableCulling();
+extern int PLGL_EnableDepthTest();
 extern int PLGL_DisableDepthTest();
+extern int PLGL_EnableDepthWrite();
+extern int PLGL_DisableDepthWrite();
 
 extern int PLGL_SetTextureStage(unsigned int stage,
                                      int textureRefID, int textureDrawMode);
@@ -333,10 +346,13 @@ extern int PLGL_Texture_SetWrap(int textureRefID, int wrapState);
 
 extern int PLGL_Texture_HasAlphaChannel(int textureRefID);
 
-extern int PLGL_Texture_BindFramebuffer(int textureRefID);
+extern int PLGL_Texture_BindFramebuffer(int textureRefID, int renderbufferID);
 
 extern int PLGL_Texture_AddRef(int textureID);
 extern int PLGL_Texture_Release(int textureID);
+
+extern int PLGL_Renderbuffer_Create(int width, int height);
+extern int PLGL_Renderbuffer_Release(int renderbufferID);
 
 /* internal */
 

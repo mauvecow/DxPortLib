@@ -140,8 +140,22 @@ int PLGL_DisableCulling() {
     return 0;
 }
 
+int PLGL_EnableDepthTest() {
+    PL_GL.glEnable(GL_DEPTH_TEST);
+    return 0;
+}
+
 int PLGL_DisableDepthTest() {
     PL_GL.glDisable(GL_DEPTH_TEST);
+    return 0;
+}
+
+int PLGL_EnableDepthWrite() {
+    PL_GL.glDepthMask(GL_TRUE);
+    return 0;
+}
+int PLGL_DisableDepthWrite() {
+    PL_GL.glDepthMask(GL_FALSE);
     return 0;
 }
 
@@ -541,7 +555,7 @@ int PLGL_ClearColor(float r, float g, float b, float a) {
 }
 
 int PLGL_Clear() {
-    PL_GL.glClear(GL_COLOR_BUFFER_BIT);
+    PL_GL.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     
     return 0;
 }

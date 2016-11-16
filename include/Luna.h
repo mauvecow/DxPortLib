@@ -573,6 +573,13 @@ public:
                           Sint32 *advance = 0, Sint32 *xOffset = 0);
 };
 
+/* ----------------------------------------------------------- LunaSurface.cpp */
+class LunaSurface {
+    static LUNACALL LSURFACE CreateDepthStencil(Uint32 width, Uint32 height,
+                                eSurfaceFormat format);
+    static LUNACALL void Release(LSURFACE lSurface);
+};
+
 /* ----------------------------------------------------------- Luna3D.cpp */
 class Luna3D {
 public:
@@ -586,6 +593,7 @@ public:
     static LUNACALL void SetColorkeyEnable(Bool Flag);
     static LUNACALL void SetBlendingType(eBlendType BlendType);
     static LUNACALL void SetZBufferEnable(Bool Flag);
+    static LUNACALL void SetZWriteEnable(Bool Flag);
     static LUNACALL void SetRenderState(D3DRENDERSTATETYPE State, Uint32 Param);
     static LUNACALL void Clear(Uint32 ClearFlags = D3DCLEAR_TARGET|
                                                    D3DCLEAR_ZBUFFER|
@@ -599,6 +607,8 @@ public:
     
     static LUNACALL void SetRenderTargetSurface(LSURFACE lSurf);
     static LUNACALL LSURFACE GetRenderTargetSurface();
+    
+    static LUNACALL void SetDepthStencilSurface(LSURFACE lSurf);
     
     static LUNACALL void EnableFullColorMode();
     

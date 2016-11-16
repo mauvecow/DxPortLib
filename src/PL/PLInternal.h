@@ -147,6 +147,7 @@ typedef enum {
     DXHANDLE_FILE,
     DXHANDLE_PLFILE,
     DXHANDLE_FRAMEBUFFER,
+    DXHANDLE_RENDERBUFFER,
     DXHANDLE_VERTEXBUFFER,
     DXHANDLE_INDEXBUFFER,
     DXHANDLE_SHADER,
@@ -251,6 +252,7 @@ extern int PL_Window_SetIconFromFile(const char *filename);
 
 extern int PL_Window_BindMainFramebuffer();
 extern int PL_Window_GetFramebuffer();
+extern int PL_Window_SetDefaultRenderbuffer(int renderbufferID);
 
 /* -------------------------------------------------------------- Math.c */
 typedef struct _PLRect {
@@ -403,7 +405,10 @@ typedef struct _PLIGraphics {
     int (*DisableScissor)();
 
     int (*DisableCulling)();
+    int (*EnableDepthTest)();
     int (*DisableDepthTest)();
+    int (*EnableDepthWrite)();
+    int (*DisableDepthWrite)();
 
     int (*SetPresetProgram)(int preset, int flags,
                             const PLMatrix *projection, const PLMatrix *view,
@@ -448,11 +453,14 @@ typedef struct _PLIGraphics {
 
     int (*Texture_HasAlphaChannel)(int textureRefID);
 
-    int (*Texture_BindFramebuffer)(int textureRefID);
+    int (*Texture_BindFramebuffer)(int textureRefID, int renderbufferID);
 
     int (*Texture_AddRef)(int textureID);
     int (*Texture_Release)(int textureID);
-
+    
+    int (*Renderbuffer_Create)(int width, int height);
+    int (*Renderbuffer_Release)(int renderbufferID);
+    
     int (*DrawVertexArray)(const VertexDefinition *def,
                const char *vertexData,
                int primitiveType, int vertexStart, int vertexCount);
