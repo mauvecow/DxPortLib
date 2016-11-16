@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -66,6 +66,17 @@ static const char s_stockVertexShaderColorTex1[] = {
         "}\n",
 };
 
+static const char *s_alphaTestCode[PL_ALPHAFUNC_END] = {
+        "    discard;",
+        "    if (finalColor.a >= alphaTest) discard;",
+        "    if (finalColor.a > alphaTest) discard;",
+        "    if (finalColor.a == alphaTest) discard;",
+        "    if (finalColor.a < alphaTest) discard;",
+        "    if (finalColor.a <= alphaTest) discard;",
+        "    if (finalColor.a != alphaTest) discard;",
+        ""
+};
+
 static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
     /* PLGL_SHADER_BASIC_NOCOLOR_TEX1 */
     {
@@ -74,9 +85,11 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
+        "uniform float alphaTest;\n"
         "varying vec2 outTexcoord;\n"
         "void main() {\n"
-        "    gl_FragColor = texture2D(texture, outTexcoord);\n"
+        "    vec4 finalColor = texture2D(texture, outTexcoord);",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         1, 1, 0
     },
@@ -86,9 +99,11 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         s_stockVertexShaderColorNotex,
         /* fragment shader */
         "precision mediump float;\n"
+        "uniform float alphaTest;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    gl_FragColor = outColor;\n"
+        "    vec4 finalColor = outColor;\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         0, 0, 1
     },
@@ -99,10 +114,12 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
+        "uniform float alphaTest;\n"
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    gl_FragColor = texture2D(texture, outTexcoord) * outColor;\n"
+        "    vec4 finalColor = texture2D(texture, outTexcoord) * outColor;\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         1, 1, 1
     },
@@ -112,10 +129,12 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         s_stockVertexShaderColorNotex,
         /* fragment shader */
         "precision mediump float;\n"
+        "uniform float alphaTest;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 c = outColor;\n"
-        "    gl_FragColor = vec4(1.0 - c.rgb, c.a);\n"
+        "    vec4 finalColor = vec4(1.0 - crgb, c.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         0, 0, 1
     },
@@ -126,11 +145,13 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
+        "uniform float alphaTest;\n"
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 c = texture2D(texture, outTexcoord);\n"
-        "    gl_FragColor = vec4((1.0 - c.rgb) * (1.0 - outColor.rgb), c.a * outColor.a);\n"
+        "    vec4 finalColor = vec4((1.0 - c.rgb) * (1.0 - outColor.rgb), c.a * outColor.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         1, 1, 1
     },
@@ -140,10 +161,12 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         s_stockVertexShaderColorNotex,
         /* fragment shader */
         "precision mediump float;\n"
+        "uniform float alphaTest;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 c = outColor;\n"
-        "    gl_FragColor = vec4(c.rgb * c.a, c.a);\n"
+        "    vec4 finalColor = vec4(c.rgb * c.a, c.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         0, 0, 1
     },
@@ -154,11 +177,13 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
+        "uniform float alphaTest;\n"
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 c = texture2D(texture, outTexcoord) * outColor;\n"
-        "    gl_FragColor = vec4(c.rgb * c.a, c.a);\n"
+        "    vec4 finalColor = vec4(c.rgb * c.a, c.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         1, 1, 1
     },
@@ -168,10 +193,12 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         s_stockVertexShaderColorNotex,
         /* fragment shader */
         "precision mediump float;\n"
+        "uniform float alphaTest;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 c = outColor;\n"
-        "    gl_FragColor = vec4(c.rgb * 4.0, c.a);\n"
+        "    vec4 finalColor = vec4(c.rgb * 4.0, c.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         0, 0, 1
     },
@@ -182,11 +209,13 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
+        "uniform float alphaTest;\n"
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 c = texture2D(texture, outTexcoord) * outColor;\n"
-        "    gl_FragColor = vec4(c.rgb * 4.0, c.a);\n"
+        "    vec4 finalColor = vec4(c.rgb * 4.0, c.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         1, 1, 1
     },
@@ -196,9 +225,11 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         s_stockVertexShaderColorNotex,
         /* fragment shader */
         "precision mediump float;\n"
+        "uniform float alphaTest;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    gl_FragColor = vec4(outColor.rgb * outColor.a, outColor.a);\n"
+        "    vec4 finalColor = vec4(outColor.rgb * outColor.a, outColor.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         0, 0, 1
     },
@@ -209,11 +240,13 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
+        "uniform float alphaTest;\n"
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 oc = vec4(outColor.rgb * outColor.a, outColor.a);\n"
-        "    gl_FragColor = texture2D(texture, outTexcoord) * oc;\n"
+        "    vec4 finalColor = texture2D(texture, outTexcoord) * oc;\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         1, 1, 1
     },
@@ -223,9 +256,11 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         s_stockVertexShaderColorNotex,
         /* fragment shader */
         "precision mediump float;\n"
+        "uniform float alphaTest;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    gl_FragColor = vec4((1.0 - outColor.rgb) * outColor.a, outColor.a);;\n"
+        "    vec4 finalColor = vec4((1.0 - outColor.rgb) * outColor.a, outColor.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         0, 0, 1
     },
@@ -236,11 +271,13 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
+        "uniform float alphaTest;\n"
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 c = texture2D(texture, outTexcoord);\n"
-        "    gl_FragColor = vec4(outColor.rgb * (1.0 - c.rgb), c.a * outColor.a);\n"
+        "    vec4 finalColor = vec4(outColor.rgb * (1.0 - c.rgb), c.a * outColor.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         1, 1, 1
     },
@@ -250,9 +287,11 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         s_stockVertexShaderColorNotex,
         /* fragment shader */
         "precision mediump float;\n"
+        "uniform float alphaTest;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
-        "    gl_FragColor = vec4(outColor.rgb * outColor.a * 4.0, outColor.a);\n"
+        "    vec4 finalColor = vec4(outColor.rgb * outColor.a * 4.0, outColor.a);\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         0, 0, 1
     },
@@ -263,17 +302,19 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         /* fragment shader */
         "precision mediump float;\n"
         "uniform sampler2D texture;\n"
+        "uniform float alphaTest;\n"
         "varying vec2 outTexcoord;\n"
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 oc = vec4(outColor.rgb * outColor.a * 4.0, outColor.a);\n"
-        "    gl_FragColor = texture2D(texture, outTexcoord) * oc;\n"
+        "    vec4 finalColor = texture2D(texture, outTexcoord) * oc;\n",
+        "    gl_FragColor = finalColor;\n"
         "}\n",
         1, 1, 1
     }
 };
 
-int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
+int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition, PLAlphaFunc alphaFunc) {
     GLuint glVertexShaderID = 0;
     GLuint glFragmentShaderID = 0;
     GLuint glProgramID = 0;
@@ -306,10 +347,16 @@ int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
             if (PL_GL.glGetError() != GL_NO_ERROR) { break; }
         }
         
-        if (definition->fragmentShader != NULL) {
+        if (definition->fragmentShaderPreAlpha != NULL) {
+            const char *buffers[3];
+            
+            buffers[0] = definition->fragmentShaderPreAlpha;
+            buffers[1] = s_alphaTestCode[(int)alphaFunc];
+            buffers[2] = definition->fragmentShaderPostAlpha;
+                
             glFragmentShaderID = PL_GL.glCreateShader(GL_FRAGMENT_SHADER);
             if (PL_GL.glGetError() != GL_NO_ERROR) { break; }
-            PL_GL.glShaderSource(glFragmentShaderID, 1, &definition->fragmentShader, NULL);
+            PL_GL.glShaderSource(glFragmentShaderID, 3, buffers, NULL);
             if (PL_GL.glGetError() != GL_NO_ERROR) { break; }
             PL_GL.glCompileShader(glFragmentShaderID);
             if (PL_GL.glGetError() != GL_NO_ERROR) { break; }
@@ -329,7 +376,8 @@ int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
         
         memcpy(&info->definition, definition, sizeof(PLGLShaderDefinition));
         info->definition.vertexShader = NULL;
-        info->definition.fragmentShader = NULL;
+        info->definition.fragmentShaderPreAlpha = NULL;
+        info->definition.fragmentShaderPostAlpha = NULL;
         
         info->glVertexShaderID = glVertexShaderID;
         info->glFragmentShaderID = glFragmentShaderID;
@@ -349,8 +397,12 @@ int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition) {
         info->glTexcoordAttribID[3] = PL_GL.glGetAttribLocation(glProgramID, "texcoord4");
         info->glColorAttribID = PL_GL.glGetAttribLocation(glProgramID, "color");
         
+        info->glAlphaTestUniformID = PL_GL.glGetUniformLocation(glProgramID, "alphaTest");
+        
         return shaderHandle;
     } while(0);
+    
+    printf("Failed to compile shader!!\n");
     
     if (glVertexShaderID != 0) {
         PL_GL.glDeleteShader(glVertexShaderID);
@@ -421,6 +473,16 @@ void PLGL_Shaders_ApplyProgramMatrices(int shaderHandle,
     PL_GL.glUniformMatrix4fv(info->glModelViewUniformID, 1, GL_FALSE, (GLfloat *)viewMatrix);
 }
 
+void PLGL_Shaders_ApplyProgramAlphaTestValue(int shaderHandle, float alphaTestValue) {
+    PLGLShaderInfo *info = (PLGLShaderInfo *)PL_Handle_GetData(shaderHandle, DXHANDLE_SHADER);
+    
+    if (info == NULL) {
+        return;
+    }
+    
+    PL_GL.glUniform1f(info->glAlphaTestUniformID, alphaTestValue);
+}
+
 void PLGL_Shaders_ApplyProgramVertexData(int shaderHandle,
                              const char *vertexData, const VertexDefinition *definition)
 {
@@ -444,7 +506,7 @@ void PLGL_Shaders_ApplyProgramVertexData(int shaderHandle,
                                                 e->size, vertexType, GL_FALSE,
                                                 vertexDataSize, vertexData + e->offset);
                     PL_GL.glEnableVertexAttribArray(info->glVertexAttribID);
-                    break; 
+                    break;
                 case VERTEX_TEXCOORD0:
                 case VERTEX_TEXCOORD1:
                 case VERTEX_TEXCOORD2:
@@ -489,7 +551,7 @@ void PLGL_Shaders_ClearProgramVertexData(int shaderHandle, const VertexDefinitio
             switch (e->vertexType) {
                 case VERTEX_POSITION:
                     PL_GL.glDisableVertexAttribArray(info->glVertexAttribID);
-                    break; 
+                    break;
                 case VERTEX_TEXCOORD0:
                 case VERTEX_TEXCOORD1:
                 case VERTEX_TEXCOORD2:
@@ -510,34 +572,47 @@ void PLGL_Shaders_ClearProgramVertexData(int shaderHandle, const VertexDefinitio
     }
 }
 
-static int s_stockShaderIDs[PLGL_SHADER_END];
+static int s_stockShaderIDs[PLGL_SHADER_END][PL_ALPHAFUNC_END];
 
-int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType) {
-    return s_stockShaderIDs[shaderType];
+int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType, PLAlphaFunc alphaFunc) {
+    int id = s_stockShaderIDs[shaderType][alphaFunc];
+    if (id > 0) {
+        return id;
+    }
+    if (id == -2) { /* Only attempt to compile once. */
+        id = PLGL_Shaders_CompileDefinition(&s_stockShaderDefinitions[shaderType], alphaFunc);
+        s_stockShaderIDs[shaderType][alphaFunc] = id;
+    }
+    return id;
 }
 
 void PLGL_Shaders_Init() {
-    int i;
+    int i, j;
 
     if (PL_GL.hasShaderSupport == DXFALSE) {
         return;
     }
     
     for (i = 0; i < PLGL_SHADER_END; ++i) {
-        s_stockShaderIDs[i] = PLGL_Shaders_CompileDefinition(&s_stockShaderDefinitions[i]);
+        for (j = 0; j < PL_ALPHAFUNC_END; ++j) {
+            s_stockShaderIDs[i][j] = -2;
+        }
     }
+    /* s_stockShaderIDs[i] = PLGL_Shaders_CompileDefinition(&s_stockShaderDefinitions[i]); */
 }
 
 void PLGL_Shaders_Cleanup() {
-    int i;
+    int i, j;
     
     if (PL_GL.hasShaderSupport == DXFALSE) {
         return;
     }
     
     for (i = 0; i < PLGL_SHADER_END; ++i) {
-        PLGL_Shaders_DeleteShader(s_stockShaderIDs[i]);
-        s_stockShaderIDs[i] = 0;
+        for (j = 0; j < PL_ALPHAFUNC_END; ++j) {
+            PLGL_Shaders_DeleteShader(s_stockShaderIDs[i][j]);
+            s_stockShaderIDs[i][j] = -2;
+        }
     }
 }
 

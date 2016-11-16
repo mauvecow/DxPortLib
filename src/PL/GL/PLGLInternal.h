@@ -195,6 +195,7 @@ typedef struct GLInfo_t {
                                            const void *pointer);
     
     void (APIENTRY *glUniform1i)(GLint location, GLint v0);
+    void (APIENTRY *glUniform1f)(GLint location, GLfloat v0);
     void (APIENTRY *glUniformMatrix4fv)(GLint location, GLsizei count,
                                         GLboolean transpose, const GLfloat *value);
     
@@ -228,7 +229,8 @@ typedef enum {
 
 typedef struct _PLGLShaderDefinition {
     const char * vertexShader;
-    const char * fragmentShader;
+    const char * fragmentShaderPreAlpha;
+    const char * fragmentShaderPostAlpha;
     int textureCount;
     int texcoordCount;
     int hasColor;
@@ -247,6 +249,8 @@ typedef struct _PLGLShaderInfo {
     
     GLuint glModelViewUniformID;
     GLuint glProjectionUniformID;
+    
+    GLuint glAlphaTestUniformID;
 } PLGLShaderInfo;
 
 extern int PL_drawScreenWidth;
@@ -278,11 +282,11 @@ extern int PLGL_DisableDepthWrite();
 
 extern int PLGL_SetTextureStage(unsigned int stage,
                                      int textureRefID, int textureDrawMode);
-extern int PLGL_SetPresetProgram(int preset, int flags,
+extern int PLGL_SetPresetProgram(int preset,
                                  const PLMatrix *projectionMatrix,
                                  const PLMatrix *viewMatrix,
                                  int textureRefID, int textureDrawMode,
-                                 float alphaTestValue);
+                                 PLAlphaFunc alphaFunc, float alphaTestValue);
 extern int PLGL_ClearTextures();
 extern int PLGL_ClearPresetProgram();
 
@@ -376,6 +380,22 @@ extern GLuint PLGL_IndexBuffer_GetGLID(int vertexBufferID);
 extern char *PLGL_IndexBuffer_GetFallback(int vboHandle);
 
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
+typedef enum _PresetProgramFlags {
+    PL_PRESETFLAG_ALPHATEST_NONE = 0,
+    
+    PL_PRESETFLAG_ALPHATEST_SHIFT = 0,
+    
+    PL_PRESETFLAG_ALPHATEST_EQUAL = (1 << PL_PRESETFLAG_ALPHATEST_SHIFT),
+    PL_PRESETFLAG_ALPHATEST_NOTEQUAL = (2 << PL_PRESETFLAG_ALPHATEST_SHIFT),
+    PL_PRESETFLAG_ALPHATEST_LESS = (3 << PL_PRESETFLAG_ALPHATEST_SHIFT),
+    PL_PRESETFLAG_ALPHATEST_LEQUAL = (4 << PL_PRESETFLAG_ALPHATEST_SHIFT),
+    PL_PRESETFLAG_ALPHATEST_GREATER = (5 << PL_PRESETFLAG_ALPHATEST_SHIFT),
+    PL_PRESETFLAG_ALPHATEST_GEQUAL = (6 << PL_PRESETFLAG_ALPHATEST_SHIFT),
+    PL_PRESETFLAG_ALPHATEST_ALWAYS = (7 << PL_PRESETFLAG_ALPHATEST_SHIFT),
+    
+    PL_PRESETFLAG_ALPHATEST_MASK = (7 << PL_PRESETFLAG_ALPHATEST_SHIFT)
+} PresetProgramFlags;
+
 extern int PLGL_FixedFunction_ClearPresetProgram();
 extern int PLGL_FixedFunction_SetPresetProgram(int preset, int flags,
                                    const PLMatrix *projectionMatrix,
@@ -391,19 +411,24 @@ extern int PLGL_FixedFunction_Init();
 extern int PLGL_FixedFunction_Cleanup();
 #endif
 
-extern int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition);
+extern int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition,
+                                    PLAlphaFunc alphaFunc);
 extern void PLGL_Shaders_DeleteShader(int shaderHandle);
 extern void PLGL_Shaders_UseProgram(int shaderHandle);
 /* This doesn't make sense outside of presets. */
 extern void PLGL_Shaders_ApplyProgramMatrices(int shaderHandle,
                                       const PLMatrix *projectionMatrix,
                                       const PLMatrix *viewMatrix);
+extern void PLGL_Shaders_ApplyProgramAlphaTestValue(int shaderHandle,
+                                    float alphaTestValue);
 extern void PLGL_Shaders_ApplyProgramVertexData(int shaderHandle,
                                     const char *vertexData,
                                     const VertexDefinition *definition);
 extern void PLGL_Shaders_ClearProgramVertexData(int shaderHandle,
                                     const VertexDefinition *definition);
-extern int PLGL_Shaders_GetStockProgramForID(PLGLShaderPresetType shaderType);
+extern int PLGL_Shaders_GetStockProgramForID(
+                    PLGLShaderPresetType shaderType,
+                    PLAlphaFunc alphaFunc);
 extern void PLGL_Shaders_Init();
 extern void PLGL_Shaders_Cleanup();
 

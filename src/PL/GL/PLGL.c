@@ -241,6 +241,7 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
     PL_GL.glDisableVertexAttribArray = GetGLFunction("glDisableVertexAttribArray");
     PL_GL.glVertexAttribPointer = GetGLFunction("glVertexAttribPointer");
     PL_GL.glUniform1i = GetGLFunction("glUniform1i");
+    PL_GL.glUniform1f = GetGLFunction("glUniform1f");
     PL_GL.glUniformMatrix4fv = GetGLFunction("glUniformMatrix4fv");
     
     /* help this is wrong. For ES2 and OGL >2.0 I should assume correct, otherwise...

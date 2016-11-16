@@ -31,8 +31,10 @@
 float g_lunaFilterOffset = 0.5f;
 int g_lunaFilterMode = DX_DRAWMODE_BILINEAR;
 int g_luna3DCamera = INVALID_CAMERA;
-int g_lunaAlphaTestPreset = PL_PRESETFLAG_ALPHATEST_GREATER;
-float g_lunaAlphaTestValue = 0.0f;
+
+PLAlphaFunc s_alphaTestFunc = PL_ALPHAFUNC_ALWAYS;
+float s_alphaTestValue = 0.0f;
+bool s_alphaTestEnable = false;
 
 int g_lunaTexturePreset = TEX_PRESET_MODULATE;
 PLMatrix g_lunaUntransformedProjectionMatrix;
@@ -159,10 +161,11 @@ Bool Luna3D::GetFilterEnable() {
 
 void Luna3D::SetColorkeyEnable(Bool Flag) {
     if (Flag) {
-        g_lunaAlphaTestPreset = PL_PRESETFLAG_ALPHATEST_GREATER;
-        g_lunaAlphaTestValue = 0.0f;
+        s_alphaTestEnable = true;
+        s_alphaTestFunc = PL_ALPHAFUNC_GREATER;
+        s_alphaTestValue = 0.0f;
     } else {
-        g_lunaAlphaTestPreset = 0;
+        s_alphaTestEnable = false;
     }
 }
 void Luna3D::SetBlendingType(eBlendType BlendType) {
@@ -389,11 +392,12 @@ void Luna3DStartDraw(int textureID) {
     s_UpdateRenderTexture();
     
     PLG.SetPresetProgram(
-        g_lunaTexturePreset, g_lunaAlphaTestPreset,
+        g_lunaTexturePreset,
         &g_lunaUntransformedProjectionMatrix,
         &g_lunaUntransformedViewMatrix,
         textureID, g_lunaFilterMode,
-        g_lunaAlphaTestValue);
+        (s_alphaTestEnable == true) ? s_alphaTestFunc : PL_ALPHAFUNC_ALWAYS,
+        s_alphaTestValue);
 }
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

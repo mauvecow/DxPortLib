@@ -375,21 +375,6 @@ typedef enum _PrimitiveType {
     PL_PRIM_TRIANGLESTRIP
 } PrimitiveType;
 
-typedef enum _PresetProgramFlags {
-    PL_PRESETFLAG_ALPHATEST_NONE = 0,
-    
-    PL_PRESETFLAG_ALPHATEST_SHIFT = 0,
-    
-    PL_PRESETFLAG_ALPHATEST_EQUAL = (1 << PL_PRESETFLAG_ALPHATEST_SHIFT),
-    PL_PRESETFLAG_ALPHATEST_NOTEQUAL = (2 << PL_PRESETFLAG_ALPHATEST_SHIFT),
-    PL_PRESETFLAG_ALPHATEST_LESS = (3 << PL_PRESETFLAG_ALPHATEST_SHIFT),
-    PL_PRESETFLAG_ALPHATEST_LEQUAL = (4 << PL_PRESETFLAG_ALPHATEST_SHIFT),
-    PL_PRESETFLAG_ALPHATEST_GREATER = (5 << PL_PRESETFLAG_ALPHATEST_SHIFT),
-    PL_PRESETFLAG_ALPHATEST_GEQUAL = (6 << PL_PRESETFLAG_ALPHATEST_SHIFT),
-    
-    PL_PRESETFLAG_ALPHATEST_MASK = (7 << PL_PRESETFLAG_ALPHATEST_SHIFT)
-} PresetProgramFlags;
-
 typedef enum _PLClearType {
     PL_CLEAR_NONE = 0,
     PL_CLEAR_COLOR = (1 << 0),
@@ -404,7 +389,20 @@ typedef enum _PLDepthFunc {
     PL_DEPTHFUNC_GEQUAL = 4,
     PL_DEPTHFUNC_GREATER = 5,
     PL_DEPTHFUNC_NOTEQUAL = 6,
+    PL_DEPTHFUNC_ALWAYS = 7,
 } PLDepthFunc;
+
+typedef enum _PLAlphaFunc {
+    PL_ALPHAFUNC_NONE = 0,
+    PL_ALPHAFUNC_LESS = 1,
+    PL_ALPHAFUNC_LEQUAL = 2,
+    PL_ALPHAFUNC_EQUAL = 3,
+    PL_ALPHAFUNC_GEQUAL = 4,
+    PL_ALPHAFUNC_GREATER = 5,
+    PL_ALPHAFUNC_NOTEQUAL = 6,
+    PL_ALPHAFUNC_ALWAYS = 7,
+    PL_ALPHAFUNC_END
+} PLAlphaFunc;
 
 typedef struct _PLIGraphics {
     void (*SetBlendMode)(
@@ -426,11 +424,11 @@ typedef struct _PLIGraphics {
     int (*DisableDepthTest)();
     int (*EnableDepthWrite)();
     int (*DisableDepthWrite)();
-
-    int (*SetPresetProgram)(int preset, int flags,
+    
+    int (*SetPresetProgram)(int preset,
                             const PLMatrix *projection, const PLMatrix *view,
                             int textureRefID, int textureDrawMode,
-                            float alphaTestValue);
+                            PLAlphaFunc alphaFunc, float alphaTestValue);
     int (*ClearPresetProgram)();
 
     int (*VertexBuffer_CreateBytes)(int vertexByteSize,

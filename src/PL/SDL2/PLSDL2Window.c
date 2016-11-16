@@ -234,9 +234,10 @@ static void PL_Window_Refresh() {
         
         PLG.DisableBlend();
         
-        PLG.SetPresetProgram(TEX_PRESET_MODULATE, 0,
+        PLG.SetPresetProgram(TEX_PRESET_MODULATE,
                              &s_projectionMatrix, &s_viewMatrix,
-                             s_screenFrameBufferB, DX_DRAWMODE_BILINEAR, 0);
+                             s_screenFrameBufferB, DX_DRAWMODE_BILINEAR,
+                             PL_ALPHAFUNC_ALWAYS, 0);
         
         PLG.DrawVertexBuffer(&s_RectVertexDefinition,
                                    s_offscreenVBO,

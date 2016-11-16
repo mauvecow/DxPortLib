@@ -88,9 +88,10 @@ static int s_ApplyDrawMode(int blendMode, int forceBlend, int textureRefID) {
         blend->srcRGBBlend, blend->destRGBBlend,
         blend->srcAlphaBlend, blend->destAlphaBlend);
     PLG.SetPresetProgram(
-        blend->texturePreset, 0,
+        blend->texturePreset,
         &s_projectionMatrix, &s_viewMatrix,
-        textureRefID, s_drawMode, 0.0f);
+        textureRefID, s_drawMode,
+        PL_ALPHAFUNC_ALWAYS, 0.0f);
     
     return 0;
 }

@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -21,12 +21,12 @@
 
 /* GL code is very generic. Instead of doing any drawing itself, it has two
  * basic portions:
- * 
+ *
  * - Maintains the current render state information, including blending,
  *   culling, scissoring, viewport, texture sampling, shaders.
  * - Draws vertices and vertex buffers using the vertex declaration and
  *   currently available state information.
- * 
+ *
  * In theory this should be very fast and only need to update state when
  * actually necessary to do so.
  */
@@ -48,15 +48,15 @@ static int s_pixelTexture = -1;
 
 /* For OpenGL, glTexEnv* combiners can take the place of fragment programs.
  * In Direct3D, the equivalent is texture stages.
- * 
+ *
  * They're effectively interchangable, so what we do is we support a
  * fixed subset of texenv collections that are basically like shaders.
- * 
+ *
  * A sane implementation might include actual shaders in its place, but
  * not quite that far in yet.
- * 
+ *
  * Do not use Presets _and_ Shaders at the same time.
- * 
+ *
  * Most of the stuff here is DxLib only so if you don't build for DxLib
  * you don't need it.
  */
@@ -99,6 +99,9 @@ int PLGL_FixedFunction_SetPresetProgram(int preset, int flags,
                 break;
             case PL_PRESETFLAG_ALPHATEST_GEQUAL:
                 PL_GL.glAlphaFunc(GL_GEQUAL, alphaTestValue);
+                break;
+            case PL_PRESETFLAG_ALPHATEST_ALWAYS:
+                PL_GL.glAlphaFunc(GL_ALWAYS, alphaTestValue);
                 break;
             default:
                 /* Never mind. */
@@ -272,7 +275,7 @@ int PLGL_FixedFunction_ApplyVertexArrayData(const VertexDefinition *def,
             case VERTEX_POSITION:
                 PL_GL.glEnableClientState(GL_VERTEX_ARRAY);
                 PL_GL.glVertexPointer(e->size, vertexType, vertexDataSize, vertexData + e->offset);
-                break; 
+                break;
             case VERTEX_TEXCOORD0:
             case VERTEX_TEXCOORD1:
             case VERTEX_TEXCOORD2:
@@ -299,14 +302,14 @@ int PLGL_FixedFunction_ClearVertexArrayData(const VertexDefinition *def) {
         switch (e->vertexType) {
             case VERTEX_POSITION:
                 PL_GL.glDisableClientState(GL_VERTEX_ARRAY);
-                break; 
+                break;
             case VERTEX_TEXCOORD0:
             case VERTEX_TEXCOORD1:
             case VERTEX_TEXCOORD2:
             case VERTEX_TEXCOORD3:
                 PL_GL.glClientActiveTexture(GL_TEXTURE0 - VERTEX_TEXCOORD0 + e->vertexType);
                 PL_GL.glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-                break; 
+                break;
             case VERTEX_COLOR:
                 PL_GL.glDisableClientState(GL_COLOR_ARRAY);
                 break;

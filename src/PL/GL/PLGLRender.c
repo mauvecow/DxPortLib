@@ -150,6 +150,7 @@ int PLGL_SetDepthFunc(PLDepthFunc depthFunc) {
         case PL_DEPTHFUNC_GEQUAL: func = GL_GEQUAL; break;
         case PL_DEPTHFUNC_GREATER: func = GL_GREATER; break;
         case PL_DEPTHFUNC_NOTEQUAL: func = GL_NOTEQUAL; break;
+        case PL_DEPTHFUNC_ALWAYS: func = GL_ALWAYS; break;
         default: return -1;
     }
     
@@ -235,10 +236,10 @@ static int s_stockShaderPresetLookupTex1[TEX_PRESET_END] = {
     PLGL_SHADER_DX_PMA_X4_COLOR_TEX1
 };
 
-int PLGL_SetPresetProgram(int preset, int flags,
+int PLGL_SetPresetProgram(int preset,
                           const PLMatrix *projectionMatrix, const PLMatrix *viewMatrix,
                           int textureRefID, int textureDrawMode,
-                          float alphaTestValue) {
+                          PLAlphaFunc alphaTestFunc, float alphaTestValue) {
     int presetID;
     int newShaderProgram;
     
@@ -250,7 +251,7 @@ int PLGL_SetPresetProgram(int preset, int flags,
         presetID = s_stockShaderPresetLookupTex1[preset];
     }
     
-    newShaderProgram = PLGL_Shaders_GetStockProgramForID(presetID);
+    newShaderProgram = PLGL_Shaders_GetStockProgramForID(presetID, alphaTestFunc);
     PLGL_Shaders_UseProgram(newShaderProgram);
     
     s_activeShaderProgram = newShaderProgram;
@@ -261,11 +262,37 @@ int PLGL_SetPresetProgram(int preset, int flags,
         PLGL_Shaders_ApplyProgramMatrices(
             newShaderProgram,
             projectionMatrix, viewMatrix);
+        if (alphaTestFunc != PL_ALPHAFUNC_ALWAYS) {
+            PLGL_Shaders_ApplyProgramAlphaTestValue(newShaderProgram, alphaTestValue);
+        }
         
         return 0;
     } else {
         /* Fixed function fallback */
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
+        int flags = 0;
+        switch(alphaTestFunc) {
+            case PL_ALPHAFUNC_LESS:
+                flags |= PL_PRESETFLAG_ALPHATEST_LESS;
+                break;
+            case PL_ALPHAFUNC_LEQUAL:
+                flags |= PL_PRESETFLAG_ALPHATEST_LEQUAL;
+                break;
+            case PL_ALPHAFUNC_EQUAL:
+                flags |= PL_PRESETFLAG_ALPHATEST_EQUAL;
+                break;
+            case PL_ALPHAFUNC_GEQUAL:
+                flags |= PL_PRESETFLAG_ALPHATEST_GEQUAL;
+                break;
+            case PL_ALPHAFUNC_GREATER:
+                flags |= PL_PRESETFLAG_ALPHATEST_GREATER;
+                break;
+            case PL_ALPHAFUNC_NOTEQUAL:
+                flags |= PL_PRESETFLAG_ALPHATEST_NOTEQUAL;
+                break;
+            default:
+                break;
+        }
         s_useFixedFunction = DXTRUE;
         return PLGL_FixedFunction_SetPresetProgram(preset, flags,
                                                    projectionMatrix, viewMatrix,
@@ -611,9 +638,9 @@ int PLGL_Render_Init() {
     PLGL_Shaders_Init();
     
     /* Set a default so it won't crash. */
-    PLGL_SetPresetProgram(PLGL_SHADER_BASIC_COLOR_NOTEX, 0,
+    PLGL_SetPresetProgram(PLGL_SHADER_BASIC_COLOR_NOTEX,
                           &g_matrixIdentity, &g_matrixIdentity,
-                          -1, 0, 0);
+                          -1, 0, PL_ALPHAFUNC_ALWAYS, 0.0f);
     
     s_emulateBuffersInit();
     
