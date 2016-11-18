@@ -402,6 +402,16 @@ Bool LunaFontSprite::GetWidth(LFONTSPRITE lFontSpr, const char *pStr,
     return false;
 }
 
+void LunaFontSprite::GetHeight(LFONTSPRITE lFontSpr, Sint32 *pHeight)
+{
+    LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
+    if (fontspr != NULL) {
+        *pHeight = fontspr->lfdHeader->fontSize;
+    } else {
+        *pHeight = -1;
+    }
+}
+
 Sint32 LunaFontSprite::EXTGetCharaRect(LFONTSPRITE lFontSpr, const char *pStr,
     Sint32 *x1, Sint32 *y1, Sint32 *x2, Sint32 *y2, Sint32 *advance, Sint32 *xOffset)
 {
@@ -534,6 +544,102 @@ Sint32 LunaFontSprite::DrawCharaRotateXYZ(LFONTSPRITE lFontSpr, const char *pStr
     }
     
     return 0;
+}
+
+POINT LunaFontSprite::GetStringLastPos(LFONTSPRITE lFontSpr, const char *pStr, Sint32 Px, Sint32 Py)
+{
+    LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
+    POINT p;
+    p.x = Px;
+    p.y = Py;
+    
+    if (fontspr != NULL) {
+        unsigned int ch;
+        unsigned int charMax = fontspr->charMax;
+        float x = F(Px);
+        int y = Py;
+        float fontSize = F(fontspr->lfdHeader->fontSize);
+        float spacing = F(fontSize + fontspr->space);
+        int sheetCount = fontspr->sheetCount;
+        int charset = g_lunaUseCharSet;
+        while ((ch = PL_Text_ReadChar(&pStr, charset)) != 0) {
+            if (ch == '\n' || ch == '\r') {
+                x = F(Px);
+                y += fontSize;
+            } else if (ch == '\t') {
+                x += spacing * 4;
+            } else if (ch == '\b') {
+                x -= spacing;
+            } else if (ch == ' ') {
+                x += spacing * 0.5f;
+            } else {
+                unsigned int index = s_CharToIndex(fontspr, ch);
+                if (index < charMax) {
+                    const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
+                    if (entry->sheetNo >= 0 && entry->sheetNo < sheetCount) {
+                        if (ch < 0xff) {
+                            x += spacing * 0.5f;
+                        } else {
+                            x += spacing;
+                        }
+                    } else {
+                        x += fontSize * 0.5f;
+                    }
+                }
+            }
+        }
+        
+        p.x = (int)x;
+        p.y = y;
+    }
+    
+    return p;
+}
+
+POINT LunaFontSprite::GetStringLastPosP(LFONTSPRITE lFontSpr, const char *pStr, Sint32 Px, Sint32 Py)
+{
+    LunaFontSprData *fontspr = (LunaFontSprData *)PL_Handle_GetData((int)lFontSpr, DXHANDLE_LUNAFONTSPRITE);
+    POINT p;
+    p.x = Px;
+    p.y = Py;
+    
+    if (fontspr != NULL) {
+        unsigned int ch;
+        unsigned int charMax = fontspr->charMax;
+        float x = F(Px);
+        int y = Py;
+        float fontSize = F(fontspr->lfdHeader->fontSize);
+        float spacing = F(fontSize + fontspr->space);
+        int sheetCount = fontspr->sheetCount;
+        int charset = g_lunaUseCharSet;
+        while ((ch = PL_Text_ReadChar(&pStr, charset)) != 0) {
+            if (ch == '\n' || ch == '\r') {
+                x = F(Px);
+                y += fontSize;
+            } else if (ch == '\t') {
+                x += spacing * 4;
+            } else if (ch == '\b') {
+                x -= spacing;
+            } else if (ch == ' ') {
+                x += spacing * 0.5f;
+            } else {
+                unsigned int index = s_CharToIndex(fontspr, ch);
+                if (index < charMax) {
+                    const LFDCharEntry *entry = &fontspr->lfdCharEntries[index];
+                    if (entry->sheetNo >= 0 && entry->sheetNo < sheetCount) {
+                        x += F(entry->pAdvance + 1);
+                    } else {
+                        x += fontSize * 0.5f;
+                    }
+                }
+            }
+        }
+        
+        p.x = (int)x;
+        p.y = y;
+    }
+    
+    return p;
 }
 
 #endif /* #ifdef DXPORTLIB_LUNA_INTERFACE */

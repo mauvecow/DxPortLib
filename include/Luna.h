@@ -555,11 +555,15 @@ public:
                           Sint32 Px, Sint32 Py, Float Pz, D3DCOLOR Color);
     static LUNACALL void DrawStringP(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 Px, Sint32 Py, Float Pz, D3DCOLOR Color);
+    
     static LUNACALL void ResetBuffer(LFONTSPRITE lFontSpr, Sint32 Space = 0);
     static LUNACALL void UpdateBuffer(LFONTSPRITE lFontSpr);
     static LUNACALL void Rendering(LFONTSPRITE lFontSpr);
+    
     static LUNACALL Bool GetWidth(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 *pLeft, Sint32 *pCenter, Sint32 *pRight);
+    static LUNACALL void GetHeight(LFONTSPRITE lFontSpr, Sint32 *pHeight);
+    
     static LUNACALL Sint32 DrawChara(LFONTSPRITE lFontSpr, const char *pStr,
                           CLunaRect *pDst, Float Pz, D3DCOLOR Color);
     static LUNACALL Sint32 DrawCharaRotate(LFONTSPRITE lFontSpr, const char *pStr,
@@ -571,6 +575,11 @@ public:
     static LUNACALL Sint32 EXTGetCharaRect(LFONTSPRITE lFontSpr, const char *pStr,
                           Sint32 *x1, Sint32 *y1, Sint32 *x2, Sint32 *y2,
                           Sint32 *advance = 0, Sint32 *xOffset = 0);
+    
+    static LUNACALL POINT GetStringLastPos(LFONTSPRITE lFontSpr, const char *pStr,
+                          Sint32 Px, Sint32 Py);
+    static LUNACALL POINT GetStringLastPosP(LFONTSPRITE lFontSpr, const char *pStr,
+                          Sint32 Px, Sint32 Py);
 };
 
 /* ----------------------------------------------------------- LunaSurface.cpp */
