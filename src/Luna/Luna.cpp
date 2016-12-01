@@ -84,8 +84,6 @@ int Luna::BootMain(Sint32 argc, char **argv,
     LunaFile_Init();
     LunaMath_Init();
     
-    LunaRand::Seed((unsigned int)::time(NULL) * PL_Platform_GetTicks());
-    
     s_LunaInit();
     
     s_LunaMain(argc, argv);
@@ -122,6 +120,8 @@ Bool Luna::Start() {
 #endif /* #ifndef DXPORTLIB_NO_SOUND */
     
     Luna3D::SetViewport(NULL);
+    
+    LunaRand::Seed((unsigned int)::time(NULL) * (PL_Platform_GetTicks() + 1));
     
     s_initialized = DXTRUE;
     
