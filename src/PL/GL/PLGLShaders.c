@@ -133,7 +133,7 @@ static const PLGLShaderDefinition s_stockShaderDefinitions[PLGL_SHADER_END] = {
         "varying vec4 outColor;\n"
         "void main() {\n"
         "    vec4 c = outColor;\n"
-        "    vec4 finalColor = vec4(1.0 - crgb, c.a);\n",
+        "    vec4 finalColor = vec4(1.0 - c.rgb, c.a);\n",
         "    gl_FragColor = finalColor;\n"
         "}\n",
         0, 0, 1
