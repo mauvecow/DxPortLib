@@ -404,6 +404,14 @@ typedef enum _PLAlphaFunc {
     PL_ALPHAFUNC_END
 } PLAlphaFunc;
 
+typedef struct _PLTextureBase {
+    int refCount;
+    
+    /* Primarily used for Luna's named texture cache. */
+    void *userdata;
+    void (*releaseFunc)(int handle);
+} PLTextureBase;
+
 typedef struct _PLIGraphics {
     void (*SetBlendMode)(
                 int blendEquation,

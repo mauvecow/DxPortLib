@@ -213,6 +213,8 @@ int PLGL_Framebuffer_GetSurface(const PLRect *rect, SDL_Surface **dSurface) {
 /* ------------------------------------------------------------- Textures */
 
 typedef struct TextureRef {
+    PLTextureBase base;
+    
     GLuint textureID;
     
     int drawMode;
@@ -236,8 +238,6 @@ typedef struct TextureRef {
     int framebufferID;
     int framebufferNeedsClear;
     
-    int refCount;
-    
     int wrappableFlag;
 } TextureRef;
 
@@ -258,9 +258,10 @@ static int s_AllocateTextureRefID(GLuint textureID) {
     }
     
     textureref = (TextureRef *)PL_Handle_AllocateData(textureRefID, sizeof(TextureRef));
+    memset(textureref, 0, sizeof(TextureRef));
+    
     textureref->textureID = textureID;
     textureref->framebufferID = -1;
-    textureref->refCount = 0;
     
     return textureRefID;
 }
@@ -607,7 +608,7 @@ int PLGL_Texture_AddRef(int textureRefID) {
         return -1;
     }
     
-    textureref->refCount += 1;
+    textureref->base.refCount += 1;
     return 0;
 }
 
@@ -617,8 +618,11 @@ int PLGL_Texture_Release(int textureRefID) {
         return -1;
     }
     
-    textureref->refCount -= 1;
-    if (textureref->refCount <= 0) {
+    textureref->base.refCount -= 1;
+    if (textureref->base.refCount <= 0) {
+        if (textureref->base.releaseFunc != NULL) {
+            textureref->base.releaseFunc(textureRefID);
+        }
         if (textureref->textureID > 0) {
             PL_GL.glDeleteTextures(1, &textureref->textureID);
             textureref->textureID = 0;

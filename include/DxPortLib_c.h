@@ -39,6 +39,36 @@
 extern "C" {
 #endif
 
+struct _DPL_ListNode_t;
+typedef struct _DPL_ListNode_t DPL_ListNode_t;
+struct _DPL_List_t;
+typedef struct _DPL_List_t DPL_List_t;
+
+struct _DPL_ListNode_t {
+    DPL_ListNode_t *prev;
+    DPL_ListNode_t *next;
+    DPL_List_t *list;
+    void *value;
+};
+
+struct _DPL_List_t {
+    DPL_ListNode_t node;
+    int count;
+};
+
+extern DPLCALL void DPL_List_Init(DPL_List_t *list);
+extern DPLCALL void DPL_List_Add(DPL_List_t *list, DPL_ListNode_t *node, void *value, DPL_ListNode_t *after);
+extern DPLCALL void DPL_List_AddFirst(DPL_List_t *list, DPL_ListNode_t *node, void *value);
+extern DPLCALL void DPL_List_AddLast(DPL_List_t *list, DPL_ListNode_t *node, void *value);
+extern DPLCALL DPL_ListNode_t * DPL_List_First(DPL_List_t *list);
+extern DPLCALL DPL_ListNode_t * DPL_List_Last(DPL_List_t *list);
+extern DPLCALL void DPL_List_Clear(DPL_List_t *list);
+
+extern DPLCALL void DPL_ListNode_Init(DPL_ListNode_t *list);
+extern DPLCALL DPL_ListNode_t * DPL_ListNode_Prev(DPL_ListNode_t *node);
+extern DPLCALL DPL_ListNode_t * DPL_ListNode_Next(DPL_ListNode_t *node);
+extern DPLCALL void DPL_ListNode_Unlink(DPL_ListNode_t *node);
+
 extern int DPLCALL DPL_Text_SetDefaultEncoding(int encoding);
 
 extern int DPLCALL DPL_Text_ConvertStringEncoding(

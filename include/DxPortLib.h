@@ -30,6 +30,8 @@
 #  include "DPLCommon.h"
 #endif
 
+#include "DxPortLib_c.h"
+
 namespace DPL {
     
 namespace Text { // DPL::Text
@@ -75,6 +77,101 @@ public:
 private:
     int m_handle;
 }; // class WinINI
+
+template<class T>
+class List;
+
+template<class T>
+class ListNode {
+private:
+    friend class List<T>;
+    
+    DPL_ListNode_t m_node;
+public:
+    DPLCALL ListNode() {
+        DPL_ListNode_Init(&m_node);
+    }
+    DPLCALL ~ListNode() {
+        Unlink();
+    }
+    DPLCALL void Unlink() {
+        DPL_ListNode_Unlink(&m_node);
+    }
+    
+    DPLCALL ListNode<T> *Next() {
+        return (ListNode<T> *)DPL_ListNode_Next(&m_node);
+    }
+    DPLCALL ListNode<T> *Prev() {
+        return (ListNode<T> *)DPL_ListNode_Prev(&m_node);
+    }
+    
+    DPLCALL T* Value() {
+        return (T*)(m_node.value);
+    }
+};
+
+template<class T>
+class List { // DPL::List<T>
+private:
+    DPL_List_t m_list;
+public:
+    DPLCALL List() {
+        DPL_List_Init(&m_list);
+    }
+    DPLCALL ~List() {
+        DPL_List_Clear(&m_list);
+    }
+    
+    DPLCALL void Add(ListNode<T> *node, T *value, ListNode<T> *after) {
+        DPL_List_Add(&m_list, &node->m_node, value, after);
+    }
+    DPLCALL void AddFirst(ListNode<T> *node, T *value) {
+        DPL_List_AddFirst(&m_list, &node->m_node, value);
+    }
+    DPLCALL void AddLast(ListNode<T> *node, T *value) {
+        DPL_List_AddLast(&m_list, &node->m_node, value);
+    }
+    
+    DPLCALL ListNode<T> *First() {
+        return (ListNode<T> *)DPL_List_First(&m_list);
+    }
+    DPLCALL ListNode<T> *Last() {
+        return (ListNode<T> *)DPL_List_Last(&m_list);
+    }
+    
+    DPLCALL void Clear() {
+        DPL_List_Clear(&m_list);
+    }
+    
+    DPLCALL int Count() const {
+        return m_list.count;
+    }
+    
+}; // DPL::List<T>
+
+struct _DPL_ListNode_t {
+    DPL_ListNode_t *prev;
+    DPL_ListNode_t *next;
+    DPL_List_t *list;
+    void *value;
+};
+
+struct _DPL_List_t {
+    DPL_ListNode_t node;
+    int count;
+};
+
+extern DPLCALL void DPL_List_Init(DPL_List_t *list);
+extern DPLCALL void DPL_List_Add(DPL_List_t *list, DPL_ListNode_t *node, void *value, DPL_ListNode_t *after);
+extern DPLCALL void DPL_List_AddFirst(DPL_List_t *list, DPL_ListNode_t *node, void *value);
+extern DPLCALL void DPL_List_AddLast(DPL_List_t *list, DPL_ListNode_t *node, void *value);
+extern DPLCALL DPL_ListNode_t * DPL_List_First(DPL_List_t *list);
+extern DPLCALL DPL_ListNode_t * DPL_List_Last(DPL_List_t *list);
+extern DPLCALL DPL_ListNode_t * DPL_List_Prev(DPL_ListNode_t *node);
+extern DPLCALL DPL_ListNode_t * DPL_List_Next(DPL_ListNode_t *node);
+extern DPLCALL void DPL_List_Unlink(DPL_ListNode_t *node);
+extern DPLCALL void DPL_List_Clear(DPL_List_t *list);
+
 
 } // namespace DPL
 

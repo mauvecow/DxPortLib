@@ -27,6 +27,69 @@
 
 #include "PL/PLInternal.h"
 #include "LunaInternal.h"
+#include "DxPortLib.h"
+
+struct FilenameCache_t {
+    DPL::ListNode<FilenameCache_t> node;
+    
+    int handle;
+    
+    char *filename;
+};
+
+DPL::List<FilenameCache_t> s_filenameList;
+
+static int s_FindTextureFromFilename(const char *filename) {
+    DPL::ListNode<FilenameCache_t> *node;
+    
+    node = s_filenameList.First();
+    while (node != NULL) {
+        FilenameCache_t *c = node->Value();
+        
+        if (PL_Text_Strcmp(filename, c->filename) == 0) {
+            return c->handle;
+        }
+        
+        node = node->Next();
+    }
+    
+    return -1;
+}
+
+static void s_ReleaseTexture(int handle) {
+    PLTextureBase *texBase = (PLTextureBase*)PL_Handle_GetData(handle, DXHANDLE_TEXTURE);
+    FilenameCache_t *entry;
+    
+    if (texBase == NULL) {
+        return;
+    }
+    
+    entry = (FilenameCache_t *)texBase->userdata;
+    if (entry == NULL) {
+        return;
+    }
+    entry->node.Unlink();
+    
+    DXFREE(entry->filename);
+    DXFREE(entry);
+}
+
+static void s_AddTexture(int handle, const char *filename) {
+    PLTextureBase *texBase = (PLTextureBase*)PL_Handle_GetData(handle, DXHANDLE_TEXTURE);
+    FilenameCache_t *entry;
+    
+    if (texBase == NULL) {
+        return;
+    }
+    
+    entry = (FilenameCache_t *)DXALLOC(sizeof(FilenameCache_t));
+    entry->filename = PL_Text_Strdup(filename);
+    entry->handle = handle;
+    texBase->userdata = (void *)entry;
+    texBase->releaseFunc = s_ReleaseTexture;
+    
+    s_filenameList.AddFirst(&entry->node, entry);
+}
 
 LTEXTURE LunaTexture::Create(Uint32 Width, Uint32 Height,
                              eSurfaceFormat format)
@@ -40,12 +103,18 @@ LTEXTURE LunaTexture::CreateFromFile(const char *pFileName,
                                      eSurfaceFormat format,
                                      D3DCOLOR keyColor) {
     char buf[2048];
-    int surfaceID = PL_Surface_Load(
+    int handle = s_FindTextureFromFilename(pFileName);
+    int surfaceID;
+    
+    if (handle > 0) {
+        PLG.Texture_AddRef(handle);
+        return handle;
+    }
+    
+    surfaceID = PL_Surface_Load(
         PL_Text_ConvertStrncpyIfNecessary(
             buf, -1, pFileName, g_lunaUseCharSet, 2048)
     );
-    int handle;
-    
     if (surfaceID < 0) {
         return -1;
     }
@@ -58,6 +127,8 @@ LTEXTURE LunaTexture::CreateFromFile(const char *pFileName,
     PL_Surface_Delete(surfaceID);
     
     PLG.Texture_SetWrap(handle, DXTRUE);
+    
+    s_AddTexture(handle, pFileName);
     
     return handle;
 }
