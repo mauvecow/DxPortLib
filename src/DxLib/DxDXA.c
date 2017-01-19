@@ -378,7 +378,6 @@ int DXA_PreloadArchive(DXArchive *archive) {
 
 DXArchive *DXA_OpenArchive(const char *filename, const char *keyString) {
     SDL_RWops *rwops;
-    char utf8Buf[2048];
     DXArchive *archive;
     
     /* - Make sure we can open the thing. */
@@ -389,7 +388,7 @@ DXArchive *DXA_OpenArchive(const char *filename, const char *keyString) {
     
     archive = (DXArchive *)DXALLOC(sizeof(DXArchive));
     
-    archive->utf8Filename = SDL_strdup(utf8Buf);
+    archive->utf8Filename = SDL_strdup(filename);
     archive->File = rwops;
     archive->DataBlob = NULL;
     archive->PreloadData = NULL;

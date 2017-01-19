@@ -165,8 +165,10 @@ static int s_GetArchiveFilename(
         if (s_archiveExtension[0] != '\0') {
             char *c = buf + position;
             c += PL_Text_WriteUTF8Char(c, '.', buf + maxLen - c);
+            position = c - buf;
             position += PL_Text_Strncpy(c, s_archiveExtension, buf + maxLen - c);
         } else {
+            buf[position] = 0;
             position += PL_Text_ConvertStrncat(buf + position, -1,
                                    ".dxa", DX_CHARSET_EXT_UTF8,
                                    maxLen - position);
