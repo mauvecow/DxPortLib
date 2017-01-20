@@ -28,7 +28,7 @@
 /* All of this code functions in SJIS space. */
 
 void LunaChara::Code2Str(Uint16 Code, char *pStr) {
-    if (IsKanji(Code)) {
+    if (IsKanji((unsigned char)(Code & 0xff))) {
         pStr[0] = Code >> 8;
         pStr[1] = Code & 0xff;
         pStr[2] = 0;

@@ -20,6 +20,7 @@
  */
 
 #include "PLInternal.h"
+#include <math.h>
 
 /* Not all platforms have these, so we implement our own, with custom
  * locale support. Suffering.
@@ -312,7 +313,7 @@ static int s_printDouble(char *dest, const char *end, s_PrintParams *params, dou
             value *= radix;
             
             if (precision == 1) {
-                c = (int)round(value);
+                c = (int)floor(value + 0.5f);
             } else {
                 c = (int)floor(value);
             }
@@ -327,7 +328,7 @@ static int s_printDouble(char *dest, const char *end, s_PrintParams *params, dou
     return dest - start;
 }
 
-static const int s_numBufSize = 255;
+#define s_numBufSize 255
 
 int PL_Text_Vsnprintf(char *dest, int bufSize, int charset, const char *format, va_list args) {
     char ch;

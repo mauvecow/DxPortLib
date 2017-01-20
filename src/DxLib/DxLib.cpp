@@ -167,7 +167,7 @@ int SetDXArchiveExtensionW(const wchar_t *extension) {
     return ::DxLib_SetDXArchiveExtensionW(extension);
 }
 int SetDXArchiveExtensionA(const char *extension) {
-    return ::DxLib_SetDXArchiveExtension(extension);
+    return ::DxLib_SetDXArchiveExtensionA(extension);
 }
 
 int SetDXArchivePriority(int priority) {

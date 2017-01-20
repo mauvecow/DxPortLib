@@ -175,20 +175,21 @@ namespace DxLib {
 #  define DXUNICALL(a) a ## A
 #endif
 
-#define DXUNICALL_WRAP(func, params, tparams) \
-    static DXINLINE int func params { \
+#define DXUNICALL_WRAP(rettype, func, params, tparams) \
+    static DXINLINE rettype func params { \
         return DXUNICALL(func) tparams; \
     }
 
-#define DXUNICALL_WRAPTO(func, params, funcTo, tparams) \
-    static DXINLINE int func params { \
+#define DXUNICALL_WRAPTO(rettype, func, params, funcTo, tparams) \
+    static DXINLINE rettype func params { \
         return DXUNICALL(funcTo) tparams; \
     }
-#define DXUNICALL_VA_WRAPTO(func, params, funcTo, tparams, argStart) \
-    static DXINLINE int func params { \
+#define DXUNICALL_VA_WRAPTO(rettype, func, params, funcTo, tparams, argStart) \
+    static DXINLINE rettype func params { \
         va_list args; \
+        rettype retval; \
         va_start(args, argStart); \
-        int retval = DXUNICALL(funcTo) tparams; \
+        retval = DXUNICALL(funcTo) tparams; \
         va_end(args); \
         return retval; \
     }

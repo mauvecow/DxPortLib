@@ -329,7 +329,7 @@ int DPL_WinINI_ReadFile(int handle, const char *filename, int fileEncoding) {
     
     size = PL_File_GetSize(fileHandle);
     if (size < (1024*1024)) { /* 1MB limit */
-        char *data = DXALLOC(size + 1);
+        char *data = DXALLOC((size_t)(size + 1));
         
         PL_File_Read(fileHandle, data, size);
         data[size] = 0;

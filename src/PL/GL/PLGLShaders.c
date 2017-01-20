@@ -402,8 +402,6 @@ int PLGL_Shaders_CompileDefinition(const PLGLShaderDefinition *definition, PLAlp
         return shaderHandle;
     } while(0);
     
-    printf("Failed to compile shader!!\n");
-    
     if (glVertexShaderID != 0) {
         PL_GL.glDeleteShader(glVertexShaderID);
     }

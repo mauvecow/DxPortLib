@@ -116,31 +116,31 @@ private:
     DPL_List_t m_list;
 public:
     DPLCALL List() {
-        DPL_List_Init(&m_list);
+        ::DPL_List_Init(&m_list);
     }
     DPLCALL ~List() {
-        DPL_List_Clear(&m_list);
+        ::DPL_List_Clear(&m_list);
     }
     
     DPLCALL void Add(ListNode<T> *node, T *value, ListNode<T> *after) {
-        DPL_List_Add(&m_list, &node->m_node, value, after);
+        ::DPL_List_Add(&m_list, &node->m_node, value, after);
     }
     DPLCALL void AddFirst(ListNode<T> *node, T *value) {
-        DPL_List_AddFirst(&m_list, &node->m_node, value);
+        ::DPL_List_AddFirst(&m_list, &node->m_node, value);
     }
     DPLCALL void AddLast(ListNode<T> *node, T *value) {
-        DPL_List_AddLast(&m_list, &node->m_node, value);
+        ::DPL_List_AddLast(&m_list, &node->m_node, value);
     }
     
     DPLCALL ListNode<T> *First() {
-        return (ListNode<T> *)DPL_List_First(&m_list);
+        return (ListNode<T> *)::DPL_List_First(&m_list);
     }
     DPLCALL ListNode<T> *Last() {
-        return (ListNode<T> *)DPL_List_Last(&m_list);
+        return (ListNode<T> *)::DPL_List_Last(&m_list);
     }
     
     DPLCALL void Clear() {
-        DPL_List_Clear(&m_list);
+        ::DPL_List_Clear(&m_list);
     }
     
     DPLCALL int Count() const {
@@ -161,6 +161,7 @@ struct _DPL_List_t {
     int count;
 };
 
+/*
 extern DPLCALL void DPL_List_Init(DPL_List_t *list);
 extern DPLCALL void DPL_List_Add(DPL_List_t *list, DPL_ListNode_t *node, void *value, DPL_ListNode_t *after);
 extern DPLCALL void DPL_List_AddFirst(DPL_List_t *list, DPL_ListNode_t *node, void *value);
@@ -171,6 +172,7 @@ extern DPLCALL DPL_ListNode_t * DPL_List_Prev(DPL_ListNode_t *node);
 extern DPLCALL DPL_ListNode_t * DPL_List_Next(DPL_ListNode_t *node);
 extern DPLCALL void DPL_List_Unlink(DPL_ListNode_t *node);
 extern DPLCALL void DPL_List_Clear(DPL_List_t *list);
+ */
 
 
 } // namespace DPL

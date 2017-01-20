@@ -41,8 +41,15 @@ int PL_Platform_GetDateTime(DATEDATA *dateBuf) {
     time_t t;
     struct tm *format;
     
+#ifdef WIN32
+    struct tm temp_format;
+    format = &temp_format;
+    time(&t);
+    localtime_s(format, &t);
+#else
     time(&t);
     format = localtime(&t);
+#endif
     
     dateBuf->Year = format->tm_year + 1900;
     dateBuf->Mon = format->tm_mon + 1;

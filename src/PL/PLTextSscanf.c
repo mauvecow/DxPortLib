@@ -53,8 +53,9 @@ static int s_scanUnsignedLong(const char *str, int charset, int radix, unsigned 
     /* Break down the numbers. */
     while (*str) {
         const char *thisStart = str;
-        c = PL_Text_ReadChar(&str, charset);
         int cv = 0;
+
+        c = PL_Text_ReadChar(&str, charset);
         if (c >= '0' && c <= '9') {
             cv = c - '0';
         } else if (c >= 'a' && c <= 'z') {
@@ -74,9 +75,10 @@ static int s_scanUnsignedLong(const char *str, int charset, int radix, unsigned 
     }
     
     if (negFlag) {
-        v = -v;
+        *value = (unsigned long)-(long)v;
+    } else {
+        *value = v;
     }
-    *value = v;
     
     return str - start;
 }
@@ -86,7 +88,6 @@ static int s_scanLong(const char *str, int charset, int radix, long *value) {
     unsigned int c = PL_Text_ReadChar(&str, charset);
     int negFlag = 0;
     unsigned long uv;
-    long v;
     
     if (c == '-') {
         negFlag = 1;
@@ -96,11 +97,11 @@ static int s_scanLong(const char *str, int charset, int radix, long *value) {
     
     str += s_scanUnsignedLong(str, charset, radix, &uv);
     
-    v = (long)uv;
     if (negFlag) {
-        v = -uv;
+        *value = -(long)uv;
+    } else {
+        *value = (long)uv;
     }
-    *value = v;
     
     return str - start;
 }
@@ -127,8 +128,9 @@ static int s_scanUint64(const char *str, int charset, int radix, uint64_t *value
     /* Break down the numbers. */
     while (*str) {
         const char *thisStart = str;
-        c = PL_Text_ReadChar(&str, charset);
         int cv = 0;
+
+        c = PL_Text_ReadChar(&str, charset);
         if (c >= '0' && c <= '9') {
             cv = c - '0';
         } else if (c >= 'a' && c <= 'z') {
@@ -148,9 +150,10 @@ static int s_scanUint64(const char *str, int charset, int radix, uint64_t *value
     }
     
     if (negFlag) {
-        v = -v;
+        *value = (uint64_t)-(int64_t)v;
+    } else {
+        *value = v;
     }
-    *value = v;
     
     return str - start;
 }
@@ -160,7 +163,6 @@ static int s_scanSint64(const char *str, int charset, int radix, int64_t *value)
     unsigned int c = PL_Text_ReadChar(&str, charset);
     int negFlag = 0;
     uint64_t uv;
-    int64_t v;
     
     if (c == '-') {
         negFlag = 1;
@@ -170,11 +172,11 @@ static int s_scanSint64(const char *str, int charset, int radix, int64_t *value)
     
     str += s_scanUint64(str, charset, radix, &uv);
     
-    v = (int64_t)uv;
     if (negFlag) {
-        v = -uv;
+        *value = -(int64_t)uv;
+    } else {
+        *value = (int64_t)uv;
     }
-    *value = v;
     
     return str - start;
 }
@@ -193,9 +195,10 @@ static int s_scanDouble(const char *str, int charset, int radix, double *value) 
     }
     
     while (*str) {
+        int cv = 0;
+
         tmp = str;
         c = PL_Text_ReadChar(&str, charset);
-        int cv = 0;
         if (c >= '0' && c <= '9') {
             cv = c - '0';
         } else if (c >= 'a' && c <= 'z') {
@@ -221,9 +224,10 @@ static int s_scanDouble(const char *str, int charset, int radix, double *value) 
         double divisor = 1.0 / radix;
         double d = divisor;
         while (*str) {
+            int cv = 0;
+
             tmp = str;
             c = PL_Text_ReadChar(&str, charset);
-            int cv = 0;
             if (c >= '0' && c <= '9') {
                 cv = c - '0';
             } else if (c >= 'a' && c <= 'z') {
@@ -424,7 +428,7 @@ int PL_Text_Vsscanf(const char *str, int charset, const char *format, va_list ar
                                     *target = value;
                                 } else {
                                     float *target = va_arg(args, float *);
-                                    *target =value;
+                                    *target = (float)value;
                                 }
                                 count += 1;
                             }

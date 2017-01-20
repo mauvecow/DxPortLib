@@ -557,7 +557,7 @@ POINT LunaFontSprite::GetStringLastPos(LFONTSPRITE lFontSpr, const char *pStr, S
         unsigned int ch;
         unsigned int charMax = fontspr->charMax;
         float x = F(Px);
-        int y = Py;
+        float y = F(Py);
         float fontSize = F(fontspr->lfdHeader->fontSize);
         float spacing = F(fontSize + fontspr->space);
         int sheetCount = fontspr->sheetCount;
@@ -590,7 +590,7 @@ POINT LunaFontSprite::GetStringLastPos(LFONTSPRITE lFontSpr, const char *pStr, S
         }
         
         p.x = (int)x;
-        p.y = y;
+        p.y = (int)y;
     }
     
     return p;
@@ -607,7 +607,7 @@ POINT LunaFontSprite::GetStringLastPosP(LFONTSPRITE lFontSpr, const char *pStr, 
         unsigned int ch;
         unsigned int charMax = fontspr->charMax;
         float x = F(Px);
-        int y = Py;
+        float y = F(Py);
         float fontSize = F(fontspr->lfdHeader->fontSize);
         float spacing = F(fontSize + fontspr->space);
         int sheetCount = fontspr->sheetCount;
@@ -636,7 +636,7 @@ POINT LunaFontSprite::GetStringLastPosP(LFONTSPRITE lFontSpr, const char *pStr, 
         }
         
         p.x = (int)x;
-        p.y = y;
+        p.y = (int)y;
     }
     
     return p;

@@ -32,7 +32,7 @@ namespace DPL {
 /* ---------------------------------------------------------------- Text */
 
 int Text::SetDefaultEncoding(int encoding) {
-    return DPL::Text::SetDefaultEncoding(encoding);
+    return DPL_Text_SetDefaultEncoding(encoding);
 }
 
 int Text::ConvertStringEncoding(

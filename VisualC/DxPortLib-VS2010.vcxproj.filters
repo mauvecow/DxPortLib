@@ -28,6 +28,9 @@
     <Filter Include="PortLib\SDL2">
       <UniqueIdentifier>{92c88e19-d5cc-41f5-a334-0cfddbf6b400}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PortLib\DPL">
+      <UniqueIdentifier>{412218f5-ca43-4a87-b10e-9457b989f5f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\DPLBuildConfig.h">
@@ -68,6 +71,24 @@
     </ClInclude>
     <ClInclude Include="..\src\PL\D3D9\PLD3D9Internal.h">
       <Filter>PortLib\D3D9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DPL\DPLInternal.h">
+      <Filter>PortLib\DPL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DPLCommon.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DPLWinTypes.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DxPortLib.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\DxPortLib_c.h">
+      <Filter>Public Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DxLib\DxBlendModes.h">
+      <Filter>DxLib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -208,6 +229,33 @@
     </ClCompile>
     <ClCompile Include="..\src\PL\D3D9\PLD3D9Texture.c">
       <Filter>PortLib\D3D9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DPL\DPLCppWrapper.cpp">
+      <Filter>PortLib\DPL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DPL\DPLList.c">
+      <Filter>PortLib\DPL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DPL\DPLText.c">
+      <Filter>PortLib\DPL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DPL\DPLWinINI.c">
+      <Filter>PortLib\DPL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\SDL2\PLSDL2System.c">
+      <Filter>PortLib\SDL2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLTextSnprintf.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\PL\PLTextSscanf.c">
+      <Filter>PortLib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaChara.cpp">
+      <Filter>Luna</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Luna\LunaSurface.cpp">
+      <Filter>Luna</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

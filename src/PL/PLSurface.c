@@ -285,7 +285,7 @@ int PL_Surface_Load(const char *filename) {
     sdlSurface = IMG_Load_RW(file, SDL_FALSE);
     if (sdlSurface == NULL) {
         /* Get around an SDL2_image bug */
-        if (PL_Text_StrTestExt(filename, TEXT(".tga"))) {
+        if (PL_Text_StrTestExt(filename, ".tga")) {
             sdlSurface = IMG_LoadTGA_RW(file);
         }
     }

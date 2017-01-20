@@ -30,6 +30,13 @@
 
 #include "SDL.h"
 
+#ifdef __GNUC__
+#  define DXA_PACKED __attribute__((packed))
+#else
+#  define DXA_PACKED
+#endif
+
+
 #define DXA_ATTRIBUTE_DIRECTORY         0x00000010
 
 /* What this does implement:
@@ -73,7 +80,7 @@ typedef struct DXArchiveHeader {
     uint16_t              DXID;
     uint16_t              Version;
     uint32_t              HeaderSize;
-} __attribute__((packed)) DXArchiveHeader;
+} DXA_PACKED DXArchiveHeader;
 
 typedef struct DXArchiveInfo {
     uint64_t          DataAddress;
@@ -82,7 +89,7 @@ typedef struct DXArchiveInfo {
     uint64_t          DirectoryTableAddress;
     
     uint64_t          CodePage;
-} __attribute__((packed)) DXArchiveInfo;
+} DXA_PACKED DXArchiveInfo;
 
 typedef struct DXArchiveInfoV5 {
     uint32_t                DataAddress;
@@ -91,12 +98,12 @@ typedef struct DXArchiveInfoV5 {
     uint32_t                DirectoryTableAddress;
     
     uint32_t                CodePage;
-} __attribute__((packed)) DXArchiveInfoV5;
+} DXA_PACKED DXArchiveInfoV5;
 
 typedef struct DXArchiveFileNameInfo {
     uint16_t          Length;
     uint16_t          Parity;
-} __attribute__((packed)) DXArchiveFileNameInfo;
+} DXA_PACKED DXArchiveFileNameInfo;
 
 typedef struct DXArchiveFileInfo {
     uint64_t          NameAddress;
@@ -110,7 +117,7 @@ typedef struct DXArchiveFileInfo {
     
     uint64_t          DataSize;
     uint64_t          CompressedDataSize;
-} __attribute__((packed)) DXArchiveFileInfo;
+} DXA_PACKED DXArchiveFileInfo;
 
 typedef struct DXArchiveFileInfoV5 {
     uint32_t          NameAddress;
@@ -124,7 +131,7 @@ typedef struct DXArchiveFileInfoV5 {
     
     uint32_t          DataSize;
     uint32_t          CompressedDataSize;
-} __attribute__((packed)) DXArchiveFileInfoV5;
+} DXA_PACKED DXArchiveFileInfoV5;
 typedef struct DXArchiveFileInfoV1 {
     uint32_t                NameAddress;
     uint32_t                Attributes;
@@ -136,27 +143,27 @@ typedef struct DXArchiveFileInfoV1 {
     uint32_t                DataAddress;
     
     uint32_t                DataSize;
-} __attribute__((packed)) DXArchiveFileInfoV1;
+} DXA_PACKED DXArchiveFileInfoV1;
 
 typedef struct DXArchiveDirectoryInfo {
     uint64_t          DirectoryAddress;
     uint64_t          ParentDirectoryAddress;
     uint64_t          FileInfoCount;
     uint64_t          FileInfoAddress;
-} __attribute__((packed)) DXArchiveDirectoryInfo;
+} DXA_PACKED DXArchiveDirectoryInfo;
 
 typedef struct DXArchiveDirectoryInfoV5 {
     uint32_t                DirectoryAddress;
     uint32_t                ParentDirectoryAddress;
     uint32_t                FileInfoCount;
     uint32_t                FileInfoAddress;
-} __attribute__((packed)) DXArchiveDirectoryInfoV5;
+} DXA_PACKED DXArchiveDirectoryInfoV5;
 
 typedef struct DXArchiveSearchInfo {
     unsigned char               Filename[1024];
     uint16_t              Parity;
     uint16_t              FileInfoID;
-} __attribute__((packed)) DXArchiveSearchInfo;
+} DXA_PACKED DXArchiveSearchInfo;
 
 /* ------------------------------------------------------------ DXARCHIVE FUNCTIONS */
 static int DXA_ReadAndDecode(DXArchive *archive, uint64_t position, void *dest, uint64_t length);
