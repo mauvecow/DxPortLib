@@ -190,6 +190,10 @@ static void s_drawSquare2D(LunaSpriteData *sprite,
     
     z *= INV_PRIMITIVE_Z_MAX;
     
+    /* Flip RGB */
+    uint32_t c = color & 0xff00ff;
+    color = (color & 0xff00ff00) | ((c >> 16) | (c << 16));
+    
     /* assign vertices */
     v[0]->x = (x1 * sXMul) + ofs; v[0]->y = (y1 * sYMul) + ofs; v[0]->z = z; v[0]->w = 1.0f; v[0]->color = color;
     v[1]->x = (x2 * sXMul) + ofs; v[1]->y = (y2 * sYMul) + ofs; v[1]->z = z; v[1]->w = 1.0f; v[1]->color = color;
