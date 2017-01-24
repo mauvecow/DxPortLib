@@ -13,7 +13,7 @@
   1. The origin of this software must not be misrepresented; you must not
      claim that you wrote the original software. If you use this software
      in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required. 
+     appreciated but is not required.
   2. Altered source versions must be plainly marked as such, and must not be
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
@@ -22,10 +22,10 @@
 #include "PLInternal.h"
 
 /* DxLib uses the Mersenne Twister, of course.
- * 
+ *
  * Rather than the more modern variants, it uses an
  * older 1999 implementation to seed with.
- * 
+ *
  * Based on the original implementations
  * by Takuji Nishimura and Makoto Matsumoto.
  * http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
@@ -33,13 +33,13 @@
 
 static int s_initialized = DXFALSE;
 
-static unsigned long s_mt[624] = { 0 };
+static uint32_t s_mt[624] = { 0 };
 static unsigned int s_rngIndex = 0;
 
 static void s_GenerateNextSet() {
     static const unsigned long table[2] = { 0, 2567483615UL };
-    unsigned long *mt = s_mt;
-    unsigned long v;
+    uint32_t *mt = s_mt;
+    uint32_t v;
     int i;
     
     for (i = 0; i < (624 - 397); ++i) {
@@ -58,7 +58,7 @@ static void s_GenerateNextSet() {
 }
 
 static void s_SeedDx(unsigned long seed) {
-    unsigned long *mt = s_mt;
+    uint32_t *mt = s_mt;
     unsigned long i;
     
     mt[0] = seed;
@@ -73,11 +73,11 @@ static void s_SeedDx(unsigned long seed) {
     s_initialized = DXTRUE;
 }
 static void s_SeedLuna(unsigned long seed) {
-    unsigned long *mt = s_mt;
-    unsigned long i;
+    uint32_t *mt = s_mt;
+    int i;
     
     mt[0] = seed;
-    for (i = 0; i < 624; ++i) {
+    for (i = 1; i < 624; ++i) {
         mt[i] = (1812433253UL * (mt[i-1] ^ (mt[i-1] >> 30)) + i);
     }
     
