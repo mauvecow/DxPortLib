@@ -20,6 +20,7 @@
  */
 
 #include "DPLBuildConfig.h"
+#include "DxDefines.h"
 
 #ifdef DXPORTLIB_DXLIB_INTERFACE
 #ifndef DX_NON_FONT
