@@ -244,6 +244,8 @@ extern int PL_Window_GetWaitVSyncFlag();
 
 extern int PL_Window_SetAlwaysRunFlag(int flag);
 extern int PL_Window_GetAlwaysRunFlag();
+extern int PL_Window_GetWindowCloseFlag();
+extern int PL_Window_GetWindowUserCloseFlag(int resetFlag);
 
 extern int PL_Window_GetActiveFlag();
 extern int PL_Window_GetWindowModeFlag();

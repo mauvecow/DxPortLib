@@ -358,6 +358,11 @@ extern DXCALL int GetWindowActiveFlag();
 // - If TRUE, window is currently in focus and active.
 extern DXCALL int GetActiveFlag();
 
+// - If TRUE, the window is currently closed.
+extern DXCALL int GetWindowCloseFlag();
+// - If TRUE, the user has closed the window. Resets flag if DXTRUE passed.
+extern DXCALL int GetWindowUserCloseFlag(int resetFlag = DXFALSE);
+
 // - Returns the number of display modes available.
 extern DXCALL int GetDisplayModeNum();
 // - Returns information for the given display mode index.

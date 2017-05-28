@@ -230,6 +230,9 @@ extern DXCALL int DxLib_SetAlwaysRunFlag(int flag);
 extern DXCALL int DxLib_GetAlwaysRunFlag();
 extern DXCALL int DxLib_GetWindowActiveFlag();
 extern DXCALL int DxLib_GetActiveFlag();
+extern DXCALL int DxLib_GetWindowCloseFlag();
+extern DXCALL int DxLib_GetWindowUserCloseFlag(int resetFlag);
+
 
 extern DXCALL int DxLib_GetDisplayModeNum();
 extern DXCALL DISPLAYMODEDATA DxLib_GetDisplayMode(int modeIndex);

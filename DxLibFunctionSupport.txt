@@ -105,14 +105,14 @@ DxWindow:
   . GetUseMMXFlag
   . GetUseSSEFlag
   . GetUseSSE2Flag
-  . GetWindowCloseFlag
+  * GetWindowCloseFlag
   X GetTaskInstance
   . GetUseWindowRgnFlag
   . GetWindowSizeChangeEnableFlag
   . GetWindowSizeExtendRate
   . GetWindowSize
   . GetWindowPosition
-  . GetWindowUserCloseFlag
+  * GetWindowUserCloseFlag
   . GetNotDrawFlag
   . GetPaintMessageFlag
   . GetValidHiPerformanceCounter

@@ -66,6 +66,9 @@ static int s_offscreenVBO = -1;
 
 static int s_forceWindowCentered = DXFALSE;
 
+static int s_windowCloseFlag = DXFALSE;
+static int s_windowUserCloseFlag = DXFALSE;
+
 typedef struct RectVertex {
     float x, y;
     float tcx, tcy;
@@ -449,6 +452,10 @@ int PL_Window_ProcessMessages() {
         return -1;
     }
     
+    if (s_windowCloseFlag == DXTRUE) {
+        return -1;
+    }
+    
     do {
         while (SDL_PollEvent(&event)) {
             switch(event.type) {
@@ -507,6 +514,8 @@ int PL_Window_ProcessMessages() {
                     break;
 #endif /* #ifndef DXPORTLIB_NO_INPUT */
                 case SDL_QUIT:
+                    s_windowCloseFlag = DXTRUE;
+                    s_windowUserCloseFlag = DXTRUE;
                     return -1;
             }
         }
@@ -703,6 +712,19 @@ int PL_Window_SetAlwaysRunFlag(int flag) {
 
 int PL_Window_GetAlwaysRunFlag() {
     return s_alwaysRunFlag;
+}
+
+int PL_Window_GetWindowCloseFlag() {
+    return s_windowCloseFlag;
+}
+int PL_Window_GetWindowUserCloseFlag(int resetFlag) {
+    int retval = s_windowUserCloseFlag;
+    
+    if (resetFlag != DXFALSE) {
+        s_windowUserCloseFlag = 0;
+    }
+    
+    return retval;
 }
 
 static int s_windowDisplayIndex = 0;

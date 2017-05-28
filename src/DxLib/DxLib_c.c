@@ -558,6 +558,12 @@ int DxLib_GetWindowActiveFlag() {
 int DxLib_GetActiveFlag() {
     return PL_Window_GetActiveFlag();
 }
+int DxLib_GetWindowCloseFlag() {
+    return PL_Window_GetWindowCloseFlag();
+}
+int DxLib_GetWindowUserCloseFlag(int resetFlag) {
+    return PL_Window_GetWindowUserCloseFlag(resetFlag);
+}
 
 int DxLib_GetDisplayModeNum() {
     return PL_Window_GetNumDisplayModes();

@@ -339,6 +339,14 @@ int GetActiveFlag() {
     return ::DxLib_GetActiveFlag();
 }
 
+int GetWindowCloseFlag() {
+    return ::DxLib_GetWindowCloseFlag();
+}
+int GetWindowUserCloseFlag(int resetFlag) {
+    return ::DxLib_GetWindowUserCloseFlag(resetFlag);
+}
+
+
 int GetDisplayModeNum() {
     return ::DxLib_GetDisplayModeNum();
 }
