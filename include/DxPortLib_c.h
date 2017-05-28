@@ -95,6 +95,8 @@ extern DPLCALL int DPL_WinINI_WriteFile(
     int handle, const char *filename, int fileEncoding);
 extern DPLCALL int DPL_WinINI_Clear(
     int handle);
+extern DPLCALL int DPL_WinINI_AddRef(
+    int handle);
 extern DPLCALL int DPL_WinINI_Release(
     int handle);
 extern DPLCALL int DPL_WinINI_GetInt(

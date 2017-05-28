@@ -71,6 +71,10 @@ WinINI::WinINI(const char *inputFilename, int fileEncoding) {
     m_handle = DPL_WinINI_Create();
     ReadFile(inputFilename, fileEncoding);
 }
+WinINI::WinINI(const WinINI &src) {
+    m_handle = src.m_handle;
+    DPL_WinINI_AddRef(m_handle);
+}
 
 WinINI::~WinINI() {
     DPL_WinINI_Release(m_handle);

@@ -59,6 +59,7 @@ class WinINI {
 public:
     DPLCALL WinINI();
     DPLCALL WinINI(const char *inputFilename, int fileEncoding = -1);
+    DPLCALL WinINI(const WinINI &src);
     DPLCALL ~WinINI();
     
     DPLCALL int Clear();

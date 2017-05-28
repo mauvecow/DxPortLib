@@ -44,6 +44,7 @@ typedef struct s_Section_t {
 
 typedef struct s_WinINI_t {
     uint32_t id;
+    int refCount;
     
     s_Section_t *sections;
 } s_WinINI_t;
@@ -297,6 +298,7 @@ int DPL_WinINI_Create() {
     
     ini = (s_WinINI_t *)PL_Handle_AllocateData(handle, sizeof(s_WinINI_t));
     ini->id = s_wininiID;
+    ini->refCount = 1;
     ini->sections = NULL;
     
     return handle;
@@ -386,10 +388,26 @@ int DPL_WinINI_WriteFile(int handle, const char *filename, int fileEncoding) {
     return 0;
 }
 
+int DPL_WinINI_AddRef(int handle) {
+    s_WinINI_t *ini = s_GetFromHandle(handle);
+    if (ini == NULL) {
+        return -1;
+    }
+    
+    ini->refCount += 1;
+    
+    return 0;
+}
+
 int DPL_WinINI_Release(int handle) {
     s_WinINI_t *ini = s_GetFromHandle(handle);
     if (ini == NULL) {
         return -1;
+    }
+    
+    ini->refCount -= 1;
+    if (ini->refCount > 0) {
+        return 0;
     }
     
     DPL_WinINI_Clear(handle);
