@@ -64,7 +64,7 @@ LIBS="$LIBS $SDL_LIBS"
 
 AC_CHECK_LIB(SDL2_image, IMG_Quit)
 
-LIBS="$LIBS -lSDL2_image -lSDL2_ttf -lvorbisfile"
+LIBS="$LIBS -lSDL2_image -lvorbisfile"
 
 LIBS="$LIBS -lGL"
 

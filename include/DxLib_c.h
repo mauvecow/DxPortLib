@@ -263,6 +263,8 @@ DXUNICALL_WRAP(int, DxLib_EXT_MessageBoxYesNo,
                (title, text, button1, button2))
 
 /* ------------------------------------------------------- DxGraphics.cpp */
+extern DXCALL int DxLib_MakeGraph(int width, int height,
+                                  int hasAlphaChannel);
 extern DXCALL int DxLib_MakeScreen(int width, int height,
                                    int hasAlphaChannel);
 

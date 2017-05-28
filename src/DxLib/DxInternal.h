@@ -296,6 +296,7 @@ extern int Dx_Font_SetFontCacheUsePremulAlphaFlag(int flag);
 extern int Dx_Font_GetFontCacheUsePremulAlphaFlag();
 
 /* ------------------------------------------------------------- Graph.c */
+extern int Dx_Graph_MakeGraph(int width, int height, int hasAlphaChannel);
 extern int Dx_Graph_MakeScreen(int width, int height, int hasAlphaChannel);
 extern int Dx_Graph_Load(const char *filename, int flipFlag);
 extern int Dx_Graph_LoadDiv(const char *filename, int graphCount,

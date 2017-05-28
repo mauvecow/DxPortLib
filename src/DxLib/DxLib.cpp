@@ -372,6 +372,9 @@ int EXT_MessageBoxYesNoW(const wchar_t *title, const wchar_t *text,
 
 // ---------------------------------------------------- DxGraphics.cpp
 
+int MakeGraph(int width, int height, int hasAlphaChannel) {
+    return ::DxLib_MakeGraph(width, height, hasAlphaChannel);
+}
 int MakeScreen(int width, int height, int hasAlphaChannel) {
     return ::DxLib_MakeScreen(width, height, hasAlphaChannel);
 }

@@ -111,6 +111,30 @@ int Dx_Graph_CreateFromSurface(int surfaceID) {
     return graphID;
 }
 
+int Dx_Graph_MakeGraph(int width, int height, int hasAlphaChannel) {
+    int textureRefID;
+    int graphID;
+    PLRect rect;
+    
+    textureRefID = PLG.Texture_CreateFromDimensions(width, height, hasAlphaChannel);
+    if (textureRefID < 0) {
+        return -1;
+    }
+    
+    /* Success, fill out the new graph entry. */
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = width;
+    rect.h = height;
+    graphID = s_AllocateGraphID(textureRefID, rect, -1);
+    
+    if (graphID < 0) {
+        PLG.Texture_Release(textureRefID);
+    }
+    
+    return graphID;
+}
+
 int Dx_Graph_MakeScreen(int width, int height, int hasAlphaChannel) {
     int textureRefID;
     int graphID;

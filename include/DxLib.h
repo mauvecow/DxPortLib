@@ -393,6 +393,10 @@ DXUNICALL_WRAP(int, EXT_MessageBoxYesNo,
                (title, text, button1, button2))
 
 // --------------------------------------------------------- DxGraphics.cpp
+// - Creates a blank graph.
+extern DXCALL int MakeGraph(int width, int height,
+                            int hasAlphaChannel = DXFALSE);
+
 // - Creates a screen graph that can be used with SetDrawScreen.
 // Note that you can't use it to draw with while bound.
 extern DXCALL int MakeScreen(int width, int height,

@@ -76,7 +76,7 @@
  *
  * Currently only used by DxLib, but should be exported eventually.
  */
-/* #define DXPORTLIB_NO_TTF_FONT */
+#define DXPORTLIB_NO_TTF_FONT
 
 /* DXPORTLIB_DXLIB_INTERFACE only: Disables the static math table for Luna.
  * Disables support for DxLib's archive format.

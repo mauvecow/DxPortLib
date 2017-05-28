@@ -627,6 +627,9 @@ int DxLib_EXT_MessageBoxYesNoW(const wchar_t *title, const wchar_t *text,
         titlebuf, textbuf, button1buf, button2buf);
 }
 
+int DxLib_MakeGraph(int width, int height, int hasAlphaChannel) {
+    return Dx_Graph_MakeGraph(width, height, hasAlphaChannel);
+}
 int DxLib_MakeScreen(int width, int height, int hasAlphaChannel) {
     return Dx_Graph_MakeScreen(width, height, hasAlphaChannel);
 }
