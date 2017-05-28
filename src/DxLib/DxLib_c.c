@@ -518,6 +518,9 @@ int DxLib_GetDrawScreen() {
 int DxLib_GetActiveGraph() {
     return Dx_Draw_GetDrawScreen();
 }
+int DxLib_GetDrawScreenSize(int *xBuf, int *yBuf) {
+    return Dx_Draw_GetDrawScreenSize(xBuf, yBuf);
+}
 
 int DxLib_EXT_SetIconImageFileA(const char *filename) {
     char buf[DX_STRMAXLEN];

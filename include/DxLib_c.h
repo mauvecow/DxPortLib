@@ -221,6 +221,7 @@ extern DXCALL int DxLib_ChangeWindowMode(int fullscreenFlag);
 extern DXCALL int DxLib_GetWindowModeFlag();
 extern DXCALL int DxLib_SetDrawScreen(int flag);
 extern DXCALL int DxLib_GetDrawScreen();
+extern DXCALL int DxLib_GetDrawScreenSize(int *xBuf, int *yBuf);
 extern DXCALL int DxLib_GetActiveGraph();
 extern DXCALL int DxLib_SetMouseDispFlag(int flag);
 extern DXCALL int DxLib_GetMouseDispFlag();

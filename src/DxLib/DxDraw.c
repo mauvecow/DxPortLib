@@ -1210,6 +1210,16 @@ int Dx_Draw_GetDrawScreen() {
     return s_drawGraphID;
 }
 
+int Dx_Draw_GetDrawScreenSize(int *XBuf, int *YBuf) {
+    if (XBuf != 0) {
+        *XBuf = s_drawScreenWidth;
+    }
+    if (YBuf != 0) {
+        *YBuf = s_drawScreenHeight;
+    }
+    return 0;
+}
+
 int Dx_Draw_ResetDrawScreen() {
     int prevGraphID = s_drawGraphID;
     

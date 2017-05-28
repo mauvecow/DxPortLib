@@ -332,6 +332,9 @@ extern DXCALL int SetDrawScreen(int screenName);
 extern DXCALL int GetDrawScreen();
 extern DXCALL int GetActiveGraph();
 
+// - Gets the size of the current screen graph.
+extern DXCALL int GetDrawScreenSize(int *xBuf, int *yBuf);
+
 // - If TRUE, waits for VSync to draw, in order to remove tearing.
 // NOTICE: Can only be called before DxLib_Init!
 extern DXCALL int SetWaitVSyncFlag(int flag);

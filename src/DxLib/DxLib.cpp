@@ -306,6 +306,9 @@ int GetDrawScreen() {
 int GetActiveGraph() {
     return ::DxLib_GetDrawScreen();
 }
+int GetDrawScreenSize(int *xBuf, int *yBuf) {
+    return ::DxLib_GetDrawScreenSize(xBuf, yBuf);
+}
 
 int SetWaitVSyncFlag(int flag) {
     return ::DxLib_SetWaitVSyncFlag(flag);

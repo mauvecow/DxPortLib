@@ -230,6 +230,7 @@ extern int Dx_Draw_ForceUpdate();
 
 extern int Dx_Draw_SetDrawScreen(int drawScreen);
 extern int Dx_Draw_GetDrawScreen();
+extern int Dx_Draw_GetDrawScreenSize(int *XBuf, int *YBuf);
 extern int Dx_Draw_ResetDrawScreen();
 
 /* -------------------------------------------------------------- Font.c */

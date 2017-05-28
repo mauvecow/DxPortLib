@@ -380,7 +380,7 @@ DxInput:
   ? SetUseJoypadVibrationFlag
 
 DxGraph:
-  . MakeGraph
+  * MakeGraph
   * MakeScreen
   * DerivationGraph
   * DeleteGraph
@@ -667,7 +667,7 @@ DxGraph:
   . SetGraphDisplayArea
   . SetChangeScreenModeGraphicsSystemResetFlag
   . GetScreenState
-  . GetDrawScreenSize
+  * GetDrawScreenSize
   . GetScreenBitDepth
   . GetColorBitDepth
   . GetChangeDisplayFlag
