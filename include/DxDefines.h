@@ -271,7 +271,8 @@ namespace DxLib {
 
 #define DX_BLENDMODE_EXT                (0x1000)
 #define DX_BLENDMODE_EXT_PS_ALPHA       (DX_BLENDMODE_EXT + 0)
-#define DX_BLENDMODE_EXT_END            (DX_BLENDMODE_EXT + 1)
+#define DX_BLENDMODE_EXT_DSTALPHA	(DX_BLENDMODE_EXT + 1)
+#define DX_BLENDMODE_EXT_END            (DX_BLENDMODE_EXT + 2)
 
 /* Font types. Internally, we only do antialiasing though. */
 #define DX_FONTTYPE_NORMAL                      (0x00)
