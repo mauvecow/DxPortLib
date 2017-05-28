@@ -843,6 +843,8 @@ extern DXCALL int DxLib_InitSoundMem(int LogOutFlag);
 extern DXCALL int DxLib_SetCreateSoundDataType(int soundDataType);
 extern DXCALL int DxLib_GetCreateSoundDataType();
 
+extern DXCALL int DxLib_GetCurrentPositionSoundMem(int soundID);
+
 #endif /* #ifndef DX_NON_SOUND */
 
 /* --------------------------------------------------------- DxMemory.cpp */

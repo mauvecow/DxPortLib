@@ -1145,6 +1145,9 @@ extern DXCALL int InitSoundMem(int LogOutFlag = DXFALSE);
 extern DXCALL int SetCreateSoundDataType(int soundDataType);
 extern DXCALL int GetCreateSoundDataType();
 
+// - Gets the current sound position in samples.
+extern DXCALL int GetCurrentPositionSoundMem(int soundID);
+
 #endif /* #ifndef DX_NON_SOUND */
 
 // ----------------------------------------------------------- DxMemory.cpp

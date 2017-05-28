@@ -952,6 +952,25 @@ int PL_Audio_RemoveLoopPoints(int soundID) {
     return retval;
 }
 
+int PL_Audio_GetCurrentPositionSoundMem(int soundID) {
+    Sound *sound;
+    int retval = 0;
+    
+    SDL_LockAudio();
+    
+    sound = (Sound *)PL_Handle_GetData(soundID, DXHANDLE_SOUND);
+    if (sound != NULL) {
+        if (sound->soundType == SOUNDTYPE_STREAM) {
+            retval = (int)ov_pcm_tell(&sound->stream.ovfile);
+        } else if (sound->soundType == SOUNDTYPE_BUFFER) {
+            retval = (int)sound->buffer.currentPos;
+        }
+    }
+    SDL_UnlockAudio();
+    
+    return retval;
+}
+
 int PL_SetVolumeSoundMemDirect(int volume, int soundID) {
     Sound *sound;
     int retval = -1;

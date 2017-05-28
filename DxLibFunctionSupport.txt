@@ -1274,7 +1274,7 @@ DxSound:
   . ChangeNextPlayVolumeSoundMem
   . SetNextPlayFrequencySoundMem
   . SetCurrentPositionSoundMem
-  . GetCurrentPositionSoundMem
+  * GetCurrentPositionSoundMem
   . SetSoundCurrentPosition
   . GetSoundCurrentPosition
   . SetSoundCurrentTime

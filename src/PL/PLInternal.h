@@ -652,6 +652,8 @@ extern int PL_Audio_SetLoopTimes(int soundID,
                                  double loopPoint);
 extern int PL_Audio_RemoveLoopPoints(int soundID);
 
+extern int PL_Audio_GetCurrentPositionSoundMem(int soundID);
+
 extern int PL_Audio_ResetSettings();
 extern int PL_Audio_Init();
 extern int PL_Audio_End();

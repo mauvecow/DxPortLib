@@ -1446,6 +1446,10 @@ int DxLib_GetCreateSoundDataType() {
     return PL_GetCreateSoundDataType();
 }
 
+int DxLib_GetCurrentPositionSoundMem(int soundID) {
+    return PL_Audio_GetCurrentPositionSoundMem(soundID);
+}
+
 #endif /* #ifndef DX_NON_SOUND */
 
 /* ---------------------------------------------------- DxMemory.cpp */

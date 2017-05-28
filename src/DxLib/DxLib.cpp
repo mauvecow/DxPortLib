@@ -1023,6 +1023,10 @@ int GetCreateSoundDataType() {
     return ::DxLib_GetCreateSoundDataType();
 }
 
+int GetCurrentPositionSoundMem(int soundID) {
+    return ::DxLib_GetCurrentPositionSoundMem(soundID);
+}
+
 #endif /* #ifndef DX_NON_SOUND */
 
 // ---------------------------------------------------- DxMemory.cpp
