@@ -138,7 +138,7 @@ int PLSDL2_RWopsToFile(SDL_RWops *rwops) {
 }
 
 SDL_RWops *PLSDL2_FileOpenWriteDirect(const char *filename) {
-    return SDL_RWFromFile(filename, "rb");
+    return SDL_RWFromFile(filename, "wb");
 }
 
 int PL_Platform_FileOpenWriteDirect(const char *filename) {
