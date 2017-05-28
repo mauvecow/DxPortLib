@@ -705,4 +705,37 @@ int PL_Window_GetAlwaysRunFlag() {
     return s_alwaysRunFlag;
 }
 
+static int s_windowDisplayIndex = 0;
+
+int PL_Window_GetNumDisplayModes() {
+    return SDL_GetNumDisplayModes(s_windowDisplayIndex);
+}
+
+#ifdef DXPORTLIB_DXLIB_INTERFACE
+DISPLAYMODEDATA PL_Window_GetDxDisplayMode(int modeIndex) {
+    SDL_DisplayMode mode;
+    DISPLAYMODEDATA data;
+    
+    if (SDL_GetDisplayMode(s_windowDisplayIndex, modeIndex, &mode) == 0) {
+        data.Width = mode.w;
+        data.Height = mode.h;
+        data.ColorBitDepth = SDL_BITSPERPIXEL(mode.format);
+        data.RefreshRate = mode.refresh_rate;
+    } else {
+        /* dummy data in unlikely case of failure */
+        data.Width = 640;
+        data.Height = 480;
+        data.ColorBitDepth = 24;
+        data.RefreshRate = -1;
+    }
+    
+    /* Because 32 is expected, even though 24 is more accurate... */
+    if (data.ColorBitDepth == 24) {
+        data.ColorBitDepth = 32;
+    }
+    
+    return data;
+}
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */
+
 #endif /* #ifdef DXPORTLIB_PLATFORM_SDL2 */

@@ -254,6 +254,11 @@ extern int PL_Window_BindMainFramebuffer();
 extern int PL_Window_GetFramebuffer();
 extern int PL_Window_SetDefaultRenderbuffer(int renderbufferID);
 
+extern int PL_Window_GetNumDisplayModes();
+#ifdef DXPORTLIB_DXLIB_INTERFACE
+extern DISPLAYMODEDATA PL_Window_GetDxDisplayMode(int modeIndex);
+#endif /* #ifdef DXPORTLIB_DXLIB_INTERFACE */
+
 /* -------------------------------------------------------------- Math.c */
 typedef struct _PLRect {
     int x, y, w, h;

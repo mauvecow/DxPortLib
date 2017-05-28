@@ -358,6 +358,11 @@ extern DXCALL int GetWindowActiveFlag();
 // - If TRUE, window is currently in focus and active.
 extern DXCALL int GetActiveFlag();
 
+// - Returns the number of display modes available.
+extern DXCALL int GetDisplayModeNum();
+// - Returns information for the given display mode index.
+extern DXCALL DISPLAYMODEDATA GetDisplayMode(int modeIndex);
+
 // - Creates an error message box.
 extern DXCALL int EXT_MessageBoxErrorW(const wchar_t *title,
                                        const wchar_t *text);

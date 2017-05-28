@@ -339,6 +339,14 @@ int GetActiveFlag() {
     return ::DxLib_GetActiveFlag();
 }
 
+int GetDisplayModeNum() {
+    return ::DxLib_GetDisplayModeNum();
+}
+
+DISPLAYMODEDATA GetDisplayMode(int modeIndex) {
+    return ::DxLib_GetDisplayMode(modeIndex);
+}
+
 int EXT_MessageBoxErrorA(const char *title, const char *text) {
     return ::DxLib_EXT_MessageBoxErrorA(title, text);
 }

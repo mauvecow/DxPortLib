@@ -559,6 +559,14 @@ int DxLib_GetActiveFlag() {
     return PL_Window_GetActiveFlag();
 }
 
+int DxLib_GetDisplayModeNum() {
+    return PL_Window_GetNumDisplayModes();
+}
+
+DISPLAYMODEDATA DxLib_GetDisplayMode(int modeIndex) {
+    return PL_Window_GetDxDisplayMode(modeIndex);
+}
+
 int DxLib_EXT_MessageBoxErrorA(const char *title, const char *text) {
     char titlebuf[DX_STRMAXLEN];
     char textbuf[DX_STRMAXLEN];

@@ -231,6 +231,9 @@ extern DXCALL int DxLib_GetAlwaysRunFlag();
 extern DXCALL int DxLib_GetWindowActiveFlag();
 extern DXCALL int DxLib_GetActiveFlag();
 
+extern DXCALL int DxLib_GetDisplayModeNum();
+extern DXCALL DISPLAYMODEDATA DxLib_GetDisplayMode(int modeIndex);
+
 extern DXCALL int DxLib_EXT_SetIconImageFileW(const wchar_t *filename);
 extern DXCALL int DxLib_EXT_SetIconImageFileA(const char *filename);
 DXUNICALL_WRAP(int, DxLib_EXT_SetIconImageFile,

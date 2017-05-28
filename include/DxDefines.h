@@ -313,6 +313,13 @@ typedef struct _XINPUT_STATE {
     short ThumbRY;
 } XINPUT_STATE;
 
+typedef struct _DISPLAYMODEDATA {
+    int Width;
+    int Height;
+    int ColorBitDepth;
+    int RefreshRate;
+} DISPLAYMODEDATA;
+
 #define DX_CHECKINPUT_KEY       (0x01)
 #define DX_CHECKINPUT_PAD       (0x02)
 #define DX_CHECKINPUT_MOUSE     (0x04)

@@ -11,7 +11,7 @@ X Will not support.
 TYPES:
   . IMEINPUTCLAUSEDATA
   . IMEINPUTDATA
-  . DISPLAYMODEDATA
+  * DISPLAYMODEDATA
   . DATEDATA
   . FILEINFO
   . MATRIX
@@ -673,8 +673,8 @@ DxGraph:
   . GetChangeDisplayFlag
   . GetVideoMemorySize
   . GetRefreshRate
-  . GetDisplayModeNum
-  . GetDisplayMode
+  * GetDisplayModeNum
+  * GetDisplayMode
   . GetDispColorData
   . GetMultiDrawScreenNum
   . SetDisplayRefreshRate
