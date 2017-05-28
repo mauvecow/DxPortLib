@@ -229,6 +229,11 @@ namespace DxLib {
 
 #define DX_NONE_GRAPH           (0xfffffffb)
 
+#define DX_CHANGESCREEN_OK            (0)
+#define DX_CHANGESCREEN_RETURN        (-1)
+#define DX_CHANGESCREEN_DEFAULT       (-2)
+#define DX_CHANGESCREEN_REFRESHNORMAL (-3)
+
 /* Placeholders for now. */
 #define DX_IMAGESAVETYPE_BMP            (0)
 #define DX_IMAGESAVETYPE_JPEG           (1)

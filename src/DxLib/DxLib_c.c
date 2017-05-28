@@ -466,7 +466,7 @@ int DxLib_SetGraphMode(int width, int height, int bitDepth, int FPS) {
     s_screenWidth = width;
     s_screenHeight = height;
     PL_Window_SetDimensions(width, height, bitDepth, FPS);
-    return 0;
+    return DX_CHANGESCREEN_OK;
 }
 int DxLib_SetWindowSizeChangeEnableFlag(int windowResizeFlag, int fitScreen) {
     /* FIXME: fitScreen is unsupported */
