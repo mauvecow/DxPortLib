@@ -30,6 +30,7 @@
 /* --------------------------------------------------------- Framebuffers */
 
 int s_boundFramebufferID = -1;
+GLuint s_boundTextureID = 0;
 int s_boundRenderbufferID = -1;
 
 /* Framebuffers are reused when it is possible to do so, so we
@@ -60,7 +61,10 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
         return -1;
     }
     
-    if (handleID == s_boundFramebufferID && renderbufferID == s_boundRenderbufferID) {
+    if (handleID == s_boundFramebufferID
+        && renderbufferID == s_boundRenderbufferID
+        && textureID == s_boundTextureID
+    ) {
         return 0;
     }
     
@@ -68,6 +72,7 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
     PLGL_Renderbuffer_Release(s_boundRenderbufferID);
     s_boundFramebufferID = -1;
     s_boundRenderbufferID = -1;
+    s_boundTextureID = 0;
     
     info = (FramebufferInfo *)PL_Handle_GetData(handleID, DXHANDLE_FRAMEBUFFER);
     
@@ -108,6 +113,7 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
             renderinfo->refCount += 1;
         }
         
+        s_boundTextureID = textureID;
         s_boundFramebufferID = handleID;
         s_boundRenderbufferID = renderbufferID;
     }
