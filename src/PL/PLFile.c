@@ -232,7 +232,7 @@ int64_t PL_File_Read(int fileHandle, void *data, int size) {
 int64_t PL_File_Write(int fileHandle, void *data, int size) {
     FileHandle *handle = (FileHandle *)PL_Handle_GetData(fileHandle, DXHANDLE_PLFILE);
     if (handle != NULL && handle->functions->write != NULL) {
-        return handle->functions->read(handle->userdata, data, size);
+        return handle->functions->write(handle->userdata, data, size);
     }
     return -1;
 }
