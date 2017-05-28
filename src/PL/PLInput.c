@@ -634,18 +634,18 @@ int PL_Input_GetJoypadPOVState(int controllerIndex, int povNumber) {
 }
 
 int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *state) {
+    memset(state, 0, sizeof(DINPUT_JOYSTATE));
+    state->POV[0] = -1;
+    state->POV[1] = -1;
+    state->POV[2] = -1;
+    state->POV[3] = -1;
+    
     if (controllerIndex >= DX_INPUT_PAD1 && controllerIndex <= DX_INPUT_PAD16) {
         int index = controllerIndex - DX_INPUT_PAD1;
         Controller *controller = s_GetController(index);
         if (controller != NULL && controller->gamecontroller != NULL) {
             SDL_GameController *gc = controller->gamecontroller;
             int axis;
-            
-            SDL_memset(state, 0, sizeof(DINPUT_JOYSTATE));
-            state->POV[0] = -1;
-            state->POV[1] = -1;
-            state->POV[2] = -1;
-            state->POV[3] = -1;
             
             if (PL_Window_GetActiveFlag() == DXFALSE) {
                 return 0;
@@ -686,12 +686,6 @@ int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *sta
             int n;
             int i;
             
-            SDL_memset(state, 0, sizeof(DINPUT_JOYSTATE));
-            state->POV[0] = -1;
-            state->POV[1] = -1;
-            state->POV[2] = -1;
-            state->POV[3] = -1;
-            
             if (PL_Window_GetActiveFlag() == DXFALSE) {
                 return 0;
             }
@@ -721,6 +715,8 @@ int PL_Input_GetJoypadDirectInputState(int controllerIndex, DINPUT_JOYSTATE *sta
     return -1;
 }
 int PL_Input_GetJoypadXInputState(int controllerIndex, XINPUT_STATE *state) {
+    memset(state, 0, sizeof(XINPUT_STATE));
+    
     if (controllerIndex >= DX_INPUT_PAD1 && controllerIndex <= DX_INPUT_PAD16) {
         int index = controllerIndex - DX_INPUT_PAD1;
         Controller *controller = s_GetController(index);
@@ -728,7 +724,6 @@ int PL_Input_GetJoypadXInputState(int controllerIndex, XINPUT_STATE *state) {
             SDL_GameController *gc = controller->gamecontroller;
             
             if (PL_Window_GetActiveFlag() == DXFALSE) {
-                memset(state, 0, sizeof(XINPUT_STATE));
                 return 0;
             }
             
