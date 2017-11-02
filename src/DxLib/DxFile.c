@@ -275,7 +275,7 @@ int Dx_File_SetDXArchiveKeyString(const char *keyString) {
 
 int Dx_File_SetDXArchiveExtension(const char *extension) {
     if (extension != 0) {
-        s_archiveExtension[0] = '\0';
+        PL_Text_Strncpy(s_archiveExtension, extension, sizeof(s_archiveExtension));
     } else {
         memset(s_archiveExtension, 0, sizeof(s_archiveExtension));
     }
