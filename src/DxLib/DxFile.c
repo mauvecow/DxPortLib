@@ -147,7 +147,7 @@ static void s_CloseArchives() {
 
 static int s_GetArchiveFilename(
     const char *filename, char *buf, int maxLen,
-    const char **pEnd
+    const char **pEnd, int aliasFlag
 ) {
     /* Extract the archive name from the filename. */
     const char *end = filename;
@@ -179,7 +179,7 @@ static int s_GetArchiveFilename(
                                    maxLen - position);
         }
         
-        if (s_archiveAliases != NULL) {
+        if (s_archiveAliases != NULL && aliasFlag != 0) {
             ArchiveAliasEntry *entry = s_archiveAliases;
             while (entry != NULL) {
                 if (PL_Text_Strcmp(buf, entry->srcArchiveName) == 0) {
@@ -205,7 +205,7 @@ SDL_RWops *Dx_File_OpenArchiveStream(const char *filename) {
     /* Extract the archive name from the filename. */
     char buf[2048];
     const char *end;
-    if (s_GetArchiveFilename(filename, buf, 2048, &end) > 0) {
+    if (s_GetArchiveFilename(filename, buf, 2048, &end, 1) > 0) {
         DXArchive *archive;
         
         archive = s_GetArchive(buf);
@@ -214,6 +214,20 @@ SDL_RWops *Dx_File_OpenArchiveStream(const char *filename) {
             /* If we can open from the stream, do that. */
             if (rwops != NULL) {
                 return rwops;
+            }
+        }
+    }
+    if (s_archiveAliases != NULL) {
+        if (s_GetArchiveFilename(filename, buf, 2048, &end, 0) > 0) {
+            DXArchive *archive;
+            
+            archive = s_GetArchive(buf);
+            if (archive != NULL) {
+                SDL_RWops *rwops = DXA_OpenStream(archive, end + 1);
+                /* If we can open from the stream, do that. */
+                if (rwops != NULL) {
+                    return rwops;
+                }
             }
         }
     }
@@ -354,7 +368,7 @@ int Dx_File_GetUseDXArchiveFlag() {
 int Dx_File_DXArchivePreLoad(const char *dxaFilename, int async) {
     char buf[2048];
     DXArchive *archive;
-    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
+    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL, 1) > 0) {
         archive = s_GetArchive(buf);
         if (archive != NULL) {
             /* FIXME async not supported */
@@ -370,7 +384,7 @@ int Dx_File_DXArchiveCheckIdle(const char *dxaFilename) {
 }
 int Dx_File_DXArchiveRelease(const char *dxaFilename) {
     char buf[2048];
-    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
+    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL, 1) > 0) {
         return s_CloseArchive(buf);
     }
     return -1;
@@ -379,7 +393,7 @@ int Dx_File_DXArchiveRelease(const char *dxaFilename) {
 int Dx_File_DXArchiveCheckFile(const char *dxaFilename, const char *filename) {
     char buf[2048];
     DXArchive *archive;
-    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
+    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL, 1) > 0) {
         archive = s_GetArchive(buf);
         if (archive != NULL) {
             return DXA_TestFile(archive, filename);
