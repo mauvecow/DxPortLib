@@ -176,6 +176,11 @@ DXUNICALL_VA_WRAPTO(int,
 // e.g. "directory/blah.txt" looks for "blah.txt" in "directory.dxa"
 extern DXCALL int SetUseDXArchiveFlag(int flag);
 
+// - Aliases archive name 'src' to archive name 'dest'.
+extern DXCALL int EXT_SetDXArchiveAliasW(const wchar_t *src = NULL, const wchar_t *dest = NULL);
+extern DXCALL int EXT_SetDXArchiveAliasA(const char *src = NULL, const char *dest = NULL);
+DXUNICALL_WRAP(int, EXT_SetDXArchiveAlias, (const TCHAR *src = NULL, const TCHAR *dest = NULL), (src, dest))
+
 // - Sets the encryption key to be used for DXA files.
 extern DXCALL int SetDXArchiveKeyStringW(const wchar_t *keyString = NULL);
 extern DXCALL int SetDXArchiveKeyStringA(const char *keyString = NULL);

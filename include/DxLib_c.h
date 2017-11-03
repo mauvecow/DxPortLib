@@ -131,6 +131,10 @@ DXUNICALL_VA_WRAPTO(int,
 /* -------------------------------------------------------- DxArchive.cpp */
 extern DXCALL int DxLib_SetUseDXArchiveFlag(int flag);
 
+extern DXCALL int DxLib_EXT_SetDXArchiveAliasW(const wchar_t *src, const wchar_t *dest);
+extern DXCALL int DxLib_EXT_SetDXArchiveAliasA(const char *src, const char *dest);
+DXUNICALL_WRAP(int, DxLib_EXT_SetDXArchiveAlias, (const TCHAR *src, const TCHAR *dest), (src, dest))
+
 extern DXCALL int DxLib_SetDXArchiveKeyStringW(const wchar_t *keyString);
 extern DXCALL int DxLib_SetDXArchiveKeyStringA(const char *keyString);
 DXUNICALL_WRAP(int, DxLib_SetDXArchiveKeyString,

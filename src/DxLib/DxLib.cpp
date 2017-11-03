@@ -157,6 +157,12 @@ int FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
 int SetUseDXArchiveFlag(int flag) {
     return ::DxLib_SetUseDXArchiveFlag(flag);
 }
+int EXT_SetDXArchiveAliasW(const wchar_t *src, const wchar_t *dest) {
+    return ::DxLib_EXT_SetDXArchiveAliasW(src, dest);
+}
+int EXT_SetDXArchiveAliasA(const char *src, const char *dest) {
+    return ::DxLib_EXT_SetDXArchiveAliasA(src, dest);
+}
 int SetDXArchiveKeyStringW(const wchar_t *keyString) {
     return ::DxLib_SetDXArchiveKeyStringW(keyString);
 }

@@ -309,6 +309,23 @@ int DxLib_SetUseDXArchiveFlag(int flag) {
     Dx_File_SetUseDXArchiveFlag(flag);
     return 0;
 }
+int DxLib_EXT_SetDXArchiveAliasA(const char *src, const char *dest) {
+    char sBuf[DX_STRMAXLEN];
+    char dBuf[DX_STRMAXLEN];
+    return Dx_File_EXTSetDXArchiveAlias(
+        PL_Text_ConvertStrncpyIfNecessary(sBuf, -1,
+                src, g_DxUseCharSet, DX_STRMAXLEN),
+        PL_Text_ConvertStrncpyIfNecessary(dBuf, -1,
+                dest, g_DxUseCharSet, DX_STRMAXLEN)
+        );
+}
+int DxLib_EXT_SetDXArchiveAliasW(const wchar_t *src, const wchar_t *dest) {
+    char sBuf[DX_STRMAXLEN];
+    char dBuf[DX_STRMAXLEN];
+    PL_Text_WideCharToString(sBuf, -1, src, DX_STRMAXLEN);
+    PL_Text_WideCharToString(dBuf, -1, dest, DX_STRMAXLEN);
+    return Dx_File_EXTSetDXArchiveAlias(sBuf, dBuf);
+}
 int DxLib_SetDXArchiveKeyStringA(const char *keyString) {
     char buf[DX_STRMAXLEN];
     return Dx_File_SetDXArchiveKeyString(

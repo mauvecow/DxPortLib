@@ -44,6 +44,13 @@ static int s_fileUseCharset = DX_CHARSET_DEFAULT;
 
 /* ------------------------------------------------------------- ARCHIVE MANAGER */
 #ifndef DX_NON_DXA
+typedef struct ArchiveAliasEntry {
+    char *srcArchiveName;
+    char *destArchiveName;
+    
+    struct ArchiveAliasEntry *next;
+} ArchiveAliasEntry;
+
 typedef struct ArchiveListEntry {
     DXArchive *archive;
     char *filename;
@@ -51,6 +58,7 @@ typedef struct ArchiveListEntry {
     struct ArchiveListEntry *next;
 } ArchiveListEntry;
 
+static ArchiveAliasEntry *s_archiveAliases = NULL;
 static ArchiveListEntry *s_archiveList = NULL;
 
 static DXArchive *s_GetArchive(const char *filename) {
@@ -163,15 +171,23 @@ static int s_GetArchiveFilename(
         }
         
         if (s_archiveExtension[0] != '\0') {
-            char *c = buf + position;
-            c += PL_Text_WriteUTF8Char(c, '.', buf + maxLen - c);
-            position = c - buf;
-            position += PL_Text_Strncpy(c, s_archiveExtension, buf + maxLen - c);
+            position += PL_Text_WriteUTF8Char(buf + position, '.', maxLen - position);
+            position += PL_Text_Strncpy(buf + position, s_archiveExtension, maxLen - position);
         } else {
-            buf[position] = 0;
-            position += PL_Text_ConvertStrncat(buf + position, -1,
+            position += PL_Text_ConvertStrncpy(buf + position, -1,
                                    ".dxa", DX_CHARSET_EXT_UTF8,
                                    maxLen - position);
+        }
+        
+        if (s_archiveAliases != NULL) {
+            ArchiveAliasEntry *entry = s_archiveAliases;
+            while (entry != NULL) {
+                if (PL_Text_Strcmp(buf, entry->srcArchiveName)) {
+                    PL_Text_Strncpy(buf, entry->destArchiveName, maxLen);
+                    break;
+                }
+                entry = entry->next;
+            }
         }
         
         if (pEnd != NULL) {
@@ -256,6 +272,34 @@ int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *
 }
 
 /* ------------------------------------------------------------ PUBLIC INTERFACE */
+int Dx_File_EXTSetDXArchiveAlias(const char *srcName, const char *destName) {
+    ArchiveAliasEntry **pEntry = &s_archiveAliases;
+    
+    while (*pEntry != NULL) {
+        if (PL_Text_Strcmp((*pEntry)->srcArchiveName, srcName) == 0) {
+            DXFREE((*pEntry)->destArchiveName);
+            if (destName == NULL) {
+                ArchiveAliasEntry *next = (*pEntry)->next;
+                DXFREE((*pEntry)->srcArchiveName);
+                DXFREE(*pEntry);
+                
+                *pEntry = next;
+                return 0;
+            }
+        }
+    }
+    
+    if (srcName == NULL || destName == NULL) {
+        return 0;
+    }
+    
+    *pEntry = DXALLOC(sizeof(ArchiveAliasEntry));
+    (*pEntry)->srcArchiveName = PL_Text_Strdup(srcName);
+    (*pEntry)->destArchiveName = PL_Text_Strdup(destName);
+    (*pEntry)->next = NULL;
+    return 0;
+}
+
 /* Sets the "encryption" key to use for the packfile. */
 int Dx_File_SetDXArchiveKeyString(const char *keyString) {
     int n = 0;

@@ -42,6 +42,8 @@ extern SDL_RWops *Dx_File_OpenStream(const char *filename);
 
 extern int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *dSize);
 
+extern int Dx_File_EXTSetDXArchiveAlias(const char *srcName, const char *destName);
+
 extern int Dx_File_SetDXArchiveKeyString(const char *keyString);
 extern int Dx_File_SetDXArchiveExtension(const char *extension);
 
