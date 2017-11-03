@@ -182,7 +182,7 @@ static int s_GetArchiveFilename(
         if (s_archiveAliases != NULL) {
             ArchiveAliasEntry *entry = s_archiveAliases;
             while (entry != NULL) {
-                if (PL_Text_Strcmp(buf, entry->srcArchiveName)) {
+                if (PL_Text_Strcmp(buf, entry->srcArchiveName) == 0) {
                     PL_Text_Strncpy(buf, entry->destArchiveName, maxLen);
                     break;
                 }
