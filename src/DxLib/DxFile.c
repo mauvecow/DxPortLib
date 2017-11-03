@@ -284,9 +284,12 @@ int Dx_File_EXTSetDXArchiveAlias(const char *srcName, const char *destName) {
                 DXFREE(*pEntry);
                 
                 *pEntry = next;
-                return 0;
+            } else {
+                (*pEntry)->destArchiveName = PL_Text_Strdup(destName);
             }
+            return 0;
         }
+        pEntry = &(*pEntry)->next;
     }
     
     if (srcName == NULL || destName == NULL) {
