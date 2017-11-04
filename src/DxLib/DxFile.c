@@ -337,7 +337,7 @@ int Dx_FileRead_findNext(DWORD_PTR fileHandle, FILEINFOA *fileInfo) {
 
         PL_Text_ConvertStrncpy(fileInfo->Name, g_DxUseCharSet,
             data->globData.gl_pathv[data->globIndex], -1,
-            sizeof(fileInfo->Name) / sizeof(fileInfo->Name[0]));
+            FILEINFONAMELEN);
 
         if (stat(data->globData.gl_pathv[data->globIndex], &sb) == 0) {
             struct tm *lt;
@@ -373,12 +373,18 @@ DWORD_PTR Dx_FileRead_findFirst(const char *filePath, FILEINFOA *fileInfo) {
 
 #ifndef DX_NON_DXA
     if (s_useArchiveFlag == DXTRUE) {
-        DXArchive *archive = s_GetArchive(filePath);
-        if (archive != NULL) {
-            data->dxaData = DXA_findFirst(archive, filePath, fileInfo);
-            if (data->dxaData != 0) {
-                data->dxaFlag = DXTRUE;
-                return (DWORD_PTR)data;
+        char buf[2048];
+        const char *end;
+        if (s_GetArchiveFilename(filePath, buf, 2048, &end, 1) > 0) {
+            DXArchive *archive;
+            
+            archive = s_GetArchive(buf);
+            if (archive != NULL) {
+                data->dxaData = DXA_findFirst(archive, end, fileInfo);
+                if (data->dxaData != 0) {
+                    data->dxaFlag = DXTRUE;
+                    return (DWORD_PTR)data;
+                }
             }
         }
     }

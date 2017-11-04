@@ -296,15 +296,17 @@ typedef struct _DATEDATA {
 
 typedef DATEDATA *LPDATEDATA;
 
+#define FILEINFONAMELEN 260
+
 typedef struct _FILEINFOW {
-    wchar_t     Name[260];
+    wchar_t     Name[FILEINFONAMELEN];
     int         DirFlag;
     LONGLONG    Size;
     DATEDATA    CreationTime;
     DATEDATA    LastWriteTime;
 } FILEINFOW;
 typedef struct _FILEINFOA {
-    char        Name[260];
+    char        Name[FILEINFONAMELEN];
     int         DirFlag;
     LONGLONG    Size;
     DATEDATA    CreationTime;

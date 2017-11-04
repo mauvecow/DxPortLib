@@ -180,7 +180,9 @@ static void DXA_GetFileNameInfo(DXArchive *archive, uint64_t address, DXArchiveF
 static int DXA_InitializeArchive(DXArchive *archive);
 
 /* ------------------------------------------------------------ DXARCHIVE IMPLEMENTATION */
-static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
+#define INVALID_DIRECTORY (0xffffffff)
+
+static uint64_t DXA_GetDirectoryAddress(DXArchive *archive, const char *filename, const char **end) {
     /* So here we have to break up the filename into pieces.
      *
      * The rules here are:
@@ -191,6 +193,8 @@ static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
     const char *src = filename;
     uint64_t directoryAddress = 0;
     int charSet = (int)archive->CharSet;
+
+    *end = filename;
     
     while (*src != '\0') {
         DXArchiveDirectoryInfo dirInfo;
@@ -216,6 +220,10 @@ static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
                 index += PL_Text_WriteChar(fileBuf + index, ch, 2047 - index, charSet);
             }
         }
+        if (dirAttrib == 0) {
+            return directoryAddress;
+        }
+        *end = src;
         
         fileBuf[index] = '\0';
         
@@ -235,14 +243,9 @@ static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
                 DXA_GetFileNameInfo(archive, fileInfo.NameAddress, &fileNameInfo, &filename);
                 
                 if (fileNameInfo.Parity == parity && !SDL_strcmp(filename, fileBuf)) {
-                    if (dirAttrib != 0) {
-                        /* Traverse into subdirectory. */
-                        directoryAddress = fileInfo.DataAddress;
-                        foundDir = 1;
-                        break;
-                    } else {
-                        return fileAddress;
-                    }
+                    /* Traverse into subdirectory. */
+                    directoryAddress = fileInfo.DataAddress;
+                    foundDir = 1;
                 }
             }
             
@@ -254,9 +257,58 @@ static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
                 fileAddress += sizeof(DXArchiveFileInfoV1);
             }
         }
+
+        if (foundDir == 0) {
+            return 0;
+        }
+    }
+    
+    return INVALID_DIRECTORY;
+}
+
+static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
+    char fileBuf[2048];
+    const char *src;
+    uint64_t directoryAddress = DXA_GetDirectoryAddress(archive, filename, &src);
+    int charSet = (int)archive->CharSet;
+
+    if (directoryAddress == INVALID_DIRECTORY) {
+        return 0;
+    }
+    
+    while (*src != '\0') {
+        DXArchiveDirectoryInfo dirInfo;
+        uint64_t fileAddress;
+        uint64_t i;
+        unsigned int parity = 0;
+
+        PL_Text_ConvertStrncpy(fileBuf, charSet, src, -1, 2048);
         
-        if (foundDir == 0)
-            break;
+        DXA_GetDirectoryInfo(archive, directoryAddress, &dirInfo);
+        fileAddress = dirInfo.FileInfoAddress;
+        for (i = 0; i < dirInfo.FileInfoCount; ++i) {
+            DXArchiveFileInfo fileInfo;
+            const char *filename;
+            
+            DXA_GetFileInfo(archive, fileAddress, &fileInfo);
+            if ((fileInfo.Attributes & DXA_ATTRIBUTE_DIRECTORY) == 0) {
+                DXArchiveFileNameInfo fileNameInfo;
+                DXA_GetFileNameInfo(archive, fileInfo.NameAddress, &fileNameInfo, &filename);
+                
+                if (fileNameInfo.Parity == parity && !SDL_strcmp(filename, fileBuf)) {
+                    /* Found it */
+                    return fileAddress;
+                }
+            }
+            
+            if (archive->Version >= 6) {
+                fileAddress += sizeof(DXArchiveFileInfo);
+            } else if (archive->Version >= 1) {
+                fileAddress += sizeof(DXArchiveFileInfoV5);
+            } else {
+                fileAddress += sizeof(DXArchiveFileInfoV1);
+            }
+        }
     }
     
     return 0;
@@ -720,41 +772,112 @@ static int DXA_Decompress(const void *vSrc, void *vDest, uint64_t dest_len) {
 /* ------------------------------------------------------- DXARCHIVE FIND* IMPLEMENTATION */
 
 struct DXAFindData {
-    char SearchPath[DX_STRMAXLEN];
     DXArchive *archive;
+
+    uint64_t directoryAddress;
+    char Pattern[DX_STRMAXLEN];
+
+    uint64_t index;
 };
 
-/*
- simple string check vs format goes here
+static const char *s_findEntries[] = {
+    ".",
+    ".."
+};
+static const size_t s_findEntryCount = sizeof(s_findEntries) / sizeof(s_findEntries[0]);
 
-static s_checkFindFormat(dxaFindData *data) {
-    return DXFALSE;
+static int s_checkFindFormat(DXAFindData *dxaData, const char *str) {
+    DXArchive *archive = dxaData->archive;
+    int charSet = (int)archive->CharSet;
+    const char *format = dxaData->Pattern;
+
+    while (*format || *str) {
+        int formatC = PL_Text_ReadUTF8Char(&format);
+        int strC = PL_Text_ReadChar(&str, charSet);
+        if (formatC == '?') {
+            /* Match any one char, skip */
+        } else if (formatC == '*') {
+            do {
+                formatC = PL_Text_ReadUTF8Char(&format);
+            } while (formatC == '*');
+
+            if (formatC == 0) {
+                return DXTRUE;
+            }
+
+            while (strC != formatC) {
+                if (strC == 0) {
+                    return DXFALSE;
+                }
+                strC = PL_Text_ReadChar(&str, charSet);
+            }
+        } else {
+            if (formatC != strC) {
+                return DXFALSE;
+            }
+        }
+    }
+    
+    return DXTRUE;
 }
 
- */
-
 int DXA_findNext(DXAFindData *dxaData, FILEINFOA *fileInfo) {
-    /* If index == -2 or == -1, check special entries '.' and '..' */
+    DXArchiveDirectoryInfo dirInfo;
 
-    /* Iterate forwards while index < directory.length */
+    memset(fileInfo, 0, sizeof(FILEINFOA));
 
-        /* If this entry matches a pattern, stop and return it */
+    /* If index < 2, check special entries '.' and '..' */
+    while (dxaData->index < s_findEntryCount) {
+        const char *str = s_findEntries[dxaData->index];
+        dxaData->index += 1;
+        if (s_checkFindFormat(dxaData, str) == DXTRUE) {
+            PL_Text_ConvertStrncpy(fileInfo->Name, g_DxUseCharSet, str, -1, FILEINFONAMELEN);
+            return 0;
+        }
+    }
 
-        /* If index > length, return -1 */
+    DXA_GetDirectoryInfo(dxaData->archive, dxaData->directoryAddress, &dirInfo);
 
-    /* Failed */
+    /* Offset past the 'default' entries to make this a bit easier. */
+    dirInfo.FileInfoCount += s_findEntryCount;
+    dirInfo.FileInfoAddress -= s_findEntryCount;
+
+    while (dxaData->index < dirInfo.FileInfoCount) {
+        DXArchiveFileInfo entry;
+        const char *filename;
+
+        DXA_GetFileInfo(dxaData->archive, dirInfo.FileInfoAddress + dxaData->index, &entry);
+        DXA_GetFileNameInfo(dxaData->archive, entry.NameAddress, 0, &filename);
+        dxaData->index += 1;
+
+        if (s_checkFindFormat(dxaData, filename) == DXTRUE) {
+
+            return 0;
+        }
+    }
 
     return -1;
 }
 
 DXAFindData *DXA_findFirst(DXArchive *archive, const char *filePath, FILEINFOA *fileInfo) {
-    DXAFindData *dxaData = (DXAFindData *)DXCALLOC(sizeof(DXAFindData));
+    const char *filePattern;
+    DXAFindData *dxaData;
+    uint64_t directoryAddress = DXA_GetDirectoryAddress(archive, filePath, &filePattern);
 
-    /* - Scan to directory in filePath. <-- this is the annoying one */
+    if (directoryAddress == INVALID_DIRECTORY) {
+        return 0;
+    }
+    
+    dxaData = (DXAFindData *)DXCALLOC(sizeof(DXAFindData));
+    dxaData->archive = archive;
+    dxaData->directoryAddress = directoryAddress;
+    dxaData->index = 0;
+    PL_Text_Strncpy(dxaData->Pattern, filePattern, DX_STRMAXLEN);
 
-    /* - Assign directory, index to dxaData. */
-
-    /* - Call findNext */
+    if (DXA_findNext(dxaData, fileInfo) < 0) {
+        DXFREE(dxaData);
+        return 0;
+    }
 
     return dxaData;
 }
