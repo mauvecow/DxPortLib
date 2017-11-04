@@ -264,12 +264,7 @@ SDL_RWops *Dx_File_OpenDirectStream(const char *filename) {
 }
 
 SDL_RWops *Dx_File_OpenStream(const char *filename) {
-    if (s_allowDirectFlag == DXFALSE) {
-        if (s_useArchiveFlag == DXTRUE) {
-            return Dx_File_OpenArchiveStream(filename);
-        }
-        return NULL;
-    } else if (s_useArchiveFlag == DXFALSE) {
+    if (s_useArchiveFlag == DXFALSE) {
         return Dx_File_OpenDirectStream(filename);
     } else if (s_filePriorityFlag == DXTRUE) {
         SDL_RWops *rwops = Dx_File_OpenDirectStream(filename);
