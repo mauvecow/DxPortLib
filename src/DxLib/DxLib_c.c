@@ -28,8 +28,6 @@
 #include "PL/PLInternal.h"
 #include "DxInternal.h"
 
-#define DX_STRMAXLEN 4096
-
 /* DxLib_c.c is C bindings to the core internal library. */
 
 static int s_calledMainReady = DXFALSE;
@@ -301,6 +299,31 @@ int DxLib_FileRead_vscanfA(int fileHandle, const char *format, va_list args) {
 }
 int DxLib_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
     return Dx_FileRead_vscanfW(fileHandle, format, args);
+}
+
+DWORD_PTR DxLib_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
+    char buf[DX_STRMAXLEN];
+
+    return Dx_FileRead_findFirstA(
+        PL_Text_ConvertStrncpyIfNecessary(buf, -1,
+                filePath, g_DxUseCharSet, DX_STRMAXLEN),
+        fileInfoA);
+}
+
+DWORD_PTR DxLib_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
+    return Dx_FileRead_findFirstW(filePath, fileInfoW);
+}
+
+int DxLib_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
+    return Dx_FileRead_findNextA(fileHandle, fileInfoA);
+}
+
+int DxLib_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
+    return Dx_FileRead_findNextW(fileHandle, fileInfoW);
+}
+
+int DxLib_FileRead_findClose(DWORD_PTR fileHandle) {
+    return Dx_FileRead_findClose(fileHandle);
 }
 
 /* ---------------------------------------------------- DxArchive.cpp */

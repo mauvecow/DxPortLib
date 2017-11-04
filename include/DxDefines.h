@@ -296,6 +296,29 @@ typedef struct _DATEDATA {
 
 typedef DATEDATA *LPDATEDATA;
 
+typedef struct _FILEINFOW {
+    wchar_t     Name[260];
+    int         DirFlag;
+    LONGLONG    Size;
+    DATEDATA    CreationTime;
+    DATEDATA    LastWriteTime;
+} FILEINFOW;
+typedef struct _FILEINFOA {
+    char        Name[260];
+    int         DirFlag;
+    LONGLONG    Size;
+    DATEDATA    CreationTime;
+    DATEDATA    LastWriteTime;
+} FILEINFOA;
+
+#ifdef UNICODE
+typedef FILEINFOW FILEINFO;
+#else
+typedef FILEINFOA FILEINFO;
+#endif
+
+typedef FILEINFO *LPFILEINFO;
+
 /* ----------------------------------------------------- INPUT DEFINES */
 typedef struct _DINPUT_JOYSTATE {
     int X;

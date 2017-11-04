@@ -717,6 +717,24 @@ static int DXA_Decompress(const void *vSrc, void *vDest, uint64_t dest_len) {
     return 0;
 }
 
+/* ------------------------------------------------------- DXARCHIVE FIND* IMPLEMENTATION */
+
+DWORD_PTR DXA_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
+    return -1;
+}
+DWORD_PTR DXA_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
+    return -1;
+}
+int DXA_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
+    return -1;
+}
+int DXA_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
+    return -1;
+}
+int DXA_findClose(DWORD_PTR fileHandle) {
+    return 0;
+}
+
 /* ------------------------------------------------------------ DXARCHIVE RWOPS STREAMING */
 
 /* The main DXA Stream opens a separate file descriptor and reads the data in incrementally.

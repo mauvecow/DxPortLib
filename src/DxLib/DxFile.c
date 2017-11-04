@@ -30,6 +30,14 @@
 
 #include "SDL.h"
 
+#define DXPORTLIB_USE_GLOB
+
+#ifdef DXPORTLIB_USE_GLOB
+#  include <glob.h>
+#  include <sys/stat.h>
+#  include <time.h>
+#endif
+
 #if defined(__WIN32__) && !defined(__GNUC__)
 /* For vsscanf hack down below. */
 #include <stdio.h>
@@ -41,6 +49,17 @@ static char s_archiveExtension[64] = { '\0' };
 static int s_initialized = DXFALSE;
 static int s_filePriorityFlag = DXFALSE;
 static int s_fileUseCharset = DX_CHARSET_DEFAULT;
+
+typedef struct DxFileStreamFunctions {
+    DWORD_PTR (*findFirstW)(const wchar_t *filePath, FILEINFOW *fileInfoW);
+    DWORD_PTR (*findFirstA)(const char *filePath, FILEINFOA *fileInfoA);
+    int (*findNextW)(DWORD_PTR fileHandle, FILEINFOW *fileInfoW);
+    int (*findNextA)(DWORD_PTR fileHandle, FILEINFOA *fileInfoA);
+    int (*findClose)(DWORD_PTR fileHandle);
+} DxFileStreamFunctions;
+
+static DxFileStreamFunctions s_streamFunctions;
+static int s_defaultStreamFunctionFlag = DXTRUE;
 
 /* ------------------------------------------------------------- ARCHIVE MANAGER */
 #ifndef DX_NON_DXA
@@ -285,6 +304,183 @@ int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *
     return retval;
 }
 
+/* ------------------------------------------------------------ STREAMING CODE */
+#ifdef DXPORTLIB_USE_GLOB
+typedef struct LocalGlobData {
+    glob_t globData;
+    int index;
+} LocalGlobData;
+
+static void s_copyFileInfoWtoA(FILEINFOA *dest, FILEINFOW *src) {
+    memset(dest, 0, sizeof(FILEINFOA));
+
+    PL_Text_WideCharToString(
+        dest->Name, g_DxUseCharSet, src->Name,
+        sizeof(dest->Name) / sizeof(dest->Name[0])
+    );
+    
+    dest->DirFlag = src->DirFlag;
+    dest->Size = src->Size;
+
+    memcpy(&dest->CreationTime, &src->CreationTime, sizeof(DATEDATA));
+    memcpy(&dest->LastWriteTime, &src->LastWriteTime, sizeof(DATEDATA));
+}
+
+static int s_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
+    LocalGlobData *data = (LocalGlobData *)fileHandle;
+    struct stat sb;
+
+    if (data == 0) {
+        return -1;
+    }
+    if (data->index >= data->globData.gl_pathc) {
+        return -1;
+    }
+
+    memset(fileInfoW, 0, sizeof(FILEINFOW));
+
+    PL_Text_StringToWideChar(fileInfoW->Name, data->globData.gl_pathv[data->index], -1,
+        sizeof(fileInfoW->Name) / sizeof(fileInfoW->Name[0]));
+
+    if (stat(data->globData.gl_pathv[data->index], &sb) == 0) {
+        struct tm *lt;
+
+        if (S_ISDIR(sb.st_mode) != 0) {
+            fileInfoW->DirFlag = DXTRUE;
+        } else {
+            fileInfoW->Size = (LONGLONG)sb.st_size;
+        }
+
+        lt = localtime(&sb.st_mtim.tv_sec);
+        fileInfoW->CreationTime.Year = lt->tm_year + 1900;
+        fileInfoW->CreationTime.Mon = lt->tm_mon;
+        fileInfoW->CreationTime.Day = lt->tm_mday;
+        fileInfoW->CreationTime.Hour = lt->tm_hour;
+        fileInfoW->CreationTime.Min = lt->tm_min;
+        fileInfoW->CreationTime.Sec = lt->tm_sec;
+
+        memcpy(&fileInfoW->CreationTime, &fileInfoW->LastWriteTime, sizeof(DATEDATA));
+    }
+
+    data->index += 1;
+
+    return 0;
+}
+static int s_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
+    FILEINFOW fileInfoW;
+
+    if (s_FileRead_findNextW(fileHandle, &fileInfoW) != 0) {
+        return -1;
+    }
+
+    s_copyFileInfoWtoA(fileInfoA, &fileInfoW);
+    return 0;
+}
+
+static DWORD_PTR s_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
+    LocalGlobData *data = DXALLOC(sizeof(LocalGlobData));
+    char pathBuf[DX_STRMAXLEN];
+    int retval;
+
+    memset(data, 0, sizeof(LocalGlobData));
+
+    retval = glob(
+        PL_Text_ConvertStrncpyIfNecessary(pathBuf, -1,
+                filePath, g_DxUseCharSet, DX_STRMAXLEN),
+        0, NULL, &data->globData);
+
+    if (retval != 0) {
+        DXFREE(data);
+        return 0;
+    }
+
+    data->index = 0;
+    if (s_FileRead_findNextA((DWORD_PTR)data, fileInfoA) != 0) {
+        globfree(&data->globData);
+        DXFREE(data);
+        return 0;
+    }
+
+    return (DWORD_PTR)data;
+}
+static DWORD_PTR s_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
+    LocalGlobData *data = DXALLOC(sizeof(LocalGlobData));
+    char pathBuf[DX_STRMAXLEN];
+    int retval;
+
+    memset(data, 0, sizeof(LocalGlobData));
+
+    PL_Text_WideCharToString(pathBuf, -1, filePath, DX_STRMAXLEN);
+
+    retval = glob(pathBuf, 0, NULL, &data->globData);
+
+    if (retval != 0) {
+        DXFREE(data);
+        return 0;
+    }
+
+    if (s_FileRead_findNextW((DWORD_PTR)data, fileInfoW) != 0) {
+        globfree(&data->globData);
+        DXFREE(data);
+        return 0;
+    }
+
+    return (DWORD_PTR)data;
+}
+
+static int s_FileRead_findClose(DWORD_PTR fileHandle) {
+    LocalGlobData *data = (LocalGlobData *)fileHandle;
+    if (data == 0) {
+        return -1;
+    }
+
+    globfree(&data->globData);
+    DXFREE(data);
+
+    return 0;
+}
+#else
+/* #ifndef DXPORTLIB_USE_GLOB */
+static int s_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
+    return -1;
+}
+static int s_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
+    return -1;
+}
+
+static DWORD_PTR s_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
+    return 0;
+}
+static DWORD_PTR s_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
+    return 0;
+}
+
+static int s_FileRead_findClose(DWORD_PTR fileHandle) {
+    return -1;
+}
+#endif
+
+static void s_SetDefaultStreamFunctions(int dxaFlag) {
+    s_defaultStreamFunctionFlag = DXTRUE;
+
+#ifndef DX_NON_DXA
+    if (dxaFlag == DXTRUE) {
+        s_streamFunctions.findFirstW = DXA_findFirstW;
+        s_streamFunctions.findFirstA = DXA_findFirstA;
+        s_streamFunctions.findNextW = DXA_findNextW;
+        s_streamFunctions.findNextA = DXA_findNextA;
+        s_streamFunctions.findClose = DXA_findClose;
+        return;
+    }
+#endif
+
+    s_streamFunctions.findFirstW = s_FileRead_findFirstW;
+    s_streamFunctions.findFirstA = s_FileRead_findFirstA;
+    s_streamFunctions.findNextW = s_FileRead_findNextW;
+    s_streamFunctions.findNextA = s_FileRead_findNextA;
+    s_streamFunctions.findClose = s_FileRead_findClose;
+}
+
 /* ------------------------------------------------------------ PUBLIC INTERFACE */
 int Dx_File_EXTSetDXArchiveAlias(const char *srcName, const char *destName) {
     ArchiveAliasEntry **pEntry = &s_archiveAliases;
@@ -357,6 +553,10 @@ int Dx_File_SetUseDXArchiveFlag(int flag) {
     flag = (flag == DXFALSE ? DXFALSE : DXTRUE);
     if (flag != s_useArchiveFlag) {
         s_useArchiveFlag = flag;
+    }
+
+    if (s_defaultStreamFunctionFlag == DXTRUE) {
+        s_SetDefaultStreamFunctions(s_useArchiveFlag);
     }
     
     return 0;
@@ -615,6 +815,39 @@ int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
     return PL_Text_Wvsscanf(buffer, g_DxUseCharSet, format, args);
 }
 
+DWORD_PTR Dx_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
+    if (s_streamFunctions.findFirstA != 0) {
+        return s_streamFunctions.findFirstA(filePath, fileInfoA);
+    }
+    return 0;
+}
+DWORD_PTR Dx_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
+    if (s_streamFunctions.findFirstW != 0) {
+        return s_streamFunctions.findFirstW(filePath, fileInfoW);
+    }
+    return 0;
+}
+
+int Dx_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
+    if (s_streamFunctions.findNextA != 0) {
+        return s_streamFunctions.findNextA(fileHandle, fileInfoA);
+    }
+    return -1;
+}
+int Dx_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
+    if (s_streamFunctions.findNextW != 0) {
+        return s_streamFunctions.findNextW(fileHandle, fileInfoW);
+    }
+    return -1;
+}
+
+int Dx_FileRead_findClose(DWORD_PTR fileHandle) {
+    if (s_streamFunctions.findClose != 0) {
+        return s_streamFunctions.findClose(fileHandle);
+    }
+    return -1;
+}
+
 int Dx_File_OpenRead(const char *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     if (rwops != NULL) {
@@ -625,6 +858,10 @@ int Dx_File_OpenRead(const char *filename) {
 
 int Dx_File_Init() {
     s_initialized = DXTRUE;
+
+    if (s_defaultStreamFunctionFlag == DXTRUE) {
+        s_SetDefaultStreamFunctions(s_useArchiveFlag);
+    }
     
     s_OpenArchives();
     

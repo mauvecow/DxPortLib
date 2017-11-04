@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#define DX_STRMAXLEN 4096
+
 /* ---------------------------------------------------------------Globals */
 extern int g_DxUseCharSet;
 
@@ -73,6 +75,12 @@ extern wchar_t Dx_FileRead_getcW(int fileHandle);
 extern int Dx_FileRead_vscanfA(int fileHandle, const char *format, va_list args);
 extern int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args);
 
+DWORD_PTR Dx_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA);
+DWORD_PTR Dx_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW);
+int Dx_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA);
+int Dx_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW);
+int Dx_FileRead_findClose(DWORD_PTR fileHandle);
+
 extern int Dx_File_Init();
 extern int Dx_File_End();
 
@@ -95,6 +103,12 @@ extern int DXA_ReadFile(DXArchive *archive, const char *filename, unsigned char 
 extern int DXA_TestFile(DXArchive *archive, const char *filename);
 
 extern SDL_RWops *DXA_OpenStream(DXArchive *archive, const char *filename);
+
+DWORD_PTR DXA_findFirstA(const char *filePath, FILEINFOA *fileInfoA);
+DWORD_PTR DXA_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW);
+int DXA_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA);
+int DXA_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW);
+int DXA_findClose(DWORD_PTR fileHandle);
 
 #else /* #ifndef DX_NOT_DXA */
 

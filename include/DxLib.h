@@ -171,6 +171,21 @@ DXUNICALL_VA_WRAPTO(int,
     FileRead_scanf, (int fileHandle, const TCHAR *format, ...),
     FileRead_vscanf, (fileHandle, format, args), format)
 
+// - Searches for files matching a pattern, DXA aware.
+extern DXCALL DWORD_PTR FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfo);
+extern DXCALL DWORD_PTR FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfo);
+DXUNICALL_WRAP(DWORD_PTR, FileRead_findFirst, (const TCHAR *filePath, FILEINFO *fileInfo),
+               (filePath, fileInfo))
+
+// - Finds the next file that matches the search criteria.
+extern DXCALL int FileRead_findNextW(DWORD_PTR findHandle, FILEINFOW *fileInfo);
+extern DXCALL int FileRead_findNextA(DWORD_PTR findHandle, FILEINFOA *fileInfo);
+DXUNICALL_WRAP(int, FileRead_findNext, (DWORD_PTR findHandle, FILEINFO *fileInfo),
+                (findHandle, fileInfo));
+
+// - Frees the data related to the file search.
+extern DXCALL int FileRead_findClose(DWORD_PTR findHandle);
+
 // ---------------------------------------------------------- DxArchive.cpp
 // - If true, will attempt to load data from dirname.dxa.
 // e.g. "directory/blah.txt" looks for "blah.txt" in "directory.dxa"
