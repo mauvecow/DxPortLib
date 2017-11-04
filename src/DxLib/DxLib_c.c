@@ -301,25 +301,58 @@ int DxLib_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) 
     return Dx_FileRead_vscanfW(fileHandle, format, args);
 }
 
+static void s_FileRead_CopyFileInfoAtoW(FILEINFOW *dest, FILEINFOA *src) {
+    memset(dest, 0, sizeof(FILEINFOW));
+
+    PL_Text_StringToWideChar(
+        dest->Name, src->Name, g_DxUseCharSet,
+        sizeof(dest->Name) / sizeof(dest->Name[0])
+    );
+    
+    dest->DirFlag = src->DirFlag;
+    dest->Size = src->Size;
+
+    memcpy(&dest->CreationTime, &src->CreationTime, sizeof(DATEDATA));
+    memcpy(&dest->LastWriteTime, &src->LastWriteTime, sizeof(DATEDATA));
+}
+
 DWORD_PTR DxLib_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
     char buf[DX_STRMAXLEN];
 
-    return Dx_FileRead_findFirstA(
+    return Dx_FileRead_findFirst(
         PL_Text_ConvertStrncpyIfNecessary(buf, -1,
                 filePath, g_DxUseCharSet, DX_STRMAXLEN),
         fileInfoA);
 }
 
 DWORD_PTR DxLib_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
-    return Dx_FileRead_findFirstW(filePath, fileInfoW);
+    char buf[DX_STRMAXLEN];
+    FILEINFOA fileInfoA;
+    int retval;
+
+    PL_Text_WideCharToString(buf, -1, filePath, DX_STRMAXLEN);
+    retval = Dx_FileRead_findFirst(buf, &fileInfoA);
+    if (retval != 0) {
+        s_FileRead_CopyFileInfoAtoW(fileInfoW, &fileInfoA);
+    }
+
+    return retval;
 }
 
 int DxLib_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
-    return Dx_FileRead_findNextA(fileHandle, fileInfoA);
+    return Dx_FileRead_findNext(fileHandle, fileInfoA);
 }
 
 int DxLib_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
-    return Dx_FileRead_findNextW(fileHandle, fileInfoW);
+    FILEINFOA fileInfoA;
+    int retval;
+    
+    retval = Dx_FileRead_findNext(fileHandle, &fileInfoA);
+    if (retval == 0) {
+        s_FileRead_CopyFileInfoAtoW(fileInfoW, &fileInfoA);
+    }
+
+    return retval;
 }
 
 int DxLib_FileRead_findClose(DWORD_PTR fileHandle) {

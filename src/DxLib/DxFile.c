@@ -51,17 +51,6 @@ static int s_initialized = DXFALSE;
 static int s_filePriorityFlag = DXFALSE;
 static int s_fileUseCharset = DX_CHARSET_DEFAULT;
 
-typedef struct DxFileStreamFunctions {
-    DWORD_PTR (*findFirstW)(const wchar_t *filePath, FILEINFOW *fileInfoW);
-    DWORD_PTR (*findFirstA)(const char *filePath, FILEINFOA *fileInfoA);
-    int (*findNextW)(DWORD_PTR fileHandle, FILEINFOW *fileInfoW);
-    int (*findNextA)(DWORD_PTR fileHandle, FILEINFOA *fileInfoA);
-    int (*findClose)(DWORD_PTR fileHandle);
-} DxFileStreamFunctions;
-
-static DxFileStreamFunctions s_streamFunctions;
-static int s_defaultStreamFunctionFlag = DXTRUE;
-
 /* ------------------------------------------------------------- ARCHIVE MANAGER */
 #ifndef DX_NON_DXA
 typedef struct ArchiveAliasEntry {
@@ -319,26 +308,11 @@ typedef struct LocalFindData {
 #ifndef DX_NON_DXA
     int dxaFlag;
 
-    struct DXAFindData *dxaData;
+    DXAFindData *dxaData;
 #endif
 } LocalFindData;
 
-void Dx_File_CopyFileInfoWtoA(FILEINFOA *dest, FILEINFOW *src) {
-    memset(dest, 0, sizeof(FILEINFOA));
-
-    PL_Text_WideCharToString(
-        dest->Name, g_DxUseCharSet, src->Name,
-        sizeof(dest->Name) / sizeof(dest->Name[0])
-    );
-    
-    dest->DirFlag = src->DirFlag;
-    dest->Size = src->Size;
-
-    memcpy(&dest->CreationTime, &src->CreationTime, sizeof(DATEDATA));
-    memcpy(&dest->LastWriteTime, &src->LastWriteTime, sizeof(DATEDATA));
-}
-
-static int s_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
+int Dx_FileRead_findNext(DWORD_PTR fileHandle, FILEINFOA *fileInfo) {
     LocalFindData *data = (LocalFindData *)fileHandle;
 
     if (data == 0) {
@@ -347,7 +321,7 @@ static int s_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
 
 #ifndef DX_NON_DXA
     if (data->dxaFlag == DXTRUE) {
-        return DXA_findNextW(data->dxaData, fileInfoW);
+        return DXA_findNext(data->dxaData, fileInfo);
     }
 #endif
 
@@ -359,30 +333,30 @@ static int s_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
             return -1;
         }
 
-        memset(fileInfoW, 0, sizeof(FILEINFOW));
+        memset(fileInfo, 0, sizeof(FILEINFOW));
 
-        PL_Text_StringToWideChar(fileInfoW->Name,
+        PL_Text_ConvertStrncpy(fileInfo->Name, g_DxUseCharSet,
             data->globData.gl_pathv[data->globIndex], -1,
-            sizeof(fileInfoW->Name) / sizeof(fileInfoW->Name[0]));
+            sizeof(fileInfo->Name) / sizeof(fileInfo->Name[0]));
 
         if (stat(data->globData.gl_pathv[data->globIndex], &sb) == 0) {
             struct tm *lt;
 
             if (S_ISDIR(sb.st_mode) != 0) {
-                fileInfoW->DirFlag = DXTRUE;
+                fileInfo->DirFlag = DXTRUE;
             } else {
-                fileInfoW->Size = (LONGLONG)sb.st_size;
+                fileInfo->Size = (LONGLONG)sb.st_size;
             }
 
             lt = localtime(&sb.st_mtim.tv_sec);
-            fileInfoW->CreationTime.Year = lt->tm_year + 1900;
-            fileInfoW->CreationTime.Mon = lt->tm_mon;
-            fileInfoW->CreationTime.Day = lt->tm_mday;
-            fileInfoW->CreationTime.Hour = lt->tm_hour;
-            fileInfoW->CreationTime.Min = lt->tm_min;
-            fileInfoW->CreationTime.Sec = lt->tm_sec;
+            fileInfo->CreationTime.Year = lt->tm_year + 1900;
+            fileInfo->CreationTime.Mon = lt->tm_mon;
+            fileInfo->CreationTime.Day = lt->tm_mday;
+            fileInfo->CreationTime.Hour = lt->tm_hour;
+            fileInfo->CreationTime.Min = lt->tm_min;
+            fileInfo->CreationTime.Sec = lt->tm_sec;
 
-            memcpy(&fileInfoW->CreationTime, &fileInfoW->LastWriteTime, sizeof(DATEDATA));
+            memcpy(&fileInfo->CreationTime, &fileInfo->LastWriteTime, sizeof(DATEDATA));
         }
 
         data->globIndex += 1;
@@ -390,40 +364,22 @@ static int s_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
         return 0;
     }
 #endif
-    return -1;
-}
-
-static int s_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
-    LocalFindData *data = (LocalFindData *)fileHandle;
-    FILEINFOW fileInfoW;
-
-    if (data == 0) {
-        return -1;
-    }
-
-#ifndef DX_NON_DXA
-    if (data->dxaFlag == DXTRUE) {
-        return DXA_findNextA(data->dxaData, fileInfoA);
-    }
-#endif
-
-    if (s_FileRead_findNextW(fileHandle, &fileInfoW) == 0) {
-        Dx_File_CopyFileInfoWtoA(fileInfoA, &fileInfoW);
-        return 0;
-    }
 
     return -1;
 }
 
-static DWORD_PTR s_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
+DWORD_PTR Dx_FileRead_findFirst(const char *filePath, FILEINFOA *fileInfo) {
     LocalFindData *data = DXCALLOC(sizeof(LocalFindData));
 
 #ifndef DX_NON_DXA
     if (s_useArchiveFlag == DXTRUE) {
-        data->dxaData = DXA_findFirstA(filePath, fileInfoA);
-        if (data->dxaData != 0) {
-            data->dxaFlag = DXTRUE;
-            return (DWORD_PTR)data;
+        DXArchive *archive = s_GetArchive(filePath);
+        if (archive != NULL) {
+            data->dxaData = DXA_findFirst(archive, filePath, fileInfo);
+            if (data->dxaData != 0) {
+                data->dxaFlag = DXTRUE;
+                return (DWORD_PTR)data;
+            }
         }
     }
 #endif
@@ -444,7 +400,7 @@ static DWORD_PTR s_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfo
 
         if (retval == 0) {
             data->globIndex = 0;
-            if (s_FileRead_findNextA((DWORD_PTR)data, fileInfoA) == 0) {
+            if (Dx_FileRead_findNext((DWORD_PTR)data, fileInfo) == 0) {
                 data->globFlag = DXTRUE;
 
                 return (DWORD_PTR)data;
@@ -458,43 +414,7 @@ static DWORD_PTR s_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfo
     return 0;
 }
 
-static DWORD_PTR s_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
-    LocalFindData *data = DXCALLOC(sizeof(LocalFindData));
-
-#ifndef DX_NON_DXA
-    if (s_useArchiveFlag == DXTRUE) {
-        data->dxaData = DXA_findFirstW(filePath, fileInfoW);
-        if (data->dxaData != 0) {
-            data->dxaFlag = DXTRUE;
-            return (DWORD_PTR)data;
-        }
-    }
-#endif
-
-#ifdef DXPORTLIB_USE_GLOB
-    if (s_allowDirectFlag == DXTRUE) {
-        char pathBuf[DX_STRMAXLEN];
-        int retval;
-        PL_Text_WideCharToString(pathBuf, -1, filePath, DX_STRMAXLEN);
-
-        retval = glob(pathBuf, 0, NULL, &data->globData);
-
-        if (retval == 0) {
-            if (s_FileRead_findNextW((DWORD_PTR)data, fileInfoW) == 0) {
-                data->globFlag = DXTRUE;
-
-                return (DWORD_PTR)data;
-            }
-            globfree(&data->globData);
-        }
-    }
-#endif
-
-    DXFREE(data);
-    return 0;
-}
-
-static int s_FileRead_findClose(DWORD_PTR fileHandle) {
+int Dx_FileRead_findClose(DWORD_PTR fileHandle) {
     LocalFindData *data = (LocalFindData *)fileHandle;
     if (data == 0) {
         return -1;
@@ -515,16 +435,6 @@ static int s_FileRead_findClose(DWORD_PTR fileHandle) {
     DXFREE(data);
 
     return 0;
-}
-
-static void s_SetDefaultStreamFunctions(int dxaFlag) {
-    s_defaultStreamFunctionFlag = DXTRUE;
-
-    s_streamFunctions.findFirstW = s_FileRead_findFirstW;
-    s_streamFunctions.findFirstA = s_FileRead_findFirstA;
-    s_streamFunctions.findNextW = s_FileRead_findNextW;
-    s_streamFunctions.findNextA = s_FileRead_findNextA;
-    s_streamFunctions.findClose = s_FileRead_findClose;
 }
 
 /* ------------------------------------------------------------ PUBLIC INTERFACE */
@@ -601,10 +511,6 @@ int Dx_File_SetUseDXArchiveFlag(int flag) {
         s_useArchiveFlag = flag;
     }
 
-    if (s_defaultStreamFunctionFlag == DXTRUE) {
-        s_SetDefaultStreamFunctions(s_useArchiveFlag);
-    }
-    
     return 0;
 }
 int Dx_File_GetUseDXArchiveFlag() {
@@ -861,39 +767,6 @@ int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
     return PL_Text_Wvsscanf(buffer, g_DxUseCharSet, format, args);
 }
 
-DWORD_PTR Dx_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
-    if (s_streamFunctions.findFirstA != 0) {
-        return s_streamFunctions.findFirstA(filePath, fileInfoA);
-    }
-    return 0;
-}
-DWORD_PTR Dx_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
-    if (s_streamFunctions.findFirstW != 0) {
-        return s_streamFunctions.findFirstW(filePath, fileInfoW);
-    }
-    return 0;
-}
-
-int Dx_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
-    if (s_streamFunctions.findNextA != 0) {
-        return s_streamFunctions.findNextA(fileHandle, fileInfoA);
-    }
-    return -1;
-}
-int Dx_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
-    if (s_streamFunctions.findNextW != 0) {
-        return s_streamFunctions.findNextW(fileHandle, fileInfoW);
-    }
-    return -1;
-}
-
-int Dx_FileRead_findClose(DWORD_PTR fileHandle) {
-    if (s_streamFunctions.findClose != 0) {
-        return s_streamFunctions.findClose(fileHandle);
-    }
-    return -1;
-}
-
 int Dx_File_OpenRead(const char *filename) {
     SDL_RWops *rwops = Dx_File_OpenStream(filename);
     if (rwops != NULL) {
@@ -905,10 +778,6 @@ int Dx_File_OpenRead(const char *filename) {
 int Dx_File_Init() {
     s_initialized = DXTRUE;
 
-    if (s_defaultStreamFunctionFlag == DXTRUE) {
-        s_SetDefaultStreamFunctions(s_useArchiveFlag);
-    }
-    
     s_OpenArchives();
     
     PL_File_SetOpenReadFunction(Dx_File_OpenRead);

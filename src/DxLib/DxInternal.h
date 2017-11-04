@@ -75,10 +75,8 @@ extern wchar_t Dx_FileRead_getcW(int fileHandle);
 extern int Dx_FileRead_vscanfA(int fileHandle, const char *format, va_list args);
 extern int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args);
 
-DWORD_PTR Dx_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA);
-DWORD_PTR Dx_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW);
-int Dx_FileRead_findNextA(DWORD_PTR findHandle, FILEINFOA *fileInfoA);
-int Dx_FileRead_findNextW(DWORD_PTR findHandle, FILEINFOW *fileInfoW);
+DWORD_PTR Dx_FileRead_findFirst(const char *filePath, FILEINFOA *fileInfo);
+int Dx_FileRead_findNext(DWORD_PTR findHandle, FILEINFOA *fileInfo);
 int Dx_FileRead_findClose(DWORD_PTR findHandle);
 
 void Dx_File_CopyFileInfoWtoA(FILEINFOA *dest, FILEINFOW *src);
@@ -108,10 +106,9 @@ extern SDL_RWops *DXA_OpenStream(DXArchive *archive, const char *filename);
 
 struct DXAFindData;
 typedef struct DXAFindData DXAFindData;
-DXAFindData *DXA_findFirstA(const char *filePath, FILEINFOA *fileInfoA);
-DXAFindData *DXA_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW);
-int DXA_findNextA(DXAFindData *dxaData, FILEINFOA *fileInfoA);
-int DXA_findNextW(DXAFindData *dxaData, FILEINFOW *fileInfoW);
+
+DXAFindData *DXA_findFirst(DXArchive *archive, const char *filePath, FILEINFOA *fileInfo);
+int DXA_findNext(DXAFindData *dxaData, FILEINFOA *fileInfo);
 int DXA_findClose(DXAFindData *dxaData);
 
 #else /* #ifndef DX_NOT_DXA */

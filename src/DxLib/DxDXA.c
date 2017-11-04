@@ -721,34 +721,42 @@ static int DXA_Decompress(const void *vSrc, void *vDest, uint64_t dest_len) {
 
 struct DXAFindData {
     char SearchPath[DX_STRMAXLEN];
+    DXArchive *archive;
 };
 
-DXAFindData *DXA_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
+/*
+ simple string check vs format goes here
+
+static s_checkFindFormat(dxaFindData *data) {
+    return DXFALSE;
+}
+
+ */
+
+int DXA_findNext(DXAFindData *dxaData, FILEINFOA *fileInfo) {
+    /* If index == -2 or == -1, check special entries '.' and '..' */
+
+    /* Iterate forwards while index < directory.length */
+
+        /* If this entry matches a pattern, stop and return it */
+
+        /* If index > length, return -1 */
+
+    /* Failed */
+
+    return -1;
+}
+
+DXAFindData *DXA_findFirst(DXArchive *archive, const char *filePath, FILEINFOA *fileInfo) {
     DXAFindData *dxaData = (DXAFindData *)DXCALLOC(sizeof(DXAFindData));
-    
-    return dxaData;
-}
-DXAFindData *DXA_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
-    wchar_t path[DX_STRMAXLEN];
-    FILEINFOW fileInfoW;
-    DXAFindData *dxaData;
 
-    PL_Text_StringToWideChar(path, filePath, g_DxUseCharSet, DX_STRMAXLEN);
+    /* - Scan to directory in filePath. <-- this is the annoying one */
 
-    dxaData = DXA_findFirstW(path, &fileInfoW);
+    /* - Assign directory, index to dxaData. */
 
-    if (dxaData != 0) {
-        Dx_File_CopyFileInfoWtoA(fileInfoA, &fileInfoW);
-    }
+    /* - Call findNext */
 
     return dxaData;
-}
-
-int DXA_findNextW(DXAFindData *dxaData, FILEINFOW *fileInfoW) {
-    return -1;
-}
-int DXA_findNextA(DXAFindData *dxaData, FILEINFOA *fileInfoA) {
-    return -1;
 }
 
 int DXA_findClose(DXAFindData *dxaData) {
