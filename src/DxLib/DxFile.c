@@ -44,6 +44,7 @@
 #endif
 
 static int s_useArchiveFlag = DXTRUE;
+static int s_allowDirectFlag = DXTRUE;
 static char s_defaultArchiveString[DXA_KEY_LENGTH + 1] = { '\0' };
 static char s_archiveExtension[64] = { '\0' };
 static int s_initialized = DXFALSE;
@@ -255,11 +256,20 @@ SDL_RWops *Dx_File_OpenArchiveStream(const char *filename) {
 }
 
 SDL_RWops *Dx_File_OpenDirectStream(const char *filename) {
+    if (s_allowDirectFlag == DXFALSE) {
+        return NULL;
+    }
+
     return SDL_RWFromFile(filename, "rb");
 }
 
 SDL_RWops *Dx_File_OpenStream(const char *filename) {
-    if (s_useArchiveFlag == DXFALSE) {
+    if (s_allowDirectFlag == DXFALSE) {
+        if (s_useArchiveFlag == DXTRUE) {
+            return Dx_File_OpenArchiveStream(filename);
+        }
+        return NULL;
+    } else if (s_useArchiveFlag == DXFALSE) {
         return Dx_File_OpenDirectStream(filename);
     } else if (s_filePriorityFlag == DXTRUE) {
         SDL_RWops *rwops = Dx_File_OpenDirectStream(filename);
@@ -305,13 +315,20 @@ int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *
 }
 
 /* ------------------------------------------------------------ STREAMING CODE */
+typedef struct LocalFindData {
 #ifdef DXPORTLIB_USE_GLOB
-typedef struct LocalGlobData {
+    int globFlag;
     glob_t globData;
-    int index;
-} LocalGlobData;
+    int globIndex;
+#endif
+#ifndef DX_NON_DXA
+    int dxaFlag;
 
-static void s_copyFileInfoWtoA(FILEINFOA *dest, FILEINFOW *src) {
+    struct DXAFindData *dxaData;
+#endif
+} LocalFindData;
+
+void Dx_File_CopyFileInfoWtoA(FILEINFOA *dest, FILEINFOW *src) {
     memset(dest, 0, sizeof(FILEINFOA));
 
     PL_Text_WideCharToString(
@@ -327,152 +344,186 @@ static void s_copyFileInfoWtoA(FILEINFOA *dest, FILEINFOW *src) {
 }
 
 static int s_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
-    LocalGlobData *data = (LocalGlobData *)fileHandle;
-    struct stat sb;
+    LocalFindData *data = (LocalFindData *)fileHandle;
 
     if (data == 0) {
         return -1;
     }
-    if (data->index >= data->globData.gl_pathc) {
-        return -1;
+
+#ifndef DX_NON_DXA
+    if (data->dxaFlag == DXTRUE) {
+        return DXA_findNextW(data->dxaData, fileInfoW);
     }
+#endif
 
-    memset(fileInfoW, 0, sizeof(FILEINFOW));
+#ifdef DXPORTLIB_USE_GLOB
+    if (data->globFlag == DXTRUE) {
+        struct stat sb;
 
-    PL_Text_StringToWideChar(fileInfoW->Name, data->globData.gl_pathv[data->index], -1,
-        sizeof(fileInfoW->Name) / sizeof(fileInfoW->Name[0]));
-
-    if (stat(data->globData.gl_pathv[data->index], &sb) == 0) {
-        struct tm *lt;
-
-        if (S_ISDIR(sb.st_mode) != 0) {
-            fileInfoW->DirFlag = DXTRUE;
-        } else {
-            fileInfoW->Size = (LONGLONG)sb.st_size;
+        if (data->globIndex >= data->globData.gl_pathc) {
+            return -1;
         }
 
-        lt = localtime(&sb.st_mtim.tv_sec);
-        fileInfoW->CreationTime.Year = lt->tm_year + 1900;
-        fileInfoW->CreationTime.Mon = lt->tm_mon;
-        fileInfoW->CreationTime.Day = lt->tm_mday;
-        fileInfoW->CreationTime.Hour = lt->tm_hour;
-        fileInfoW->CreationTime.Min = lt->tm_min;
-        fileInfoW->CreationTime.Sec = lt->tm_sec;
+        memset(fileInfoW, 0, sizeof(FILEINFOW));
 
-        memcpy(&fileInfoW->CreationTime, &fileInfoW->LastWriteTime, sizeof(DATEDATA));
+        PL_Text_StringToWideChar(fileInfoW->Name,
+            data->globData.gl_pathv[data->globIndex], -1,
+            sizeof(fileInfoW->Name) / sizeof(fileInfoW->Name[0]));
+
+        if (stat(data->globData.gl_pathv[data->globIndex], &sb) == 0) {
+            struct tm *lt;
+
+            if (S_ISDIR(sb.st_mode) != 0) {
+                fileInfoW->DirFlag = DXTRUE;
+            } else {
+                fileInfoW->Size = (LONGLONG)sb.st_size;
+            }
+
+            lt = localtime(&sb.st_mtim.tv_sec);
+            fileInfoW->CreationTime.Year = lt->tm_year + 1900;
+            fileInfoW->CreationTime.Mon = lt->tm_mon;
+            fileInfoW->CreationTime.Day = lt->tm_mday;
+            fileInfoW->CreationTime.Hour = lt->tm_hour;
+            fileInfoW->CreationTime.Min = lt->tm_min;
+            fileInfoW->CreationTime.Sec = lt->tm_sec;
+
+            memcpy(&fileInfoW->CreationTime, &fileInfoW->LastWriteTime, sizeof(DATEDATA));
+        }
+
+        data->globIndex += 1;
+
+        return 0;
     }
-
-    data->index += 1;
-
-    return 0;
+#endif
+    return -1;
 }
+
 static int s_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
+    LocalFindData *data = (LocalFindData *)fileHandle;
     FILEINFOW fileInfoW;
 
-    if (s_FileRead_findNextW(fileHandle, &fileInfoW) != 0) {
+    if (data == 0) {
         return -1;
     }
 
-    s_copyFileInfoWtoA(fileInfoA, &fileInfoW);
-    return 0;
+#ifndef DX_NON_DXA
+    if (data->dxaFlag == DXTRUE) {
+        return DXA_findNextA(data->dxaData, fileInfoA);
+    }
+#endif
+
+    if (s_FileRead_findNextW(fileHandle, &fileInfoW) == 0) {
+        Dx_File_CopyFileInfoWtoA(fileInfoA, &fileInfoW);
+        return 0;
+    }
+
+    return -1;
 }
 
 static DWORD_PTR s_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
-    LocalGlobData *data = DXALLOC(sizeof(LocalGlobData));
-    char pathBuf[DX_STRMAXLEN];
-    int retval;
+    LocalFindData *data = DXCALLOC(sizeof(LocalFindData));
 
-    memset(data, 0, sizeof(LocalGlobData));
-
-    retval = glob(
-        PL_Text_ConvertStrncpyIfNecessary(pathBuf, -1,
-                filePath, g_DxUseCharSet, DX_STRMAXLEN),
-        0, NULL, &data->globData);
-
-    if (retval != 0) {
-        DXFREE(data);
-        return 0;
+#ifndef DX_NON_DXA
+    if (s_useArchiveFlag == DXTRUE) {
+        data->dxaData = DXA_findFirstA(filePath, fileInfoA);
+        if (data->dxaData != 0) {
+            data->dxaFlag = DXTRUE;
+            return (DWORD_PTR)data;
+        }
     }
+#endif
 
-    data->index = 0;
-    if (s_FileRead_findNextA((DWORD_PTR)data, fileInfoA) != 0) {
-        globfree(&data->globData);
-        DXFREE(data);
-        return 0;
+#ifdef DXPORTLIB_USE_GLOB
+    if (s_allowDirectFlag == DXTRUE) {
+        char pathBuf[DX_STRMAXLEN];
+        int retval;
+        /* glob is technically inaccurate here, since this is a clone of Windows'
+        * FindFirstFile. FindFirstFile does not allow wildcards in pathnames, it
+        * only seeks over a single directory's worth of contents.
+        *
+        * So we just assume the source code respects that. Because it should. */
+        retval = glob(
+            PL_Text_ConvertStrncpyIfNecessary(pathBuf, -1,
+                    filePath, g_DxUseCharSet, DX_STRMAXLEN),
+            0, NULL, &data->globData);
+
+        if (retval == 0) {
+            data->globIndex = 0;
+            if (s_FileRead_findNextA((DWORD_PTR)data, fileInfoA) == 0) {
+                data->globFlag = DXTRUE;
+
+                return (DWORD_PTR)data;
+            }
+            globfree(&data->globData);
+        }
     }
+#endif
 
-    return (DWORD_PTR)data;
+    DXFREE(data);
+    return 0;
 }
+
 static DWORD_PTR s_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
-    LocalGlobData *data = DXALLOC(sizeof(LocalGlobData));
-    char pathBuf[DX_STRMAXLEN];
-    int retval;
+    LocalFindData *data = DXCALLOC(sizeof(LocalFindData));
 
-    memset(data, 0, sizeof(LocalGlobData));
-
-    PL_Text_WideCharToString(pathBuf, -1, filePath, DX_STRMAXLEN);
-
-    retval = glob(pathBuf, 0, NULL, &data->globData);
-
-    if (retval != 0) {
-        DXFREE(data);
-        return 0;
+#ifndef DX_NON_DXA
+    if (s_useArchiveFlag == DXTRUE) {
+        data->dxaData = DXA_findFirstW(filePath, fileInfoW);
+        if (data->dxaData != 0) {
+            data->dxaFlag = DXTRUE;
+            return (DWORD_PTR)data;
+        }
     }
+#endif
 
-    if (s_FileRead_findNextW((DWORD_PTR)data, fileInfoW) != 0) {
-        globfree(&data->globData);
-        DXFREE(data);
-        return 0;
+#ifdef DXPORTLIB_USE_GLOB
+    if (s_allowDirectFlag == DXTRUE) {
+        char pathBuf[DX_STRMAXLEN];
+        int retval;
+        PL_Text_WideCharToString(pathBuf, -1, filePath, DX_STRMAXLEN);
+
+        retval = glob(pathBuf, 0, NULL, &data->globData);
+
+        if (retval == 0) {
+            if (s_FileRead_findNextW((DWORD_PTR)data, fileInfoW) == 0) {
+                data->globFlag = DXTRUE;
+
+                return (DWORD_PTR)data;
+            }
+            globfree(&data->globData);
+        }
     }
+#endif
 
-    return (DWORD_PTR)data;
+    DXFREE(data);
+    return 0;
 }
 
 static int s_FileRead_findClose(DWORD_PTR fileHandle) {
-    LocalGlobData *data = (LocalGlobData *)fileHandle;
+    LocalFindData *data = (LocalFindData *)fileHandle;
     if (data == 0) {
         return -1;
     }
 
-    globfree(&data->globData);
+#ifndef DX_NON_DXA
+    if (data->dxaFlag == DXTRUE) {
+        DXA_findClose(data->dxaData);
+    }
+#endif
+
+#ifdef DXPORTLIB_USE_GLOB
+    if (data->globFlag == DXTRUE) {
+        globfree(&data->globData);
+    }
+#endif
+
     DXFREE(data);
 
     return 0;
 }
-#else
-/* #ifndef DXPORTLIB_USE_GLOB */
-static int s_FileRead_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
-    return -1;
-}
-static int s_FileRead_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
-    return -1;
-}
-
-static DWORD_PTR s_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
-    return 0;
-}
-static DWORD_PTR s_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
-    return 0;
-}
-
-static int s_FileRead_findClose(DWORD_PTR fileHandle) {
-    return -1;
-}
-#endif
 
 static void s_SetDefaultStreamFunctions(int dxaFlag) {
     s_defaultStreamFunctionFlag = DXTRUE;
-
-#ifndef DX_NON_DXA
-    if (dxaFlag == DXTRUE) {
-        s_streamFunctions.findFirstW = DXA_findFirstW;
-        s_streamFunctions.findFirstA = DXA_findFirstA;
-        s_streamFunctions.findNextW = DXA_findNextW;
-        s_streamFunctions.findNextA = DXA_findNextA;
-        s_streamFunctions.findClose = DXA_findClose;
-        return;
-    }
-#endif
 
     s_streamFunctions.findFirstW = s_FileRead_findFirstW;
     s_streamFunctions.findFirstA = s_FileRead_findFirstA;

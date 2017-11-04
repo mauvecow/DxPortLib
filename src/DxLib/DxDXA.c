@@ -719,19 +719,42 @@ static int DXA_Decompress(const void *vSrc, void *vDest, uint64_t dest_len) {
 
 /* ------------------------------------------------------- DXARCHIVE FIND* IMPLEMENTATION */
 
-DWORD_PTR DXA_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
+struct DXAFindData {
+    char SearchPath[DX_STRMAXLEN];
+};
+
+DXAFindData *DXA_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
+    DXAFindData *dxaData = (DXAFindData *)DXCALLOC(sizeof(DXAFindData));
+    
+    return dxaData;
+}
+DXAFindData *DXA_findFirstA(const char *filePath, FILEINFOA *fileInfoA) {
+    wchar_t path[DX_STRMAXLEN];
+    FILEINFOW fileInfoW;
+    DXAFindData *dxaData;
+
+    PL_Text_StringToWideChar(path, filePath, g_DxUseCharSet, DX_STRMAXLEN);
+
+    dxaData = DXA_findFirstW(path, &fileInfoW);
+
+    if (dxaData != 0) {
+        Dx_File_CopyFileInfoWtoA(fileInfoA, &fileInfoW);
+    }
+
+    return dxaData;
+}
+
+int DXA_findNextW(DXAFindData *dxaData, FILEINFOW *fileInfoW) {
     return -1;
 }
-DWORD_PTR DXA_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfoW) {
+int DXA_findNextA(DXAFindData *dxaData, FILEINFOA *fileInfoA) {
     return -1;
 }
-int DXA_findNextA(DWORD_PTR fileHandle, FILEINFOA *fileInfoA) {
-    return -1;
-}
-int DXA_findNextW(DWORD_PTR fileHandle, FILEINFOW *fileInfoW) {
-    return -1;
-}
-int DXA_findClose(DWORD_PTR fileHandle) {
+
+int DXA_findClose(DXAFindData *dxaData) {
+    if (dxaData != 0) {
+        DXFREE(dxaData);
+    }
     return 0;
 }
 
