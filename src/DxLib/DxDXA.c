@@ -827,6 +827,8 @@ static int s_checkFindFormat(DXAFindData *dxaData, const char *str) {
 
 int DXA_findNext(DXAFindData *dxaData, FILEINFOA *fileInfo) {
     DXArchiveDirectoryInfo dirInfo;
+    DXArchive *archive = dxaData->archive;
+    int fileSize;
 
     memset(fileInfo, 0, sizeof(FILEINFOA));
 
@@ -840,22 +842,30 @@ int DXA_findNext(DXAFindData *dxaData, FILEINFOA *fileInfo) {
         }
     }
 
-    DXA_GetDirectoryInfo(dxaData->archive, dxaData->directoryAddress, &dirInfo);
+    DXA_GetDirectoryInfo(archive, dxaData->directoryAddress, &dirInfo);
 
+    if (archive->Version >= 6) {
+        fileSize = sizeof(DXArchiveFileInfo);
+    } else if (archive->Version >= 1) {
+        fileSize = sizeof(DXArchiveFileInfoV5);
+    } else {
+        fileSize = sizeof(DXArchiveFileInfoV1);
+    }
+    
     /* Offset past the 'default' entries to make this a bit easier. */
     dirInfo.FileInfoCount += s_findEntryCount;
-    dirInfo.FileInfoAddress -= s_findEntryCount;
+    dirInfo.FileInfoAddress -= s_findEntryCount * fileSize;
 
     while (dxaData->index < dirInfo.FileInfoCount) {
         DXArchiveFileInfo entry;
         const char *filename;
 
-        DXA_GetFileInfo(dxaData->archive, dirInfo.FileInfoAddress + dxaData->index, &entry);
-        DXA_GetFileNameInfo(dxaData->archive, entry.NameAddress, 0, &filename);
+        DXA_GetFileInfo(archive, dirInfo.FileInfoAddress + (fileSize * dxaData->index), &entry);
+        DXA_GetFileNameInfo(archive, entry.NameAddress, 0, &filename);
         dxaData->index += 1;
 
         if (s_checkFindFormat(dxaData, filename) == DXTRUE) {
-
+            PL_Text_ConvertStrncpy(fileInfo->Name, g_DxUseCharSet, filename, -1, FILEINFONAMELEN);
             return 0;
         }
     }
