@@ -798,6 +798,12 @@ static int s_checkFindFormat(DXAFindData *dxaData, const char *str) {
     while (*format || *str) {
         int formatC = PL_Text_ReadUTF8Char(&format);
         int strC = PL_Text_ReadChar(&str, charSet);
+        if (formatC >= 'a' && formatC <= 'z') {
+            formatC += 'A' - 'a';
+        }
+        if (strC >= 'a' && strC <= 'z') {
+            strC += 'A' - 'a';
+        }
         if (formatC == '?') {
             /* Match any one char, skip */
         } else if (formatC == '*') {
