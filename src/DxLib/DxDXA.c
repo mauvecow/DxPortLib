@@ -182,7 +182,11 @@ static int DXA_InitializeArchive(DXArchive *archive);
 /* ------------------------------------------------------------ DXARCHIVE IMPLEMENTATION */
 #define INVALID_DIRECTORY (0xffffffff)
 
-static uint64_t DXA_GetDirectoryAddress(DXArchive *archive, const char *filename, const char **end) {
+static uint64_t DXA_GetDirectoryAddress(
+    DXArchive *archive,
+    const char *filename, const char **end,
+    unsigned int *pParity
+) {
     /* So here we have to break up the filename into pieces.
      *
      * The rules here are:
@@ -195,7 +199,7 @@ static uint64_t DXA_GetDirectoryAddress(DXArchive *archive, const char *filename
     int charSet = (int)archive->CharSet;
 
     *end = filename;
-    
+
     while (*src != '\0') {
         DXArchiveDirectoryInfo dirInfo;
         int index = 0;
@@ -221,6 +225,9 @@ static uint64_t DXA_GetDirectoryAddress(DXArchive *archive, const char *filename
             }
         }
         if (dirAttrib == 0) {
+            if (pParity != NULL) {
+                *pParity = parity;
+            }
             return directoryAddress;
         }
         *end = src;
@@ -259,7 +266,7 @@ static uint64_t DXA_GetDirectoryAddress(DXArchive *archive, const char *filename
         }
 
         if (foundDir == 0) {
-            return 0;
+            break;
         }
     }
     
@@ -269,45 +276,42 @@ static uint64_t DXA_GetDirectoryAddress(DXArchive *archive, const char *filename
 static uint64_t DXA_GetFileAddress(DXArchive *archive, const char *filename) {
     char fileBuf[2048];
     const char *src;
-    uint64_t directoryAddress = DXA_GetDirectoryAddress(archive, filename, &src);
+    unsigned int parity = 0;
+    uint64_t directoryAddress = DXA_GetDirectoryAddress(archive, filename, &src, &parity);
     int charSet = (int)archive->CharSet;
+    DXArchiveDirectoryInfo dirInfo;
+    uint64_t fileAddress;
+    uint64_t i;
 
     if (directoryAddress == INVALID_DIRECTORY) {
         return 0;
     }
-    
-    while (*src != '\0') {
-        DXArchiveDirectoryInfo dirInfo;
-        uint64_t fileAddress;
-        uint64_t i;
-        unsigned int parity = 0;
 
-        PL_Text_ConvertStrncpy(fileBuf, charSet, src, -1, 2048);
+    PL_Text_ConvertStrncpy(fileBuf, charSet, src, -1, 2048);
+    
+    DXA_GetDirectoryInfo(archive, directoryAddress, &dirInfo);
+    fileAddress = dirInfo.FileInfoAddress;
+    for (i = 0; i < dirInfo.FileInfoCount; ++i) {
+        DXArchiveFileInfo fileInfo;
+        const char *filename;
         
-        DXA_GetDirectoryInfo(archive, directoryAddress, &dirInfo);
-        fileAddress = dirInfo.FileInfoAddress;
-        for (i = 0; i < dirInfo.FileInfoCount; ++i) {
-            DXArchiveFileInfo fileInfo;
-            const char *filename;
-            
-            DXA_GetFileInfo(archive, fileAddress, &fileInfo);
-            if ((fileInfo.Attributes & DXA_ATTRIBUTE_DIRECTORY) == 0) {
-                DXArchiveFileNameInfo fileNameInfo;
-                DXA_GetFileNameInfo(archive, fileInfo.NameAddress, &fileNameInfo, &filename);
-                
-                if (fileNameInfo.Parity == parity && !SDL_strcmp(filename, fileBuf)) {
-                    /* Found it */
-                    return fileAddress;
-                }
+        DXA_GetFileInfo(archive, fileAddress, &fileInfo);
+        if ((fileInfo.Attributes & DXA_ATTRIBUTE_DIRECTORY) == 0) {
+            DXArchiveFileNameInfo fileNameInfo;
+            DXA_GetFileNameInfo(archive, fileInfo.NameAddress, &fileNameInfo, &filename);
+
+            if (fileNameInfo.Parity == parity && !SDL_strcasecmp(filename, fileBuf)) {
+                /* Found it */
+                return fileAddress;
             }
-            
-            if (archive->Version >= 6) {
-                fileAddress += sizeof(DXArchiveFileInfo);
-            } else if (archive->Version >= 1) {
-                fileAddress += sizeof(DXArchiveFileInfoV5);
-            } else {
-                fileAddress += sizeof(DXArchiveFileInfoV1);
-            }
+        }
+        
+        if (archive->Version >= 6) {
+            fileAddress += sizeof(DXArchiveFileInfo);
+        } else if (archive->Version >= 1) {
+            fileAddress += sizeof(DXArchiveFileInfoV5);
+        } else {
+            fileAddress += sizeof(DXArchiveFileInfoV1);
         }
     }
     
@@ -862,7 +866,7 @@ int DXA_findNext(DXAFindData *dxaData, FILEINFOA *fileInfo) {
 DXAFindData *DXA_findFirst(DXArchive *archive, const char *filePath, FILEINFOA *fileInfo) {
     const char *filePattern;
     DXAFindData *dxaData;
-    uint64_t directoryAddress = DXA_GetDirectoryAddress(archive, filePath, &filePattern);
+    uint64_t directoryAddress = DXA_GetDirectoryAddress(archive, filePath, &filePattern, NULL);
 
     if (directoryAddress == INVALID_DIRECTORY) {
         return 0;
