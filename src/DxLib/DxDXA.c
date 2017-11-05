@@ -180,7 +180,7 @@ static void DXA_GetFileNameInfo(DXArchive *archive, uint64_t address, DXArchiveF
 static int DXA_InitializeArchive(DXArchive *archive);
 
 /* ------------------------------------------------------------ DXARCHIVE IMPLEMENTATION */
-#define INVALID_DIRECTORY (0xffffffff)
+#define INVALID_DIRECTORY ((uint64_t)0xffffffff)
 
 static uint64_t DXA_GetDirectoryAddress(
     DXArchive *archive,
