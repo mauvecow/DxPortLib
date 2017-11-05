@@ -380,7 +380,7 @@ DWORD_PTR Dx_FileRead_findFirst(const char *filePath, FILEINFOA *fileInfo) {
             
             archive = s_GetArchive(buf);
             if (archive != NULL) {
-                data->dxaData = DXA_findFirst(archive, end, fileInfo);
+                data->dxaData = DXA_findFirst(archive, end + 1, fileInfo);
                 if (data->dxaData != 0) {
                     data->dxaFlag = DXTRUE;
                     return (DWORD_PTR)data;
@@ -417,7 +417,7 @@ DWORD_PTR Dx_FileRead_findFirst(const char *filePath, FILEINFOA *fileInfo) {
 #endif
 
     DXFREE(data);
-    return 0;
+    return (DWORD_PTR)-1;
 }
 
 int Dx_FileRead_findClose(DWORD_PTR fileHandle) {
