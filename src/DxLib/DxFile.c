@@ -333,7 +333,7 @@ int Dx_FileRead_findNext(DWORD_PTR fileHandle, FILEINFOA *fileInfo) {
             return -1;
         }
 
-        memset(fileInfo, 0, sizeof(FILEINFOW));
+        memset(fileInfo, 0, sizeof(FILEINFOA));
 
         PL_Text_ConvertStrncpy(fileInfo->Name, g_DxUseCharSet,
             data->globData.gl_pathv[data->globIndex], -1,
@@ -406,11 +406,11 @@ DWORD_PTR Dx_FileRead_findFirst(const char *filePath, FILEINFOA *fileInfo) {
 
         if (retval == 0) {
             data->globIndex = 0;
+            data->globFlag = DXTRUE;
             if (Dx_FileRead_findNext((DWORD_PTR)data, fileInfo) == 0) {
-                data->globFlag = DXTRUE;
-
                 return (DWORD_PTR)data;
             }
+            data->globFlag = DXFALSE;
             globfree(&data->globData);
         }
     }
@@ -425,6 +425,7 @@ int Dx_FileRead_findClose(DWORD_PTR fileHandle) {
     if (data == 0) {
         return -1;
     }
+    return 0;
 
 #ifndef DX_NON_DXA
     if (data->dxaFlag == DXTRUE) {

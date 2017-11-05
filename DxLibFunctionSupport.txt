@@ -347,9 +347,9 @@ DxFile:
   . FileRead_getInfoNum
   . FileRead_getInfo
   . FileRead_deleteInfo
-  . FileRead_findFirst
-  . FileRead_findNext
-  . FileRead_findClose
+  * FileRead_findFirst
+  * FileRead_findNext
+  * FileRead_findClose
   . GetStreamFunctionDefault
   . ChangeStreamFunction
 
