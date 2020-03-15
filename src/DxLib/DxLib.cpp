@@ -153,9 +153,32 @@ int FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args) {
     return ::DxLib_FileRead_vscanfW(fileHandle, format, args);
 }
 
+DWORD_PTR FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfo) {
+    return ::DxLib_FileRead_findFirstW(filePath, fileInfo);
+}
+DWORD_PTR FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfo) {
+    return ::DxLib_FileRead_findFirstA(filePath, fileInfo);
+}
+
+int FileRead_findNextW(DWORD_PTR findHandle, FILEINFOW *fileInfo) {
+    return ::DxLib_FileRead_findNextW(findHandle, fileInfo);
+}
+int FileRead_findNextA(DWORD_PTR findHandle, FILEINFOA *fileInfo) {
+    return ::DxLib_FileRead_findNextA(findHandle, fileInfo);
+}
+int FileRead_findClose(DWORD_PTR findHandle) {
+    return ::DxLib_FileRead_findClose(findHandle);
+}
+
 // ---------------------------------------------------- DxArchive.cpp
 int SetUseDXArchiveFlag(int flag) {
     return ::DxLib_SetUseDXArchiveFlag(flag);
+}
+int EXT_SetDXArchiveAliasW(const wchar_t *src, const wchar_t *dest) {
+    return ::DxLib_EXT_SetDXArchiveAliasW(src, dest);
+}
+int EXT_SetDXArchiveAliasA(const char *src, const char *dest) {
+    return ::DxLib_EXT_SetDXArchiveAliasA(src, dest);
 }
 int SetDXArchiveKeyStringW(const wchar_t *keyString) {
     return ::DxLib_SetDXArchiveKeyStringW(keyString);

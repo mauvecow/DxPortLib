@@ -30,12 +30,21 @@
 
 #include "SDL.h"
 
+#define DXPORTLIB_USE_GLOB
+
+#ifdef DXPORTLIB_USE_GLOB
+#  include <glob.h>
+#  include <sys/stat.h>
+#  include <time.h>
+#endif
+
 #if defined(__WIN32__) && !defined(__GNUC__)
 /* For vsscanf hack down below. */
 #include <stdio.h>
 #endif
 
 static int s_useArchiveFlag = DXTRUE;
+static int s_allowDirectFlag = DXTRUE;
 static char s_defaultArchiveString[DXA_KEY_LENGTH + 1] = { '\0' };
 static char s_archiveExtension[64] = { '\0' };
 static int s_initialized = DXFALSE;
@@ -44,6 +53,13 @@ static int s_fileUseCharset = DX_CHARSET_DEFAULT;
 
 /* ------------------------------------------------------------- ARCHIVE MANAGER */
 #ifndef DX_NON_DXA
+typedef struct ArchiveAliasEntry {
+    char *srcArchiveName;
+    char *destArchiveName;
+    
+    struct ArchiveAliasEntry *next;
+} ArchiveAliasEntry;
+
 typedef struct ArchiveListEntry {
     DXArchive *archive;
     char *filename;
@@ -51,13 +67,14 @@ typedef struct ArchiveListEntry {
     struct ArchiveListEntry *next;
 } ArchiveListEntry;
 
+static ArchiveAliasEntry *s_archiveAliases = NULL;
 static ArchiveListEntry *s_archiveList = NULL;
 
 static DXArchive *s_GetArchive(const char *filename) {
     /* - Check to see if this archive is already open first. */
     DXArchive *archive;
     ArchiveListEntry *entry;
-    
+
     for (entry = s_archiveList; entry != NULL; entry = entry->next) {
         if (!PL_Text_Strcmp(entry->filename, filename)) {
             return entry->archive;
@@ -74,16 +91,16 @@ static DXArchive *s_GetArchive(const char *filename) {
         entry->next = s_archiveList;
         s_archiveList = entry;
     }
-    
+
     return archive;
 }
 
-static int s_CloseArchive(const char *filename) {
+static int s_CloseArchive(DXArchive *archive) {
     ArchiveListEntry **pEntry = &s_archiveList;
     ArchiveListEntry *entry;
     
     while ((entry = *pEntry) != NULL) {
-        if (!PL_Text_Strcmp(entry->filename, filename)) {
+        if (entry->archive == archive) {
             ArchiveListEntry *nextEntry = entry->next;
             
             DXA_CloseArchive(entry->archive);
@@ -126,7 +143,7 @@ static DXArchive *s_GetArchive(const char *filename) {
     return NULL;
 }
 
-static int s_CloseArchive(const char *filename) {
+static int s_CloseArchive(DXArchive *archive) {
     return -1;
 }
 
@@ -139,7 +156,7 @@ static void s_CloseArchives() {
 
 static int s_GetArchiveFilename(
     const char *filename, char *buf, int maxLen,
-    const char **pEnd
+    const char **pEnd, int aliasFlag
 ) {
     /* Extract the archive name from the filename. */
     const char *end = filename;
@@ -163,15 +180,23 @@ static int s_GetArchiveFilename(
         }
         
         if (s_archiveExtension[0] != '\0') {
-            char *c = buf + position;
-            c += PL_Text_WriteUTF8Char(c, '.', buf + maxLen - c);
-            position = c - buf;
-            position += PL_Text_Strncpy(c, s_archiveExtension, buf + maxLen - c);
+            position += PL_Text_WriteUTF8Char(buf + position, '.', maxLen - position);
+            position += PL_Text_Strncpy(buf + position, s_archiveExtension, maxLen - position);
         } else {
-            buf[position] = 0;
-            position += PL_Text_ConvertStrncat(buf + position, -1,
+            position += PL_Text_ConvertStrncpy(buf + position, -1,
                                    ".dxa", DX_CHARSET_EXT_UTF8,
                                    maxLen - position);
+        }
+        
+        if (s_archiveAliases != NULL && aliasFlag != 0) {
+            ArchiveAliasEntry *entry = s_archiveAliases;
+            while (entry != NULL) {
+                if (PL_Text_Strcmp(buf, entry->srcArchiveName) == 0) {
+                    PL_Text_Strncpy(buf, entry->destArchiveName, maxLen);
+                    break;
+                }
+                entry = entry->next;
+            }
         }
         
         if (pEnd != NULL) {
@@ -184,21 +209,40 @@ static int s_GetArchiveFilename(
     return 0;
 }
 
+static DXArchive *s_TryGetArchive(
+    const char *filename, char *buf, int maxLen,
+    const char **pEnd
+) {
+    DXArchive *archive;
+
+    if (s_GetArchiveFilename(filename, buf, 2048, pEnd, 1) > 0) {
+        archive = s_GetArchive(buf);
+        if (archive != NULL) {
+            return archive;
+        }
+    }
+    if (s_archiveAliases != NULL) {
+        if (s_GetArchiveFilename(filename, buf, 2048, pEnd, 0) > 0) {
+            archive = s_GetArchive(buf);
+            if (archive != NULL) {
+                return archive;
+            }
+        }
+    }
+    return 0;
+}
+
 /* ------------------------------------------------------------ STREAM INTERFACE */
 SDL_RWops *Dx_File_OpenArchiveStream(const char *filename) {
     /* Extract the archive name from the filename. */
     char buf[2048];
     const char *end;
-    if (s_GetArchiveFilename(filename, buf, 2048, &end) > 0) {
-        DXArchive *archive;
-        
-        archive = s_GetArchive(buf);
-        if (archive != NULL) {
-            SDL_RWops *rwops = DXA_OpenStream(archive, end + 1);
-            /* If we can open from the stream, do that. */
-            if (rwops != NULL) {
-                return rwops;
-            }
+    DXArchive *archive = s_TryGetArchive(filename, buf, 2048, &end);
+    if (archive != 0) {
+        SDL_RWops *rwops = DXA_OpenStream(archive, end + 1);
+        /* If we can open from the stream, do that. */
+        if (rwops != NULL) {
+            return rwops;
         }
     }
     
@@ -206,6 +250,10 @@ SDL_RWops *Dx_File_OpenArchiveStream(const char *filename) {
 }
 
 SDL_RWops *Dx_File_OpenDirectStream(const char *filename) {
+    if (s_allowDirectFlag == DXFALSE) {
+        return NULL;
+    }
+
     return SDL_RWFromFile(filename, "rb");
 }
 
@@ -255,7 +303,181 @@ int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *
     return retval;
 }
 
+/* ------------------------------------------------------------ STREAMING CODE */
+typedef struct LocalFindData {
+#ifdef DXPORTLIB_USE_GLOB
+    int globFlag;
+    glob_t globData;
+    int globIndex;
+#endif
+#ifndef DX_NON_DXA
+    int dxaFlag;
+
+    DXAFindData *dxaData;
+#endif
+} LocalFindData;
+
+int Dx_FileRead_findNext(DWORD_PTR fileHandle, FILEINFOA *fileInfo) {
+    LocalFindData *data = (LocalFindData *)fileHandle;
+
+    if (data == 0 || fileHandle == (DWORD_PTR)-1) {
+        return -1;
+    }
+
+#ifndef DX_NON_DXA
+    if (data->dxaFlag == DXTRUE) {
+        return DXA_findNext(data->dxaData, fileInfo);
+    }
+#endif
+
+#ifdef DXPORTLIB_USE_GLOB
+    if (data->globFlag == DXTRUE) {
+        struct stat sb;
+
+        if (data->globIndex >= data->globData.gl_pathc) {
+            return -1;
+        }
+
+        memset(fileInfo, 0, sizeof(FILEINFOA));
+
+        PL_Text_ConvertStrncpy(fileInfo->Name, g_DxUseCharSet,
+            data->globData.gl_pathv[data->globIndex], -1,
+            FILEINFONAMELEN);
+
+        if (stat(data->globData.gl_pathv[data->globIndex], &sb) == 0) {
+            struct tm *lt;
+
+            if (S_ISDIR(sb.st_mode) != 0) {
+                fileInfo->DirFlag = DXTRUE;
+            } else {
+                fileInfo->Size = (LONGLONG)sb.st_size;
+            }
+
+            lt = localtime(&sb.st_mtim.tv_sec);
+            fileInfo->CreationTime.Year = lt->tm_year + 1900;
+            fileInfo->CreationTime.Mon = lt->tm_mon;
+            fileInfo->CreationTime.Day = lt->tm_mday;
+            fileInfo->CreationTime.Hour = lt->tm_hour;
+            fileInfo->CreationTime.Min = lt->tm_min;
+            fileInfo->CreationTime.Sec = lt->tm_sec;
+
+            memcpy(&fileInfo->CreationTime, &fileInfo->LastWriteTime, sizeof(DATEDATA));
+        }
+
+        data->globIndex += 1;
+
+        return 0;
+    }
+#endif
+
+    return -1;
+}
+
+DWORD_PTR Dx_FileRead_findFirst(const char *filePath, FILEINFOA *fileInfo) {
+    LocalFindData *data = DXCALLOC(sizeof(LocalFindData));
+
+#ifndef DX_NON_DXA
+    if (s_useArchiveFlag == DXTRUE) {
+        char buf[2048];
+        const char *end;
+        DXArchive *archive = s_TryGetArchive(filePath, buf, 2048, &end);
+
+        if (archive != NULL) {
+            data->dxaData = DXA_findFirst(archive, end + 1, fileInfo);
+            if (data->dxaData != 0) {
+                data->dxaFlag = DXTRUE;
+                return (DWORD_PTR)data;
+            }
+        }
+    }
+#endif
+
+#ifdef DXPORTLIB_USE_GLOB
+    if (s_allowDirectFlag == DXTRUE) {
+        char pathBuf[DX_STRMAXLEN];
+        int retval;
+        /* glob is technically inaccurate here, since this is a clone of Windows'
+        * FindFirstFile. FindFirstFile does not allow wildcards in pathnames, it
+        * only seeks over a single directory's worth of contents.
+        *
+        * So we just assume the source code respects that. Because it should. */
+        retval = glob(
+            PL_Text_ConvertStrncpyIfNecessary(pathBuf, -1,
+                    filePath, g_DxUseCharSet, DX_STRMAXLEN),
+            0, NULL, &data->globData);
+
+        if (retval == 0) {
+            data->globIndex = 0;
+            data->globFlag = DXTRUE;
+            if (Dx_FileRead_findNext((DWORD_PTR)data, fileInfo) == 0) {
+                return (DWORD_PTR)data;
+            }
+            data->globFlag = DXFALSE;
+            globfree(&data->globData);
+        }
+    }
+#endif
+
+    DXFREE(data);
+    return (DWORD_PTR)-1;
+}
+
+int Dx_FileRead_findClose(DWORD_PTR fileHandle) {
+    LocalFindData *data = (LocalFindData *)fileHandle;
+    if (data == 0 || fileHandle == (DWORD_PTR)-1) {
+        return -1;
+    }
+    return 0;
+
+#ifndef DX_NON_DXA
+    if (data->dxaFlag == DXTRUE) {
+        DXA_findClose(data->dxaData);
+    }
+#endif
+
+#ifdef DXPORTLIB_USE_GLOB
+    if (data->globFlag == DXTRUE) {
+        globfree(&data->globData);
+    }
+#endif
+
+    DXFREE(data);
+
+    return 0;
+}
+
 /* ------------------------------------------------------------ PUBLIC INTERFACE */
+int Dx_File_EXTSetDXArchiveAlias(const char *srcName, const char *destName) {
+    ArchiveAliasEntry **pEntry = &s_archiveAliases;
+    
+    while (*pEntry != NULL) {
+        if (PL_Text_Strcmp((*pEntry)->srcArchiveName, srcName) == 0) {
+            DXFREE((*pEntry)->destArchiveName);
+            if (destName == NULL) {
+                ArchiveAliasEntry *next = (*pEntry)->next;
+                DXFREE((*pEntry)->srcArchiveName);
+                DXFREE(*pEntry);
+                
+                *pEntry = next;
+            } else {
+                (*pEntry)->destArchiveName = PL_Text_Strdup(destName);
+            }
+            return 0;
+        }
+        pEntry = &(*pEntry)->next;
+    }
+    
+    if (srcName == NULL || destName == NULL) {
+        return 0;
+    }
+    
+    *pEntry = DXALLOC(sizeof(ArchiveAliasEntry));
+    (*pEntry)->srcArchiveName = PL_Text_Strdup(srcName);
+    (*pEntry)->destArchiveName = PL_Text_Strdup(destName);
+    (*pEntry)->next = NULL;
+    return 0;
+}
+
 /* Sets the "encryption" key to use for the packfile. */
 int Dx_File_SetDXArchiveKeyString(const char *keyString) {
     int n = 0;
@@ -275,7 +497,7 @@ int Dx_File_SetDXArchiveKeyString(const char *keyString) {
 
 int Dx_File_SetDXArchiveExtension(const char *extension) {
     if (extension != 0) {
-        s_archiveExtension[0] = '\0';
+        PL_Text_Strncpy(s_archiveExtension, extension, sizeof(s_archiveExtension));
     } else {
         memset(s_archiveExtension, 0, sizeof(s_archiveExtension));
     }
@@ -297,7 +519,7 @@ int Dx_File_SetUseDXArchiveFlag(int flag) {
     if (flag != s_useArchiveFlag) {
         s_useArchiveFlag = flag;
     }
-    
+
     return 0;
 }
 int Dx_File_GetUseDXArchiveFlag() {
@@ -306,13 +528,10 @@ int Dx_File_GetUseDXArchiveFlag() {
 
 int Dx_File_DXArchivePreLoad(const char *dxaFilename, int async) {
     char buf[2048];
-    DXArchive *archive;
-    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
-        archive = s_GetArchive(buf);
-        if (archive != NULL) {
-            /* FIXME async not supported */
-            return DXA_PreloadArchive(archive);
-        }
+    DXArchive *archive = s_TryGetArchive(dxaFilename, buf, 2048, NULL);
+    if (archive != 0) {
+        /* FIXME async not supported */
+        return DXA_PreloadArchive(archive);
     }
     return -1;
 }
@@ -323,8 +542,9 @@ int Dx_File_DXArchiveCheckIdle(const char *dxaFilename) {
 }
 int Dx_File_DXArchiveRelease(const char *dxaFilename) {
     char buf[2048];
-    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
-        return s_CloseArchive(buf);
+    DXArchive *archive = s_TryGetArchive(dxaFilename, buf, 2048, NULL);
+    if (archive != 0) {
+        return s_CloseArchive(archive);
     }
     return -1;
 }
@@ -332,7 +552,7 @@ int Dx_File_DXArchiveRelease(const char *dxaFilename) {
 int Dx_File_DXArchiveCheckFile(const char *dxaFilename, const char *filename) {
     char buf[2048];
     DXArchive *archive;
-    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL) > 0) {
+    if (s_GetArchiveFilename(dxaFilename, buf, 2048, NULL, 1) > 0) {
         archive = s_GetArchive(buf);
         if (archive != NULL) {
             return DXA_TestFile(archive, filename);
@@ -564,7 +784,7 @@ int Dx_File_OpenRead(const char *filename) {
 
 int Dx_File_Init() {
     s_initialized = DXTRUE;
-    
+
     s_OpenArchives();
     
     PL_File_SetOpenReadFunction(Dx_File_OpenRead);

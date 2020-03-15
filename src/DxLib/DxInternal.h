@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#define DX_STRMAXLEN 4096
+
 /* ---------------------------------------------------------------Globals */
 extern int g_DxUseCharSet;
 
@@ -41,6 +43,8 @@ extern SDL_RWops *Dx_File_OpenDirectStream(const char *filename);
 extern SDL_RWops *Dx_File_OpenStream(const char *filename);
 
 extern int Dx_File_ReadFile(const char *filename, unsigned char **dData, unsigned int *dSize);
+
+extern int Dx_File_EXTSetDXArchiveAlias(const char *srcName, const char *destName);
 
 extern int Dx_File_SetDXArchiveKeyString(const char *keyString);
 extern int Dx_File_SetDXArchiveExtension(const char *extension);
@@ -71,6 +75,12 @@ extern wchar_t Dx_FileRead_getcW(int fileHandle);
 extern int Dx_FileRead_vscanfA(int fileHandle, const char *format, va_list args);
 extern int Dx_FileRead_vscanfW(int fileHandle, const wchar_t *format, va_list args);
 
+DWORD_PTR Dx_FileRead_findFirst(const char *filePath, FILEINFOA *fileInfo);
+int Dx_FileRead_findNext(DWORD_PTR findHandle, FILEINFOA *fileInfo);
+int Dx_FileRead_findClose(DWORD_PTR findHandle);
+
+void Dx_File_CopyFileInfoWtoA(FILEINFOA *dest, FILEINFOW *src);
+
 extern int Dx_File_Init();
 extern int Dx_File_End();
 
@@ -93,6 +103,13 @@ extern int DXA_ReadFile(DXArchive *archive, const char *filename, unsigned char 
 extern int DXA_TestFile(DXArchive *archive, const char *filename);
 
 extern SDL_RWops *DXA_OpenStream(DXArchive *archive, const char *filename);
+
+struct DXAFindData;
+typedef struct DXAFindData DXAFindData;
+
+DXAFindData *DXA_findFirst(DXArchive *archive, const char *filePath, FILEINFOA *fileInfo);
+int DXA_findNext(DXAFindData *dxaData, FILEINFOA *fileInfo);
+int DXA_findClose(DXAFindData *dxaData);
 
 #else /* #ifndef DX_NOT_DXA */
 

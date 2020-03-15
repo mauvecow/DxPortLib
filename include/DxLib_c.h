@@ -128,8 +128,21 @@ DXUNICALL_VA_WRAPTO(int,
     DxLib_FileRead_scanf, (int fileHandle, const TCHAR *format, ...),
     DxLib_FileRead_vscanf, (fileHandle, format, args), format)
 
+extern DXCALL DWORD_PTR DxLib_FileRead_findFirstW(const wchar_t *filePath, FILEINFOW *fileInfo);
+extern DXCALL DWORD_PTR DxLib_FileRead_findFirstA(const char *filePath, FILEINFOA *fileInfo);
+DXUNICALL_WRAP(DWORD_PTR, DxLib_FileRead_findFirst, (const TCHAR *filePath, FILEINFO *fileInfo),
+               (filePath, fileInfo))
+
+extern DXCALL int DxLib_FileRead_findNextW(DWORD_PTR findHandle, FILEINFOW *fileInfo);
+extern DXCALL int DxLib_FileRead_findNextA(DWORD_PTR findHandle, FILEINFOA *fileInfo);
+extern DXCALL int DxLib_FileRead_findClose(DWORD_PTR findHandle);
+
 /* -------------------------------------------------------- DxArchive.cpp */
 extern DXCALL int DxLib_SetUseDXArchiveFlag(int flag);
+
+extern DXCALL int DxLib_EXT_SetDXArchiveAliasW(const wchar_t *src, const wchar_t *dest);
+extern DXCALL int DxLib_EXT_SetDXArchiveAliasA(const char *src, const char *dest);
+DXUNICALL_WRAP(int, DxLib_EXT_SetDXArchiveAlias, (const TCHAR *src, const TCHAR *dest), (src, dest))
 
 extern DXCALL int DxLib_SetDXArchiveKeyStringW(const wchar_t *keyString);
 extern DXCALL int DxLib_SetDXArchiveKeyStringA(const char *keyString);
