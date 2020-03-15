@@ -148,8 +148,7 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
         s_debugPrint("s_LoadGL: using GL_ARB_vertex_buffer_object");
     }
 #endif
-
-    if (majorVersion >= 3) {
+    if (majorVersion >= 2) {
         PL_GL.hasFramebufferSupport = DXTRUE;
         PL_GL.glFramebufferTexture2D = GetGLFunction("glFramebufferTexture2D");
         PL_GL.glBindFramebuffer = GetGLFunction("glBindFramebuffer");
@@ -182,11 +181,11 @@ int PLGL_Init(PLGLGetGLFunction GetGLFunction,
 #endif
 
     PL_drawOffscreen = DXFALSE;
-#ifndef DXPORTLIB_DRAW_OPENGL_ES2
+// #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (PL_GL.hasFramebufferSupport == DXTRUE) {
         PL_drawOffscreen = DXTRUE;
     }
-#endif
+// #endif
     
 #ifndef DXPORTLIB_DRAW_OPENGL_ES2
     if (IsGLExtSupported("GL_ARB_texture_rectangle")
