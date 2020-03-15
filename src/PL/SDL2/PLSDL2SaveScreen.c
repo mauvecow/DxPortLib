@@ -41,6 +41,7 @@ int PL_SaveDrawScreenToJPEG(int x1, int y1, int x2, int y2,
 int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
                            const char *filename,
                            int compressionLevel) {
+#ifndef DXPORTLIB_DRAW_OPENGL_ES2
     SDL_Surface *surface;
     PLRect rect;
     rect.x = x1;
@@ -53,6 +54,9 @@ int PL_SaveDrawScreenToPNG(int x1, int y1, int x2, int y2,
     }
     
     return IMG_SavePNG(surface, filename);
+#else
+    return -1;
+#endif
 }
 
 #endif

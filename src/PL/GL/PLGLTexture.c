@@ -95,7 +95,10 @@ static int s_GLFrameBuffer_Bind(int handleID, GLenum textureTarget, GLuint textu
             
             if (renderinfo != NULL) {
                 PL_GL.glFramebufferRenderbuffer(
-                    GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                    GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                    GL_RENDERBUFFER, renderinfo->renderbufferID);
+                PL_GL.glFramebufferRenderbuffer(
+                    GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
                     GL_RENDERBUFFER, renderinfo->renderbufferID);
             }
         }
@@ -703,6 +706,10 @@ int PLGL_Texture_RenderGetTextureInfo(int textureRefID, PLRect *rect, float *xMu
     
     return 0;
 }
+
+#ifdef DXPORTLIB_DRAW_OPENGL_ES2
+#define GL_DEPTH24_STENCIL8 (GL_RGBA4)
+#endif
 
 int PLGL_Renderbuffer_Create(int width, int height) {
     int renderbufferID = PL_Handle_AcquireID(DXHANDLE_RENDERBUFFER);

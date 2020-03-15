@@ -38,3 +38,15 @@ If there are any comments, you may contact the maintainer:
 Patrick McCarthy <mauve@sandwich.net>
 
 Twitter: @mauvecow
+
+---
+
+for emscripten(HTML5) build
+
+```sh
+mkdir build && cd build
+emcmake cmake .. -DBUILD_SHARED_LIBS=OFF
+emmake make
+```
+
+---

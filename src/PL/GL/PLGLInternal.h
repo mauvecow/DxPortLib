@@ -32,6 +32,7 @@
 
 #ifdef DXPORTLIB_DRAW_OPENGL_ES2
 #include "SDL_opengles2.h"
+typedef GLclampf GLclampd;
 #else
 #include "SDL_opengl.h"
 #endif
