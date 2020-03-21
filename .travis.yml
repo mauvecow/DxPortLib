@@ -1,0 +1,22 @@
+sudo: false
+
+language: cpp
+
+services:
+  - docker
+
+before_install:
+  - docker pull trzeci/emscripten:1.39.10-upstream
+
+script:
+  - docker run --name dxportlib trzeci/emscripten:1.39.10-upstream bash -c "git clone https://github.com/nokotan/DxPortLib.git && cd DxPortLib && mkdir build && cd build && emcmake cmake .. && emmake make"
+  - docker cp dxportlib:/src/DxPortLib/build/libDxPortLib.a .
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file:
+    - libDxPortLib.a
+  skip_cleanup: true
+  on:
+    tags: true
