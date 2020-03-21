@@ -233,3 +233,10 @@ Makefile.in
 
 /html5/*
 !/html5/CMakeLists.txt
+
+
+#############
+## VS Code
+#############
+
+.vscode
