@@ -15,4 +15,6 @@ deploy:
   token: $GITHUB_TOKEN
   file:
     - libDxPortLib.a
-  cleanup: false
+  skip_cleanup: true
+  on:
+    tags: true
